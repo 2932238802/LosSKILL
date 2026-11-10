@@ -1,0 +1,16 @@
+# OS / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# 安装测试与本地临时目录
+/.tmp/
+/tmp/
+/out/
+
+# 日志
+*.log
