@@ -81,8 +81,19 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Target 'D:\MyPro
 | `sandra-sales-money-talk` | 谈钱：预算时机与差距出现时的三句话 | 蒸馏 · 书籍 |
 | `sandra-sales-review` | 拜访复盘：四层结论 + 最多 3 条下阶段动作 | 蒸馏 · 书籍 |
 | `sandra-sales-demand-gen` | 客户开发：ICP、分级、转介绍、行为量日历 | 蒸馏 · 书籍 |
+| `game-design` | 《游戏设计艺术（第2版）》总入口：13 张能力卡的路由 + 全书概览/术语/速查 | 蒸馏 · 书籍 |
+| `game-design-experience` | 体验目标：一句可检验的体验陈述 + 场景 + 兴趣曲线 | 蒸馏 · 书籍 |
+| `game-design-tetrad` | 四元素与主题：机制/故事/美学/技术四栏拆解 | 蒸馏 · 书籍 |
+| `game-design-prototype` | 原型与迭代：问题陈述 → 风险排序 → 最小原型 | 蒸馏 · 书籍 |
+| `game-design-review` | 八项测试：立项与砍留的结构化评审 | 蒸馏 · 书籍 |
+| `game-design-mechanics` | 机制与平衡：期望值、十二类平衡、有意义的选择 | 蒸馏 · 书籍 |
+| `game-design-narrative` | 故事与角色：珍珠串/故事机/英雄之旅 + 间接控制 | 蒸馏 · 书籍 |
+| `game-design-playtest` | 试玩测试：五问定义、观察、问卷与访谈 | 蒸馏 · 书籍 |
 
 > `sandra-sales` 是「路由 + 参考包」，其余 7 个是可直接单点触发的独立 Skill。两者可同时安装：独立 Skill 命中时优先用它，路由包负责没有独立 Skill 的 6 张能力卡与全书背景。
+
+> `game-design` 同样是「路由 + 参考包」，其余 7 个是可直接单点触发的独立 Skill。路由包覆盖玩家动机、界面、团队文档、商业模式、社群、伦理 6 张能力卡与全书背景。
+> 两套系列互不依赖，可只装一套；同一系列内，独立 Skill 命中时优先用它。
 
 ### 装好之后怎么触发
 
@@ -96,6 +107,11 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Target 'D:\MyPro
 | 「客户说太贵了」 | `sandra-sales-objections` → `sandra-sales-money-talk` | 先判是不是烟幕，再给差距出现时的三句话 |
 | 「客户要免费做方案」 | `sandra-sales`（free-work-gate 卡） | 免费工作闸门的判断与拒绝话术 |
 | 「复盘一下上周那次拜访」 | `sandra-sales-review` | 四层结论 + 最多 3 条下阶段动作 |
+| 「玩家说不上哪不好，就是不想再开一局」 | `game-design-experience` | 体验陈述 + 场景约束 + 兴趣曲线诊断 |
+| 「这个功能单看很酷，要不要加」 | `game-design-tetrad` | 四元素耦合检查 + 主题取舍 |
+| 「预算砍半，原型先做哪块」 | `game-design-prototype` | 风险排序 + 最小原型计划 |
+| 「玩家总用同一招，怎么调」 | `game-design-mechanics` | 最优策略定位 + 期望值/平衡审计 |
+| 「剧情和关卡老打架」 | `game-design-narrative` | 结构选择 + 角色关系 + 间接控制 |
 
 ---
 
@@ -111,7 +127,12 @@ LosSKILL/
 │  ├─ sandra-sales/
 │  │  ├─ SKILL.md         # 必需：frontmatter(name/description) + 正文
 │  │  └─ references/      # 可选：按需加载的参考文件
-│  └─ sandra-sales-qualify/
+│  ├─ sandra-sales-qualify/
+│  │  └─ SKILL.md
+│  ├─ game-design/
+│  │  ├─ SKILL.md
+│  │  └─ references/
+│  └─ game-design-experience/
 │     └─ SKILL.md
 ├─ _template/             # 新增 Skill 的模板与写作规范
 │  ├─ SKILL.md
@@ -140,7 +161,8 @@ LosSKILL/
 
 ## 说明与边界
 
-- 本仓库是**方法蒸馏**，不是原书替代品。`sandra-sales` 系列的能力卡保留了原文引文与行号，用于溯源；引用与商用请遵守原书版权。
+- 本仓库是**方法蒸馏**，不是原书替代品。`sandra-sales` 与 `game-design` 系列的能力卡保留了原文引文与页码，用于溯源；引用与商用请遵守原书版权。
+- `game-design` 系列的来源是 638 页扫描件的 OCR 文本：透镜框内问题大多缺失，财务数字不可读，部分案例为作者转述。卡片已在相应位置标注边界，不要当作实证结论。
 - 蒸馏内容中的案例均为书内案例的改写，比例类数字（如「90% 的方案提交过早」）书中无出处，只作方向参考，不可当阈值使用。
 - Skill 是给 AI 的操作指令，不构成法律、财务、定价授权建议；涉及合规与授权的场景，Skill 内部会要求转人工。
 
