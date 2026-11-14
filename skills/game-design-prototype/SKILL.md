@@ -2,12 +2,12 @@
 name: game-design-prototype
 description: |
   当用户有游戏想法、需要生成创意、排原型计划或决定"先做哪部分"时使用。
-  适用信号：头脑风暴、创意不够、先做哪个、原型计划、迭代、风险、预算砍半。
+  适用信号：头脑风暴、创意不够、先做哪个、原型计划、迭代、风险、预算砍半、反复迭代仍无效果（先质疑方向与问题陈述）。
   不适用于：判断方案是否优秀（game-design-review）、执行试玩（game-design-playtest）、规则数值本身（game-design-mechanics）。
 metadata:
   cangjie.generated-by: cangjie-tools v2.5.0
   cangjie.capability-id: cap.the-art-of-game-design.prototype-iteration
-  cangjie.capability-revision: 1
+  cangjie.capability-revision: 2
   cangjie.bundle-id: bundle.the-art-of-game-design
   cangjie.source-title: 游戏设计艺术（第2版）
   cangjie.tags: prototype, iteration, planning

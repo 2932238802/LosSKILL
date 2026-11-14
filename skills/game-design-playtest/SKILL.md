@@ -3,11 +3,11 @@ name: game-design-playtest
 description: |
   当用户要做试玩、用户测试、问卷、访谈或分析玩家反馈时使用。
   适用信号：试玩、测试玩家、问卷怎么设计、玩家反馈、焦点小组、留存低但评价好。
-  不适用于：修 Bug（QA）、判断方案整体（game-design-review）、调数值（game-design-mechanics）。
+  不适用于：修 Bug（QA）、判断方案整体（game-design-review）、调数值（game-design-mechanics）、迭代方向本身存疑（game-design-prototype）。
 metadata:
   cangjie.generated-by: cangjie-tools v2.5.0
   cangjie.capability-id: cap.the-art-of-game-design.playtest
-  cangjie.capability-revision: 1
+  cangjie.capability-revision: 2
   cangjie.bundle-id: bundle.the-art-of-game-design
   cangjie.source-title: 游戏设计艺术（第2版）
   cangjie.tags: playtest, research, feedback
