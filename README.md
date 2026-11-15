@@ -1,13 +1,15 @@
-# LosSKILL — 可被任意 AI 直接加载的 Skill 仓库
+# LosSKILL — 个人环境配置仓库 + AI Skill 收藏
 
-这个仓库是**个人 Skill 库**：把从书、长视频、播客、课程、访谈里蒸馏出来的方法，以及日常收集整理的有效方法，写成一个个**自包含、可被 AI 直接调用**的 Skill 文件夹。
+这个仓库是**个人开发环境备份方案**，同时也是**个人 AI Skill 收藏库**：
+1. 收集自己的代码习惯、AI 辅助方法、工作流程（整理为可被 AI 直接调用的 Skill）
+2. 包含个人配置（快捷键、软件安装指令、开发环境设置）
+3. 提供一键配置脚本，在新电脑上拉取仓库后运行指令，就能快速配置好所有环境、软件和个人习惯。
 
-目标很简单：**别人（或别的 AI）把这个仓库下载下来，不用读文档、不用改编，就能直接用。**
+目标很简单：**用这个仓库，在新电脑上最快 5 分钟就能恢复自己的全部开发环境，包含 AI 技能和工作流，不用重新设置，不用整理配置。**
 
-- 每个 Skill 都是独立的文件夹，核心只有一份 `SKILL.md`
-- 所有引用文件都用**相对路径**，复制/移动整个文件夹不会断链
-- 仓库根目录的 `SKILLS.md` 是全部 Skill 的索引，AI 可以先读索引再按需加载某一个
-- 新增 Skill 有固定模板 `_template/`，保持结构一致
+- 「AI Skill」部分：保持原有 Skill 目录结构，可被任意 AI 工具直接加载
+- 「环境配置」部分：新增 `configs/`（个人配置文件）和 `scripts/env-setup/`（环境安装脚本）
+- 新增 `install.sh`/`install.ps1` 扩展功能：除了复制 AI Skill，还能执行环境安装指令
 
 ---
 
@@ -64,6 +66,75 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Target 'D:\MyPro
 | 任意自研 Agent | 任意目录 | 加载规则：读 `SKILL.md` 的 frontmatter，`description` 命中即加载正文 |
 
 > 本仓库两个安装脚本的默认目标都是 `~/.dsh/skills`（Windows 与 Linux/macOS 一致）。装到别的工具时用 `-Target` 或第二个参数显式指定即可，例如 `./scripts/install.sh all ~/.claude/skills`。
+
+---
+
+## 核心能力：AI 注释保护（自动保护你的 LOS: 注释）
+
+本仓库新增了 **AI 规则 Skill** — `ai-comment-protection`，用于：
+✅ **禁止 AI 修改/删除你的 `LOS:` 开头的手动注释**
+✅ **AI 修改包含注释的代码时，必须保留所有 `LOS:` 注释**
+✅ **AI 必须记录修改过程中保留的 `LOS:` 注释，不得覆盖**
+
+当你将 LosSKILL 仓库加载到任意 AI 工具后，AI 会自动遵守这条规则：只要检测到文件中以 `// LOS:`、`# LOS:`、`/* LOS:` 等开头的注释，就绝对不会修改、删除或覆盖这些注释，只会原封不动保留它们。
+
+### 个人环境配置功能
+
+本仓库同时具备 **AI Skill 收藏** 和 **个人开发环境备份** 能力：
+1. **AI Skill 部分**：原有技能目录，包含可被 AI 工具直接加载的工作流、方法指南（含 `ai-comment-protection` 规则，保护你的手动注释）
+2. **环境配置部分**：
+   - `configs/`：个人配置文件（git 配置、bash 别名、Neovim 配置等）
+   - 一键配置脚本：`./scripts/install.sh` 完成 Skill 安装后，可选择自动部署个人配置
+
+### 一键恢复环境（新电脑专用）
+在新电脑上，拉取仓库后运行：
+```bash
+cd LosSKILL
+./setup.sh --yes          # 推荐：一条命令串起 技能 → 环境 → SSH → dsh 插件 → 自检
+```
+只想装 Skills + 环境（不碰 SSH / dsh 插件）时，仍可单独跑：
+```bash
+./scripts/install.sh      # 分步脚本，交互式
+```
+`./setup.sh` 支持的参数：`--yes`（环境配置直接应用）、`--with-blesh`（额外装 ble.sh 实时历史候选）、`--validate-only`（只自检）。
+
+脚本会先安装所有 AI Skill（包括注释保护规则），然后询问是否应用个人环境配置：
+- 部署 `.gitconfig` 与 Neovim 配置（覆盖前自动备份为 `*.losskill.bak`）；`.bashrc` 只作为**模板**参考，脚本只向真实 `.bashrc` 追加受管配置块，不会整文件覆盖
+- 自动识别系统包管理器（apt/brew/yum），安装常用开发工具（git、curl 等）
+- 同步 Neovim、VS Code 等编辑器配置
+- **WSL2 环境专属**：安装 Oh My Posh（huvix 主题）、中文语言包、C++ 和 Rust 开发工具，以及历史前缀搜索（↑/↓、Ctrl+X Ctrl+H、Ctrl+R）
+- **Git SSH 自动配置**：无论 WSL 还是普通 Linux，自动创建 ED25519 SSH 密钥，并提示你将公钥添加到 GitHub（`https://github.com/settings/keys`），配置 SSH 提交方式，无需每次输入 Git 密码。
+
+### SSH Git 提交方式（自动处理）
+脚本会自动生成你的 SSH 密钥，并在控制台显示公钥内容，按提示复制到 GitHub 的 SSH 密钥页面即可。完成后，Git 提交将通过 SSH 加密，更安全且无需重复认证。
+
+### WSL2 环境增强（自动配置）
+在 WSL2 环境下运行 `./scripts/install.sh` 应用个人环境配置时，会自动完成：
+1. **中文语言包安装**：自动安装 `language-pack-zh-hans`，设置 WSL2 默认 locale 为中文，支持中文界面和输入
+2. **Oh My Posh（huvix 主题）**：安装 Oh My Posh，把主题文件固定到 `~/.config/oh-my-posh/themes/huvix.omp.json`，**并删除旧的 kali 主题 init 行**，避免两套提示符互相覆盖
+3. **历史搜索（三个真实可用的功能）**：
+   - 输入前缀后按 **↑ / ↓**：只翻「以当前输入开头」的历史（等价 PowerShell 的 UpArrow）
+   - **Ctrl+X Ctrl+H**：把匹配的最近 10 条打印成 `<History(N)>` 列表
+   - **Ctrl+R**：fzf 弹层模糊搜索历史（未装 fzf 时退回 bash 自带的增量搜索）
+4. **C++/Rust 开发环境**：安装编译工具和 Rust 语言环境
+
+#### 要「边打字边列历史」就装 ble.sh
+截图里的 `<-/10>` + `[History]` 列表是 **PowerShell 的 PSReadLine ListView 预测**；bash/readline 没有对等机制。要最接近的效果，可额外装 `ble.sh`（bash 行编辑器，自带历史补全菜单）：
+```bash
+./scripts/install-blesh.sh    # 或 ./setup.sh --with-blesh
+```
+装完后敲命令前缀会自动出现历史候选菜单。注意 ble.sh 会接管 readline（替代上面 ↑/↓、Ctrl+R 的绑定），还原方式见脚本末尾说明。
+
+#### 为什么旧版脚本没有效果
+旧脚本把匹配逻辑挂在 `PROMPT_COMMAND` 上，并读取 `$READLINE_LINE`。但 `READLINE_LINE` **只在 `bind -x` 绑定的函数里才有值**，在 `PROMPT_COMMAND` 里恒为空，导致条件判断永远成立、匹配串永远为空 —— 所以既不会按你输入的前缀过滤，也不会有任何视觉反馈。现在改成 `bind -x` 绑定 `Ctrl+X Ctrl+H` 后才真正拿得到当前输入。
+
+### AI 注释保护规则（自动生效）
+当你加载本仓库到任意 AI 工具后，规则自动生效：
+- 识别所有以 `LOS:` 开头的注释（无论用 `//`、`#`、`/*` 等注释符）
+- AI 不得修改、删除、移动这些注释
+- AI 修改代码时，必须保留这些注释内容，不得覆盖
+- 如果修改需要涉及注释所在代码块，AI 必须在回复中明确说明已保留这些注释的位置和内容
+
 
 ---
 
@@ -137,10 +208,20 @@ LosSKILL/
 ├─ _template/             # 新增 Skill 的模板与写作规范
 │  ├─ SKILL.md
 │  └─ GUIDE.md
+├─ configs/               # 个人配置：由安装脚本部署到 home
+│  ├─ .gitconfig          # git 别名与行为
+│  ├─ .bashrc             # bash 模板（含历史搜索块，仅作参考/示例）
+│  ├─ powershell-profile.ps1  # PowerShell 7 配置：PSReadLine 历史预测(Layout 列表)、别名、Oh My Posh
+│  └─ nvim/init.vim       # Neovim 配置
+├─ setup.sh              # 一键总入口：技能 → 环境 → SSH → dsh 插件 → 自检
 └─ scripts/
-   ├─ install.ps1         # 安装（Windows）
-   ├─ install.sh          # 安装（macOS / Linux）
-   └─ validate.ps1        # 自检：frontmatter、命名、相对路径、索引覆盖
+   ├─ install.sh          # 分步安装（WSL2 / Linux / macOS：Skill + 环境 + SSH）
+   ├─ install.ps1         # 分步安装（Windows：Skill + 环境 + SSH + winget）
+   ├─ install-dsh-plugins.sh  # 给 dsh 的 profile 批量装插件（幂等，npm 直连）
+   ├─ install-blesh.sh    # 可选：装 ble.sh，实现「边打字边列历史」
+   ├─ setup-ssh-git.sh    # 只做 SSH 密钥与 GitHub 提交方式
+   ├─ validate.sh         # 自检（Linux / WSL，等价 validate.ps1）
+   └─ validate.ps1        # 自检（Windows）
 ```
 
 ---
@@ -153,7 +234,7 @@ LosSKILL/
 4. 正文用相对路径引用附件；不要依赖仓库外的文件
 5. 在 `SKILLS.md` 增加一行索引
 6. 单文件控制在 ~500 行内；长内容拆进 `references/`，正文只留「何时读哪个文件」
-7. 跑一遍自检：`powershell -ExecutionPolicy Bypass -File .\scripts\validate.ps1`
+7. 跑一遍自检：Linux/WSL 用 `./scripts/validate.sh`，Windows 用 `powershell -ExecutionPolicy Bypass -File .\scripts\validate.ps1`
 
 详细规范见 [_template/GUIDE.md](_template/GUIDE.md)。
 
@@ -165,6 +246,35 @@ LosSKILL/
 - `game-design` 系列的来源是 638 页扫描件的 OCR 文本：透镜框内问题大多缺失，财务数字不可读，部分案例为作者转述。卡片已在相应位置标注边界，不要当作实证结论。
 - 蒸馏内容中的案例均为书内案例的改写，比例类数字（如「90% 的方案提交过早」）书中无出处，只作方向参考，不可当阈值使用。
 - Skill 是给 AI 的操作指令，不构成法律、财务、定价授权建议；涉及合规与授权的场景，Skill 内部会要求转人工。
+
+## DeepSeek Harness 集成
+
+### 1. 安装 DeepSeek Harness
+使用以下命令全局安装 DeepSeek Harness（需要 Node.js ≥ 18）：
+```bash
+npm install -g @deepseek-ai/dsh
+```
+
+### 2. 自动安装插件脚本
+仓库新增了 `scripts/install-dsh-plugins.sh` 脚本，用于为 Web  Profile 自动安装常用插件：
+- 插件列表：`dshmarket`（插件市场）、`dsh-prompt`（提示管理）、`dsh-prompt-history`（提示历史）、`dsh-mole`（代码调试工具）
+
+使用方法：
+```bash
+cd LosSKILL
+./scripts/install-dsh-plugins.sh
+```
+脚本默认**直接走 npm** 装进 `~/.dsh/profiles/web`（本机 `dsh plugin add` 会踩 pnpm panic，见下），已安装且版本一致的会跳过，失败时才回退到 `dsh plugin` 命令。可选参数：
+```bash
+./scripts/install-dsh-plugins.sh dshmarket foo@1.2.3   # 只装指定插件
+DSH_PROFILE=desktop ./scripts/install-dsh-plugins.sh   # 装到别的 profile
+```
+
+> 已知问题：本机 `dsh plugin --profile web add <pkg>` 报
+> `Main thread panicked ... current dir is an absolute path with drive letter`（pnpm exit 9）。
+> 这是 pnpm 在 WSL 下解析工作目录的 bug，与插件本身无关；改用 npm 直装即可绕开。
+
+---
 
 ## License
 

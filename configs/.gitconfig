@@ -1,0 +1,21 @@
+[user]
+	name = LosAngelous
+	email = losangelous@example.com
+[core]
+	editor = code --wait
+[alias]
+	co = checkout
+	br = branch
+	st = status
+	ci = commit
+	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+[push]
+	default = simple
+[pull]
+	rebase = true
+[commit]
+	gpgSign = false
+[grep]
+	lineNumber = true
+[color]
+	ui = auto

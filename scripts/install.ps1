@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
   Install skills from the LosSKILL repo into a target skills directory.
@@ -94,4 +94,109 @@ foreach ($name in $names) {
 
 Write-Host ''
 Write-Host ("Done: {0} installed, {1} skipped." -f $installed, $skipped)
+
+# --- Additional: Personal environment configuration (optional)
+$applyEnv = Read-Host "Do you want to apply personal environment configurations (configs & software)? [Y/n]"
+if ($applyEnv -ne 'n' -and $applyEnv -ne 'N') {
+    Write-Host "`nApplying personal environment configurations for Windows..."
+    $userProfile = [Environment]::GetFolderPath('UserProfile')
+
+    function Backup-File([string]$Path) {
+        if (Test-Path -LiteralPath $Path) {
+            Copy-Item -LiteralPath $Path -Destination "$Path.losskill.bak" -Force
+        }
+    }
+
+    # ---------- git 配置（带备份） ----------
+    $gitConfig = Join-Path $repoRoot 'configs\.gitconfig'
+    if (Test-Path $gitConfig) {
+        $gitTarget = Join-Path $userProfile '.gitconfig'
+        Backup-File $gitTarget
+        Copy-Item -LiteralPath $gitConfig -Destination $gitTarget -Force
+        Write-Host "  [OK] .gitconfig -> $gitTarget (旧文件备份为 .gitconfig.losskill.bak)"
+    }
+
+    # ---------- PowerShell profile（正确语法，替代旧的 alias ... = '...'） ----------
+    $psConfig = Join-Path $repoRoot 'configs\powershell-profile.ps1'
+    if (Test-Path $psConfig) {
+        $psProfilePath = $PROFILE.CurrentUserAllHosts
+        $psDir = Split-Path -Parent $psProfilePath
+        if ($psDir -and -not (Test-Path $psDir)) { New-Item -ItemType Directory -Path $psDir -Force | Out-Null }
+        Backup-File $psProfilePath
+        # 幂等：先删掉本脚本以前写入的旧块，再追加一次
+        if (Test-Path $psProfilePath) {
+            $kept = Get-Content -LiteralPath $psProfilePath |
+                    Where-Object { $_ -notmatch 'Custom aliases from LosSKILL' -and $_ -notmatch "^alias \w+ = '" }
+            Set-Content -LiteralPath $psProfilePath -Value $kept -Encoding UTF8
+        }
+        if (-not (Select-String -LiteralPath $psProfilePath -Pattern 'LosSKILL: PowerShell profile' -Quiet -ErrorAction SilentlyContinue)) {
+            Add-Content -LiteralPath $psProfilePath -Encoding UTF8 -Value @(
+                ''
+                '# LosSKILL: PowerShell profile (详见仓库 configs/powershell-profile.ps1)'
+                ". `"$psConfig`""
+            )
+        }
+        Write-Host "  [OK] PowerShell profile 已接入：$psProfilePath"
+    }
+
+    # ---------- Neovim 配置 ----------
+    $nvimConfig = Join-Path $repoRoot 'configs\nvim'
+    if (Test-Path $nvimConfig) {
+        $nvimTarget = Join-Path $userProfile 'AppData\Local\nvim'
+        New-Item -ItemType Directory -Path $nvimTarget -Force | Out-Null
+        Backup-File (Join-Path $nvimTarget 'init.vim')
+        Copy-Item -LiteralPath (Join-Path $nvimConfig 'init.vim') -Destination $nvimTarget -Force
+        Write-Host "  [OK] Neovim 配置 -> $nvimTarget"
+    }
+
+    # ---------- 常用软件（winget） ----------
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        $packages = @(
+            @{ Id = 'Git.Git';                  Name = 'Git' },
+            @{ Id = 'Neovim.Neovim';            Name = 'Neovim' },
+            @{ Id = 'Microsoft.VisualStudioCode'; Name = 'VS Code' },
+            @{ Id = 'JanDeDobbeleer.OhMyPosh';  Name = 'Oh My Posh' },
+            @{ Id = 'Rustlang.Rustup';          Name = 'Rust' },
+            @{ Id = 'Kitware.CMake';            Name = 'CMake' },
+            @{ Id = 'Microsoft.VisualStudio.2022.BuildTools'; Name = 'MSVC Build Tools' }
+        )
+        foreach ($pkg in $packages) {
+            $installed = winget list --id $pkg.Id --exact 2>$null | Select-String -Pattern $pkg.Id -Quiet
+            if ($installed) {
+                Write-Host "    [skip] $($pkg.Name) 已安装"
+            } else {
+                Write-Host "    [installing] $($pkg.Name) ..."
+                winget install --id $pkg.Id --silent --accept-package-agreements --accept-source-agreements
+            }
+        }
+    } else {
+        Write-Host "  winget 不可用，请手动安装：Git / Neovim / VS Code / Oh My Posh / Rust"
+    }
+
+    # ---------- SSH 密钥（存在就不重建，邮箱已一致就不再提示） ----------
+    $sshDir = Join-Path $userProfile '.ssh'
+    $sshKey = Join-Path $sshDir 'id_ed25519'
+    $sshPub = "$sshKey.pub"
+    if (-not (Test-Path $sshDir)) { New-Item -ItemType Directory -Path $sshDir -Force | Out-Null }
+    if (-not (Test-Path $sshKey)) {
+        ssh-keygen -t ed25519 -C 'losangelous@windows' -f $sshKey -N '""'
+        Write-Host "  [OK] 已创建新的 SSH 密钥：$sshKey"
+    } else {
+        Write-Host "  [OK] 已有 SSH 密钥：$sshKey"
+    }
+    if (Test-Path $sshPub) {
+        $pub = (Get-Content -LiteralPath $sshPub -Raw).Trim()
+        if ($pub -match '19857198709@163\.com') {
+            Write-Host "  [skip] 该公钥邮箱为 19857198709@163.com，已加入过 GitHub，无需重复添加"
+        } else {
+            Write-Host "`n  === 把下面这行公钥加到 GitHub ==="
+            Write-Host "  页面：https://github.com/settings/keys"
+            Write-Host "  $pub"
+            Write-Host "  ----------------------------------"
+        }
+    }
+
+    Write-Host "`nPersonal environment configuration applied successfully!"
+}
+
 Write-Host 'Note: some tools need a session restart or skill list refresh before the new skills appear.'
