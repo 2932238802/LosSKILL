@@ -1,77 +1,122 @@
 #!/usr/bin/env bash
 # LosSKILL 一键总入口：新电脑 git clone 之后，一条命令恢复全部环境。
 #
-# 流程：技能安装 → 个人环境配置 → SSH → dsh 插件 → 自检
-#
-# 用法：
-#   ./setup.sh                 # 全流程（环境配置走交互式询问）
-#   ./setup.sh --yes           # 全流程，环境配置直接 yes（新电脑首选）
-#   ./setup.sh --with-blesh    # 全流程 + 额外安装 ble.sh（实时历史候选）
-#   ./setup.sh --validate-only # 只自检
-#
-# 可单独跑某一步：
-#   ./scripts/install.sh
-#   ./scripts/setup-ssh-git.sh
-#   ./scripts/install-dsh-plugins.sh
-#   ./scripts/install-blesh.sh
-#   ./scripts/validate.sh
+# 默认（直接回车）：弹出交互式菜单，用序号勾选要执行哪些步骤。
+# 也支持快捷参数，方便脚本/CI 复用：
+#   ./setup.sh --yes            # 全部执行，环境配置直接 yes
+#   ./setup.sh --with-blesh     # 全部执行 + 额外装 ble.sh
+#   ./setup.sh --validate-only  # 只自检
 
 set -uo pipefail
 cd "$(dirname "$0")"
 
-env_opt=""
-with_blesh=0
-only_validate=0
-for a in "$@"; do
-    case "$a" in
-        --yes) env_opt="yes" ;;
-        --with-blesh) with_blesh=1 ;;
-        --validate-only) only_validate=1 ;;
-        -h|--help) sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-        *) echo "未知参数：$a（见 --help）" >&2; exit 2 ;;
-    esac
-done
-
 step() { printf '\n\033[1;36m== %s ==\033[0m\n' "$1"; }
 ok()   { printf '  ✅ %s\n' "$1"; }
 
-if [ "$only_validate" -eq 1 ]; then
-    step "自检"
-    ./scripts/validate.sh
-    exit $?
+ITEMS=(
+  "安装 AI Skills（复制到 ~/.dsh/skills）"
+  "个人环境 + WSL2 增强（中文/oh-my-posh/C++/Rust/历史/SSH）"
+  "单独配置 SSH（密钥 + origin 切 SSH，可重复跑）"
+  "安装 dsh 插件（npm 直连，幂等）"
+  "安装 ble.sh（边打字边列历史候选，可选）"
+  "运行自检"
+)
+
+run_item() {
+  case "$1" in
+    0) LOSSKILL_ENV=no  ./scripts/install.sh ;;
+    1) LOSSKILL_ENV=yes ./scripts/install.sh ;;
+    2) ./scripts/setup-ssh-git.sh </dev/null || true ;;
+    3) ./scripts/install-dsh-plugins.sh || true ;;
+    4) ./scripts/install-blesh.sh || true ;;
+    5) ./scripts/validate.sh ;;
+  esac
+}
+
+run_all() {
+  step "1/5 安装 AI Skills"
+  run_item 0
+  step "2/5 个人环境 + WSL2 增强"
+  run_item 1
+  step "3/5 SSH"
+  run_item 2
+  step "4/5 dsh 插件"
+  run_item 3
+  step "5/5 自检"
+  run_item 5
+  echo
+  echo "  · 开新终端（或 source ~/.bashrc）让 oh-my-posh / 历史配置生效"
+  echo "  · 若第 3 步提示公钥，去 https://github.com/settings/keys 粘贴一次"
+  echo "  · dsh 插件生效需重启 dsh web 进程，或刷新 http://127.0.0.1:3080"
+  echo
+  echo "全部完成 🎉"
+}
+
+# ---------- 快捷参数 ----------
+for a in "$@"; do
+  case "$a" in
+    --validate-only) ./scripts/validate.sh; exit $? ;;
+    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  esac
+done
+for a in "$@"; do
+  case "$a" in
+    --with-blesh) run_item 4 ;;
+    --yes) ;;
+    *) echo "未知参数：$a（见 --help）" >&2; exit 2 ;;
+  esac
+done
+if [ "$#" -gt 0 ]; then
+  run_all
+  exit $?
 fi
 
-step "1/5 安装 AI Skills + 个人环境配置"
-if [ -n "$env_opt" ]; then
-    LOSSKILL_ENV="$env_opt" ./scripts/install.sh
-else
-    ./scripts/install.sh
-fi
-ok "技能与环境配置完成"
+# ---------- 交互式菜单 ----------
+menu() {
+  local -a sel=(0 0 0 0 0 0)
+  local input tok i n
+  while true; do
+    echo
+    echo "  LosSKILL 配置菜单"
+    echo "  输入序号切换勾选（可多个，空格分隔）｜ a=全选  c=清空  Enter=执行  q=退出"
+    echo
+    for i in "${!ITEMS[@]}"; do
+      mark=" "
+      [ "${sel[$i]}" = 1 ] && mark="x"
+      printf '   [%s] %d. %s\n' "$mark" "$((i+1))" "${ITEMS[$i]}"
+    done
+    printf '\n  选择> '
+    read -r input || { echo; return 1; }
+    case "$input" in
+      q|Q) echo "已取消"; return 1 ;;
+      "")  break ;;
+      a|A) sel=(1 1 1 1 1 1) ;;
+      c|C) sel=(0 0 0 0 0 0) ;;
+      *)
+        for tok in $input; do
+          case "$tok" in
+            [1-6]) sel[$((tok-1))]=$((1 - ${sel[$((tok-1))]})) ;;
+            *) echo "  ⚠️ 忽略无效序号：$tok" ;;
+          esac
+        done
+        ;;
+    esac
+  done
 
-step "2/5 SSH（GitHub 提交方式）"
-# 非交互跑：origin 是否切 SSH 保持默认不改，只处理密钥与提示
-./scripts/setup-ssh-git.sh </dev/null || true
-ok "SSH 处理完成"
+  n=0
+  for i in "${!sel[@]}"; do
+    [ "${sel[$i]}" = 1 ] || continue
+    n=$((n+1))
+    step "[$n] ${ITEMS[$i]}"
+    run_item "$i"
+  done
+  [ "$n" -eq 0 ] && { echo "未选择任何项，退出"; return 1; }
 
-step "3/5 dsh 插件"
-if command -v node >/dev/null 2>&1 && [ -d "$HOME/.dsh/profiles" ]; then
-    ./scripts/install-dsh-plugins.sh || true
-else
-    echo "  跳过：未检测到 dsh profile（先安装并启动过一次 dsh web 再跑）"
-fi
+  echo
+  echo "  · 开新终端（或 source ~/.bashrc）让 oh-my-posh / 历史配置生效"
+  echo "  · dsh 插件生效需重启 dsh web 进程，或刷新 http://127.0.0.1:3080"
+  echo
+  echo "选择执行完成 ✅"
+}
 
-if [ "$with_blesh" -eq 1 ]; then
-    step "3.5/5 ble.sh（实时历史候选，可选）"
-    ./scripts/install-blesh.sh || true
-fi
-
-step "4/5 自检"
-./scripts/validate.sh
-
-step "5/5 收尾提示"
-echo "  · 开新终端（或 source ~/.bashrc）让 oh-my-posh / 历史配置生效"
-echo "  · 若第 2 步提示公钥，去 https://github.com/settings/keys 粘贴一次即可"
-echo "  · dsh 插件生效需重启 dsh web 进程，或刷新 http://127.0.0.1:3080"
-echo
-echo "全部完成 🎉"
+menu

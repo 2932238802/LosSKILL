@@ -90,13 +90,15 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Target 'D:\MyPro
 在新电脑上，拉取仓库后运行：
 ```bash
 cd LosSKILL
-./setup.sh --yes          # 推荐：一条命令串起 技能 → 环境 → SSH → dsh 插件 → 自检
+./setup.sh               # 回车即弹出菜单，按序号勾选要执行的步骤（无需记任何参数）
 ```
+菜单长这样：输入 `1 2 3` 再回车就是「勾选第 1/2/3 项」，`a` 全选、`c` 清空、`q` 退出，回车开始执行。六个步骤分别是：AI Skills、个人环境、SSH、dsh 插件、ble.sh（可选）、自检。
+
 只想装 Skills + 环境（不碰 SSH / dsh 插件）时，仍可单独跑：
 ```bash
 ./scripts/install.sh      # 分步脚本，交互式
 ```
-`./setup.sh` 支持的参数：`--yes`（环境配置直接应用）、`--with-blesh`（额外装 ble.sh 实时历史候选）、`--validate-only`（只自检）。
+`./setup.sh` 也保留了快捷参数（自动化用，日常不需要记）：`--yes`（全量执行）、`--with-blesh`（全量 + ble.sh）、`--validate-only`（只自检）。
 
 脚本会先安装所有 AI Skill（包括注释保护规则），然后询问是否应用个人环境配置：
 - 部署 `.gitconfig` 与 Neovim 配置（覆盖前自动备份为 `*.losskill.bak`）；`.bashrc` 只作为**模板**参考，脚本只向真实 `.bashrc` 追加受管配置块，不会整文件覆盖
