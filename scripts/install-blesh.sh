@@ -44,7 +44,7 @@ bleopt history_share=1
 bleopt complete_auto_history=1
 bleopt complete_menu_complete=1
 bleopt complete_auto_complete=1
-bleopt menu_style=align
+bleopt complete_menu_style=align-nowrap
 bleopt exec_errexit_mark=
 BLERC
 
