@@ -40,10 +40,10 @@ echo "==> 找到入口：$ble_entry"
 # 写 ble.sh 的配置（历史补全菜单）
 cat > "$HOME/.blerc" << 'BLERC'
 # LosSKILL: ble.sh 配置（历史补全菜单，仿 PowerShell）
+# 注意：新版 ble.sh 中 complete_auto_history 已废弃（历史自动补全默认开启），不要写
 bleopt history_share=1
-bleopt complete_auto_history=1
-bleopt complete_menu_complete=1
 bleopt complete_auto_complete=1
+bleopt complete_menu_complete=1
 bleopt complete_menu_style=align-nowrap
 bleopt exec_errexit_mark=
 BLERC
