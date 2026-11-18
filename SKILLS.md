@@ -2,7 +2,7 @@
 
 > 给 AI 的读取说明：先读本文件。按「触发信号」找到对应 Skill，再只加载该 Skill 的 `SKILL.md`；任务跨域时最多再加载 1 个。没有命中任何一行时，不要硬套，直接说明超出本库范围。
 
-本仓库当前收录 **4 个技能包（18 个 Skill 目录）**：`sandra-sales` 系列（8 个）、`game-design` 系列（8 个）、`dsh-cockpit`（1 个）、`ai-comment-protection`（1 个）。
+本仓库当前收录 **5 个技能包（19 个 Skill 目录）**：`sandra-sales` 系列（8 个）、`game-design` 系列（8 个）、`dsh-cockpit`（1 个）、`ai-comment-protection`（1 个）、`huashu-nuwa`（1 个）。
 
 ---
 
@@ -141,7 +141,29 @@
 | [`ai-comment-protection`](skills/ai-comment-protection/SKILL.md) | AI 需要修改包含注释的文件；用户要求「不能改我的注释」；修改代码前需要扫描所有注释 | 确认所有 `LOS:` 注释原封不动保留；修改代码时必须保留原有 `LOS:` 注释；必须在回复中记录修改过程中保留的注释内容 | 纯代码逻辑修改（无注释）；纯写作任务 | `skills/ai-comment-protection/` |
 
 ---
-## 五、组合用法（常见的跨 Skill 链路）
+## 五、huashu-nuwa（女娲造人：人物思维蒸馏）
+
+适用场景：把某个人的思维方式做成可调用的 Skill——先调研他的原话与决策，再提炼心智模型与招式，最后产出独立的 `<人名>-perspective` Skill。
+不适用：直接「扮演某名人」聊天；写人物传记 / 书摘 / 读后感；不做调研的一次性文案。
+
+| Skill | 何时用（触发信号） | 产出 | 不用于 | 路径 |
+|---|---|---|---|---|
+| [`huashu-nuwa`](skills/huashu-nuwa/SKILL.md) | 「造 skill」「蒸馏 XX」「女娲」「做个 XX 视角」「更新 XX 的 skill」；模糊需求「我想要个思维顾问」「怎么提升决策质量」 | 六路调研笔记（著作 / 对话 / 表达特征 / 外部评价 / 决策 / 时间线）→ 框架提炼 → 可运行的 `<人名>-perspective` Skill + 质检 | 扮演名人闲聊；书摘与读后感；不调研直接编人物设定 | `skills/huashu-nuwa/` |
+
+包内结构（按需加载，不必全读）：
+
+| 文件 | 内容 |
+|---|---|
+| `SKILL.md` | 主流程：两种入口、调研六件套、增量判据、质检标准 |
+| `references/extraction-framework.md` | 提炼框架（心智模型 / 招式 / 启发式 / 声音 / 边界） |
+| `references/skill-template.md` | 生成物模板 |
+| `scripts/` | 字幕下载、字幕转写、调研合并、质量检查脚本 |
+| `examples/` | 乔布斯、马斯克、芒格、费曼、Naval、塔勒布、Trump、Paul Graham、Ilya、张一鸣、张雪峰、孙宇晨等成品示例 |
+
+> 上游仓库：<https://github.com/alchaincyf/nuwa-skill>（MIT，作者花叔）。为控制仓库体积，同步时剔除了宣传图/视频（`promo/`、根目录大图、`assets/hero.gif`），不影响 Skill 运行。
+
+---
+## 六、组合用法（常见的跨 Skill 链路）
 
 | 场景 | 加载顺序 |
 |---|---|
@@ -153,6 +175,7 @@
 | 口头同意但不签 | `pre-sign-reversal`（路由包）→ `money-talk` |
 | 拜访后团队复盘 | `review` →（按需）`upfront-contract` |
 | 季度初定目标与行为量 | `demand-gen` →（存量部分）`account-growth`（路由包） |
+| 想让某个人的思维方式给自己当顾问 | `huashu-nuwa` → 生成的 `<人名>-perspective` |
 
 **game-design 系列**
 
@@ -166,7 +189,7 @@
 
 ---
 
-## 六、索引维护规则
+## 七、索引维护规则
 
 - 新增 Skill：在「一」下新建小节，表格补齐 Skill 名、触发信号、产出、不用于、路径
 - 触发信号要写**客户/用户的原话**，不要写抽象名词（「含糊即拒绝」不如「客户反复说再考虑考虑」好命中）

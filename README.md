@@ -59,7 +59,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Target 'D:\MyPro
 
 | 工具 | 默认目录 | 说明 |
 |---|---|---|
-| DeepSeek Harness (DSH) | `~/.dsh/skills/` | 本机已在该目录验证这 8 个 Skill 可被正常列出与触发 |
+| DeepSeek Harness (DSH) | `~/.dsh/skills/` | 本机已在该目录验证本仓库的 Skill 可被正常列出与触发 |
 | Claude Code | `~/.claude/skills/`（个人）或 `<项目>/.claude/skills/`（项目） | 目录名即 Skill 名 |
 | Codex CLI / 兼容 Agent Skills 的客户端 | 见各自配置，认 `SKILL.md` 约定 | 指向 `skills/<name>/` 即可 |
 | Cursor / Windsurf / Cline 等 | 项目内 `.cursor/rules`、`.windsurfrules` 等 | 可把某个 `SKILL.md` 内容贴为规则；或使用支持 skills 目录的插件 |
@@ -162,6 +162,7 @@ cd LosSKILL
 | `game-design-mechanics` | 机制与平衡：期望值、十二类平衡、有意义的选择 | 蒸馏 · 书籍 |
 | `game-design-narrative` | 故事与角色：珍珠串/故事机/英雄之旅 + 间接控制 | 蒸馏 · 书籍 |
 | `game-design-playtest` | 试玩测试：五问定义、观察、问卷与访谈 | 蒸馏 · 书籍 |
+| `huashu-nuwa` | 女娲造人：一个人名或一句模糊需求 → 深度调研 → 提炼 → 生成可运行的人物思维 Skill | 蒸馏 · 人物方法论 |
 
 > `sandra-sales` 是「路由 + 参考包」，其余 7 个是可直接单点触发的独立 Skill。两者可同时安装：独立 Skill 命中时优先用它，路由包负责没有独立 Skill 的 6 张能力卡与全书背景。
 
@@ -205,8 +206,9 @@ LosSKILL/
 │  ├─ game-design/
 │  │  ├─ SKILL.md
 │  │  └─ references/
-│  └─ game-design-experience/
-│     └─ SKILL.md
+│  ├─ game-design-experience/
+│  │  └─ SKILL.md
+│  └─ huashu-nuwa/        # 人物蒸馏（女娲），含 examples/ 成品示例
 ├─ _template/             # 新增 Skill 的模板与写作规范
 │  ├─ SKILL.md
 │  └─ GUIDE.md
