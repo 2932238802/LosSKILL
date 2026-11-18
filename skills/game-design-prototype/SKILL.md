@@ -7,7 +7,7 @@ description: |
 metadata:
   cangjie.generated-by: cangjie-tools v2.5.0
   cangjie.capability-id: cap.the-art-of-game-design.prototype-iteration
-  cangjie.capability-revision: 2
+  cangjie.capability-revision: 3
   cangjie.bundle-id: bundle.the-art-of-game-design
   cangjie.source-title: 游戏设计艺术（第2版）
   cangjie.tags: prototype, iteration, planning
@@ -53,6 +53,8 @@ metadata:
 
 ## E — 执行
 
+**回答顺序**：先给用户所问问题的最小可执行答案（通常 2–5 句），再展开完整流程。问题本身是概念或判断（“要不要”“需不需要”“有什么区别”）时，先直接回答并给依据；不为凑格式虚构项目、世界或数据，确需举例时标明“示例，可整体替换”。
+
 **输入契约**
 - 一个待解决的问题或创意方向；
 - 目标体验（可先用 `game-design-experience` 产出）；
@@ -83,6 +85,7 @@ metadata:
 
 ## B — 边界
 
+- **量化边界**：不编造原书未给出的样本量、阈值、时间表、成本、留存/转化数字或统计功效结论。必须给数字时，标为“经验值/假设”，并写明来源或计算依据；没有依据就写“待验证”，不给精确数。
 - 不用于判断方案是否优秀——用 `game-design-review`。
 - 不用于收集玩家反馈的执行细节——用 `game-design-playtest`。
 - 迭代次数多不等于一定变好：方向错误、判断力不足或预算耗尽时，迭代只是反复试错；原书未讨论这一反例。

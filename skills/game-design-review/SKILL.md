@@ -7,7 +7,7 @@ description: |
 metadata:
   cangjie.generated-by: cangjie-tools v2.5.0
   cangjie.capability-id: cap.the-art-of-game-design.eight-filters-review
-  cangjie.capability-revision: 1
+  cangjie.capability-revision: 2
   cangjie.bundle-id: bundle.the-art-of-game-design
   cangjie.source-title: 游戏设计艺术（第2版）
   cangjie.tags: review, quality-gate, decision
@@ -58,6 +58,8 @@ metadata:
 
 ## E — 执行
 
+**回答顺序**：先给用户所问问题的最小可执行答案（通常 2–5 句），再展开完整流程。问题本身是概念或判断（“要不要”“需不需要”“有什么区别”）时，先直接回答并给依据；不为凑格式虚构项目、世界或数据，确需举例时标明“示例，可整体替换”。
+
 **输入契约**
 - 一个明确的设计方案（不是一句话想法）；
 - 目标受众与使用场景；
@@ -86,6 +88,7 @@ metadata:
 
 ## B — 边界
 
+- **量化边界**：不编造原书未给出的样本量、阈值、时间表、成本、留存/转化数字或统计功效结论。必须给数字时，标为“经验值/假设”，并写明来源或计算依据；没有依据就写“待验证”，不给精确数。
 - 八项测试没有权重、阈值或通过分数线；不要伪造评分体系。
 - 不适合每日站会：全量重跑成本高，适合里程碑评审。
 - 不能替代试玩：第 8 项必须由目标玩家验证，团队自评不算。
