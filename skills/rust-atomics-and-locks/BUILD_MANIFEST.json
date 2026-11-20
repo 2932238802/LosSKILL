@@ -1,0 +1,39 @@
+{
+  "tool": "cangjie-tools v2.5.0",
+  "published_hashes": {
+    "SKILL.md": "f92cf843fabe7419ced015f5db04e8c3401ef33f04f8bdf5a6c045f4304b746d",
+    "references/capabilities/atomic-ops-and-ordering.md": "6c144ac4e996f8cc878c7256653aaed7e52908c66e59e706553c14a4be1c01c1",
+    "references/capabilities/atomic-performance-and-portability.md": "841433093de2d708dabe77092bc77b9cf3911d3ed43839db96caa5f8ff4d3294",
+    "references/capabilities/build-arc-weak.md": "ee73ddfbb1a63098da4a458e28a9b088523348896e0bfb42eff896c9693b002f",
+    "references/capabilities/build-blocking-locks.md": "45a1698faf53072d6463ed22ed8c9bd8b581e99950f65058521db5239bf509cc",
+    "references/capabilities/build-one-shot-channel.md": "fb477672ba6c39d62522209f6579f293096c0e199b25189b4cf369a566e15f75",
+    "references/capabilities/build-spinlock-guard.md": "e7708fdb91424b126c35c9f198cc88383c2efbd4d6e15b43c999a49ce1ee25ff",
+    "references/capabilities/concurrency-safety-review.md": "7cd6599f73abc4edf18983563aea8be29b9024a3e43e3005a59ba5d871266d90",
+    "references/capabilities/os-primitive-selection.md": "fc2c776991bad73b3ad76952539e80778e24005f82f7f82b8b2a1ade1f8f3700",
+    "references/capabilities/safe-concurrency-api-design.md": "2affeb103e3d68c4ea04f94374480ebd9236399a7367b5182d5fa3edad2fea28",
+    "references/capability-index.md": "99966cff9e96cab9aca6d792cb111eb3de0eacad2ef8b6fddd3ded527c58eeec",
+    "references/cheatsheet.md": "b35ba107ea185b3805282dcb4970134bb8c16fb027dd180a99447bfb6f1f89f6",
+    "references/glossary.md": "bbede686a4d99bec1e2730d60b94619302c402f2d17d308253335605f29cc728",
+    "references/overview.md": "53f1b36afccf65c405f5bb6909a1103487177604a034f076b119146e47e1d62f"
+  },
+  "note": "update/重编译前比对 published_hashes；检测到本地手改不得静默覆盖",
+  "bundle_id": "bundle.rust-atomics-and-locks",
+  "bundle_sha256": "ac16bc380c363d10c7eac29d74b8fbfc313674f190353994bcecb856be0b5f7c",
+  "variant": "single",
+  "run_id": "run-20261119-201938-d514ef",
+  "decision": {
+    "schema_version": 1,
+    "requested": "single",
+    "selected": "single",
+    "decision_policy": "single-first-v1",
+    "skill_budget": 8,
+    "promoted_count": 6,
+    "capability_count": 9,
+    "reasons": [
+      "用户显式选择 single，auto 决策器不覆盖用户选择"
+    ],
+    "alternative": "compact pack（1 个来源路由入口 + 6 个晋级 Skill，共 7 个可发现入口）",
+    "user_confirmed": true,
+    "preserve_strategy_on_update": true
+  }
+}

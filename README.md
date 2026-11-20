@@ -8,7 +8,7 @@
 目标很简单：**用这个仓库，在新电脑上最快 5 分钟就能恢复自己的全部开发环境，包含 AI 技能和工作流，不用重新设置，不用整理配置。**
 
 - 「AI Skill」部分：保持原有 Skill 目录结构，可被任意 AI 工具直接加载
-- 「环境配置」部分：新增 `configs/`（个人配置文件）和 `scripts/env-setup/`（环境安装脚本）
+- 「环境配置」部分：新增 `configs/`（个人配置文件）和 `scripts/install.sh` / `scripts/install.ps1`（环境安装脚本）
 - 新增 `install.sh`/`install.ps1` 扩展功能：除了复制 AI Skill，还能执行环境安装指令
 
 ---
@@ -45,7 +45,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Target 'D:\MyPro
 
 脚本参数：`-Skill` 支持单名、逗号分隔多个、或 `all`；`-Target` 指定目录；`-Force` 覆盖已存在的同名 Skill（只删除目标目录下那一个文件夹）。
 
-脚本只做复制，不联网、不执行 Skill 里的任何指令。
+Skill 安装部分只做复制，不联网、不执行 Skill 里的任何指令；只有你确认执行「个人环境配置」步骤后，脚本才会联网安装软件并写入 home 配置。
 
 ### 方式三：让 AI 自己装
 
@@ -163,6 +163,9 @@ cd LosSKILL
 | `game-design-narrative` | 故事与角色：珍珠串/故事机/英雄之旅 + 间接控制 | 蒸馏 · 书籍 |
 | `game-design-playtest` | 试玩测试：五问定义、观察、问卷与访谈 | 蒸馏 · 书籍 |
 | `huashu-nuwa` | 女娲造人：一个人名或一句模糊需求 → 深度调研 → 提炼 → 生成可运行的人物思维 Skill | 蒸馏 · 人物方法论 |
+| `dev-workflow` | 四角色开发工作流：G0 受理 → G1 确认 → G2 开发 → G3 评审 → G4 总审 | 自建 · 工作流 |
+| `rust-atomics-and-locks` | 《Rust Atomics and Locks》并发能力包：内存序、并发审查、Arc/锁/通道实现 | 蒸馏 · 书籍 |
+| `leverage-protocol` | 满力协议：任务分级、三条硬门、能力地图与项目适配 | 自建 · 工作流 |
 
 > `sandra-sales` 是「路由 + 参考包」，其余 7 个是可直接单点触发的独立 Skill。两者可同时安装：独立 Skill 命中时优先用它，路由包负责没有独立 Skill 的 6 张能力卡与全书背景。
 
@@ -186,6 +189,9 @@ cd LosSKILL
 | 「预算砍半，原型先做哪块」 | `game-design-prototype` | 风险排序 + 最小原型计划 |
 | 「玩家总用同一招，怎么调」 | `game-design-mechanics` | 最优策略定位 + 期望值/平衡审计 |
 | 「剧情和关卡老打架」 | `game-design-narrative` | 结构选择 + 角色关系 + 间接控制 |
+| 「按开发工作流来，先出需求卡」 | `dev-workflow` | CR 需求卡 + R/AC/T + G0-G4 门禁与交接 Prompt |
+| 「认真做，别偷工减料」 | `leverage-protocol` | 任务分级 + 三条硬门 + 该调用的能力清单 |
+| 「这里该用哪个 Ordering」 | `rust-atomics-and-locks` | 内存序选型 + 正确性边界 + 更弱序的替代条件 |
 
 ---
 
@@ -198,17 +204,19 @@ LosSKILL/
 ├─ LICENSE                # MIT
 ├─ .gitattributes         # 统一 LF，保证 install.sh 在跨平台可用
 ├─ skills/                # 所有 Skill，一个文件夹一个 Skill
-│  ├─ sandra-sales/
-│  │  ├─ SKILL.md         # 必需：frontmatter(name/description) + 正文
-│  │  └─ references/      # 可选：按需加载的参考文件
-│  ├─ sandra-sales-qualify/
-│  │  └─ SKILL.md
-│  ├─ game-design/
-│  │  ├─ SKILL.md
-│  │  └─ references/
-│  ├─ game-design-experience/
-│  │  └─ SKILL.md
-│  └─ huashu-nuwa/        # 人物蒸馏（女娲），含 examples/ 成品示例
+│  ├─ sandra-sales/       # 书籍蒸馏：路由包 + references/capabilities/
+│  ├─ sandra-sales-*/     # 7 个可单点触发的独立能力 Skill
+│  ├─ game-design/        # 书籍蒸馏：路由包 + references/capabilities/
+│  ├─ game-design-*/      # 7 个可单点触发的独立能力 Skill
+│  ├─ rust-atomics-and-locks/  # 书籍蒸馏：9 张并发能力卡
+│  ├─ huashu-nuwa/        # 人物蒸馏（女娲），含 examples/ 成品示例
+│  ├─ dev-workflow/       # 四角色开发工作流 + references/ 角色提示词
+│  ├─ leverage-protocol/  # 满力协议 + capability_index.py
+│  ├─ dsh-cockpit/        # 派单驾驶舱
+│  └─ ai-comment-protection/   # 保护 LOS: 手动注释
+├─ prompts/               # 四角色 Prompt 的独立可粘贴版本（与 dev-workflow 同步）
+├─ books/                 # 本地蒸馏流水线产物（不入库）
+├─ dist/                  # 本地编译产物（不入库）
 ├─ _template/             # 新增 Skill 的模板与写作规范
 │  ├─ SKILL.md
 │  └─ GUIDE.md
@@ -225,7 +233,8 @@ LosSKILL/
    ├─ install-blesh.sh    # 可选：装 ble.sh，实现「边打字边列历史」
    ├─ setup-ssh-git.sh    # 只做 SSH 密钥与 GitHub 提交方式
    ├─ validate.sh         # 自检（Linux / WSL，等价 validate.ps1）
-   └─ validate.ps1        # 自检（Windows）
+   ├─ validate.ps1        # 自检（Windows）
+   └─ vesta-e2e/          # 本地 E2E 脚本模板（不入库）
 ```
 
 ---

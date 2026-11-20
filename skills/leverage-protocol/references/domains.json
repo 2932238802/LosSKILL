@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "domains": [
+    {
+      "id": "architecture",
+      "name": "架构与边界",
+      "signals": ["架构", "分层", "模块", "耦合", "边界", "重构", "微服务", "单体", "依赖", "职责", "architecture", "layering", "module", "coupling", "boundary", "refactor", "monolith", "service", "dependency"],
+      "checks": ["职责是否单一，依赖方向是否清晰", "变更是否跨越模块/层边界", "是否需要 ADR 记录取舍", "失败、降级与回滚路径是否明确"],
+      "prompt": "要不要我先给出 2–3 个架构方案与取舍（含成本/风险），再决定动手？",
+      "avoid_when": ["单文件小脚本", "纯知识问答", "用户已明确指定方案且只要执行"]
+    },
+    {
+      "id": "design-patterns",
+      "name": "设计模式与惯用法",
+      "signals": ["设计模式", "模式", "工厂", "策略", "观察者", "适配器", "装饰器", "状态机", "建造者", "组合", "代理", "pattern", "factory", "strategy", "observer", "adapter", "decorator", "state machine", "builder", "proxy", "idiom"],
+      "checks": ["是否真的需要模式，避免过度设计", "是否有更简单的语言惯用法", "生命周期、所有权与并发边界是否成立", "是否可测试、可替换"],
+      "prompt": "这里有一个可能适用的模式，但先确认是否过度设计；要我列两个候选（含不用模式）吗？",
+      "avoid_when": ["三行以内的小函数", "用户明确要求最简实现"]
+    },
+    {
+      "id": "api-design",
+      "name": "API 与契约设计",
+      "signals": ["API", "接口", "契约", "版本", "兼容", "错误码", "参数", "返回值", "api", "interface", "contract", "versioning", "compatibility", "error code", "schema"],
+      "checks": ["输入/输出契约与失败语义是否完整", "是否破坏兼容性", "错误码与重试语义是否一致", "调用方误用能否被类型/校验挡住"],
+      "prompt": "要不要我先把 API 契约（输入/输出/错误/兼容性）写出来再实现？",
+      "avoid_when": ["一次性内部脚本", "只改实现不动接口"]
+    },
+    {
+      "id": "data-modeling",
+      "name": "数据模型与迁移",
+      "signals": ["数据模型", "表结构", "schema", "迁移", "索引", "事务", "数据库", "data model", "migration", "index", "transaction", "database", "sql"],
+      "checks": ["实体与关系是否反映真实约束", "迁移是否可回滚、是否有锁表风险", "索引是否匹配查询", "一致性边界与事务范围"],
+      "prompt": "要不要我先确认数据约束与迁移/回滚方案，再改 schema？",
+      "avoid_when": ["纯内存数据结构", "无持久化"]
+    },
+    {
+      "id": "testing",
+      "name": "测试策略",
+      "signals": ["测试", "覆盖率", "单测", "集成测试", "端到端", "回归", "用例", "test", "coverage", "unit", "integration", "e2e", "regression"],
+      "checks": ["哪些行为必须有测试（正常/边界/错误）", "测试是否真的会失败（避免空断言）", "是否需要回归用例", "测试数据与隔离"],
+      "prompt": "要不要我补一组最小但有效的测试（正常 + 边界 + 失败路径）？",
+      "avoid_when": ["用户明确只要草稿", "环境无法运行测试（需说明）"]
+    },
+    {
+      "id": "security",
+      "name": "安全与隐私",
+      "signals": ["安全", "认证", "授权", "注入", "密钥", "隐私", "权限", "csrf", "xss", "security", "auth", "injection", "secret", "privacy", "permission"],
+      "checks": ["输入是否不可信、是否做了校验/转义", "认证与授权边界", "密钥/日志是否泄漏敏感信息", "最小权限与失败关闭"],
+      "prompt": "要不要我先做一次安全边界检查（输入、权限、敏感信息）？",
+      "avoid_when": ["纯本地离线脚本", "与外部输入/权限无关"]
+    },
+    {
+      "id": "performance",
+      "name": "性能与资源",
+      "signals": ["性能", "慢", "延迟", "吞吐", "内存", "优化", "基准", "performance", "latency", "throughput", "memory", "optimize", "benchmark"],
+      "checks": ["先测量再优化，瓶颈在哪", "复杂度与分配/IO 次数", "是否引入缓存一致性/锁竞争", "优化是否改变语义"],
+      "prompt": "要不要我先定位瓶颈（基准/火焰图/复杂度），再决定优化？",
+      "avoid_when": ["没有可测量目标", "正确性尚未验证"]
+    },
+    {
+      "id": "concurrency",
+      "name": "并发与异步",
+      "signals": ["并发", "线程", "锁", "竞态", "异步", "async", "await", "线程池", "concurrency", "thread", "lock", "race", "tokio", "parallel"],
+      "checks": ["共享可变状态与同步协议", "锁顺序/持锁时长/死锁", "取消、超时与 backpressure", "错误传播与 panic 安全"],
+      "prompt": "要不要我先画出共享状态与同步协议，再检查竞态/死锁/取消？",
+      "avoid_when": ["纯单线程同步代码"]
+    },
+    {
+      "id": "error-handling",
+      "name": "错误处理与韧性",
+      "signals": ["错误", "异常", "重试", "超时", "降级", "熔断", "幂等", "error", "exception", "retry", "timeout", "fallback", "circuit breaker", "idempotent"],
+      "checks": ["失败是否被显式分类与传播", "重试是否幂等、是否有退避", "超时/取消是否覆盖", "部分失败时的状态一致性"],
+      "prompt": "要不要我先补齐失败分类、超时与重试语义？",
+      "avoid_when": ["不可能失败的纯计算", "用户只要 happy path 原型"]
+    },
+    {
+      "id": "observability",
+      "name": "可观测性",
+      "signals": ["日志", "指标", "追踪", "告警", "监控", "logging", "metrics", "tracing", "alert", "monitoring", "opentelemetry"],
+      "checks": ["关键路径是否有日志/指标", "错误是否可定位（含上下文/ID）", "是否泄漏敏感信息", "告警是否有可执行动作"],
+      "prompt": "要不要我补最小可观测性（结构化日志 + 关键指标）？",
+      "avoid_when": ["一次性脚本", "无运维需求"]
+    },
+    {
+      "id": "docs-adr",
+      "name": "文档与决策记录",
+      "signals": ["文档", "设计文档", "ADR", "注释", "readme", "说明", "documentation", "adr", "comment", "design doc"],
+      "checks": ["为什么这样做的取舍是否记录", "接口/使用方式是否可照做", "是否与代码同步", "读者是谁"],
+      "prompt": "要不要我把关键取舍写成一段 ADR/设计说明，避免以后重新争论？",
+      "avoid_when": ["用户明确不要文档", "改动 trivial"]
+    },
+    {
+      "id": "delivery",
+      "name": "发布、迁移与回滚",
+      "signals": ["发布", "上线", "迁移", "回滚", "灰度", "兼容", "release", "deploy", "rollback", "canary", "migration", "compatibility"],
+      "checks": ["是否有回滚路径", "新旧版本是否兼容", "数据迁移是否可中断/重入", "灰度与观测指标"],
+      "prompt": "要不要我先给出发布/回滚与兼容性方案，再继续实现？",
+      "avoid_when": ["纯本地实验", "无部署环节"]
+    }
+  ]
+}

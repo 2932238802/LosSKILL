@@ -1,0 +1,13 @@
+# 能力索引（完整版）
+
+| capability_id | 标题 | 重要度 | 意图 | 关键词 | 能力卡 |
+|---|---|---|---|---|---|
+| cap.rust-atomics-and-locks.atomic-ops-and-ordering | 原子操作与内存序选型 | critical | 为共享状态选择原子操作与内存序；判断 Relaxed 是否足够；证明一段并发代码的 happens-before；选择 fence 的位置与类型；处理原子计数溢出与 ABA | memory ordering、Ordering、Relaxed、Acquire、Release、SeqCst、fence、happens-before、compare_exchange、fetch_add、内存序、原子操作、溢出、ABA | capabilities/atomic-ops-and-ordering.md |
+| cap.rust-atomics-and-locks.concurrency-safety-review | 并发与 unsafe 代码安全审查 | critical | 审查并发或 unsafe Rust 是否有 UB；排查偶发崩溃、死锁、丢唤醒；检查 Send/Sync 与 guard 生命周期；判断 SeqCst/compiler_fence 是否误用；区分 UB 与性能/公平性问题 | data race、undefined behavior、soundness、review、Send、Sync、guard、lost wakeup、deadlock、poison、Miri、数据竞争、未定义行为、审查、死锁、丢唤醒 | capabilities/concurrency-safety-review.md |
+| cap.rust-atomics-and-locks.safe-concurrency-api-design | 安全并发 API 设计 | high | 设计难以误用的并发 API；决定用 guard、消费 self、PhantomData 还是运行时检查；正确实现 Send/Sync 与 Deref 语义；缩减 unsafe 面积 | safe API、guard、typestate、PhantomData、Send、Sync、UnsafeCell、split borrow、安全接口、类型状态、封装 | capabilities/safe-concurrency-api-design.md |
+| cap.rust-atomics-and-locks.build-spinlock-guard | 自旋锁与守卫实现 | medium | 实现一个最小自旋锁；理解 guard 与 Deref/Drop 解锁；把裸 AtomicBool 锁封装成安全类型 | spin lock、spinlock、guard、UnsafeCell、spin_loop、自旋锁、守卫、忙等 | capabilities/build-spinlock-guard.md |
+| cap.rust-atomics-and-locks.build-arc-weak | Arc / Weak 引用计数实现 | high | 实现或理解 Arc/Weak；解释引用计数的内存序；用 Weak 打破循环引用；实现唯一所有者修改（get_mut） | Arc、Weak、reference counting、refcount、NonNull、ManuallyDrop、get_mut、upgrade、引用计数、弱引用、循环引用 | capabilities/build-arc-weak.md |
+| cap.rust-atomics-and-locks.build-blocking-locks | 阻塞锁实现：Mutex / Condvar / RwLock | high | 实现可阻塞的 Mutex/Condvar/RwLock；解释或优化锁的系统调用；解决写者饥饿/写者忙等/丢唤醒；理解 futex 风格 wait/wake 协议 | Mutex、Condvar、RwLock、futex、wait、wake、writer starvation、thundering herd、互斥锁、条件变量、读写锁、写者饥饿 | capabilities/build-blocking-locks.md |
+| cap.rust-atomics-and-locks.build-one-shot-channel | 一次性通道实现 | medium | 实现一次性通道；用类型状态防止重复 send/receive；实现无分配的 split-borrow 通道；处理未接收消息的析构 | channel、one-shot、MaybeUninit、Sender、Receiver、typestate、通道、一次性、类型状态 | capabilities/build-one-shot-channel.md |
+| cap.rust-atomics-and-locks.atomic-performance-and-portability | 原子代码性能诊断与可移植性 | high | 诊断原子/并发代码变慢；排查伪共享与 cache line 对齐；写可信的原子操作基准；验证 x86→ARM 的内存序可移植性 | false sharing、cache line、repr(align)、black_box、benchmark、x86-64、ARM64、weakly ordered、伪共享、缓存行、基准、可移植性 | capabilities/atomic-performance-and-portability.md |
+| cap.rust-atomics-and-locks.os-primitive-selection | 操作系统并发原语选型 | medium | 选择跨平台等待/唤醒原语；包装 pthread/Windows 原语时的移动与销毁问题；需要优先级继承或跨进程同步 | pthread、futex、WaitOnAddress、SRWLOCK、CRITICAL_SECTION、os_unfair_lock、atomic-wait、跨平台、系统调用 | capabilities/os-primitive-selection.md |

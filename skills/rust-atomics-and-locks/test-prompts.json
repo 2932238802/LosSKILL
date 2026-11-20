@@ -1,0 +1,23 @@
+{
+  "skill": "rust-atomics-and-locks",
+  "version": "0.1.0",
+  "test_cases": [
+    {"id": "should-trigger-01", "type": "should_trigger", "prompt": "三个线程共享一个日志缓冲区：写线程先填数据再置一个 AtomicBool 通知，读线程轮询这个标志后读缓冲区。我该给这些原子操作选什么 Ordering？", "expected_behavior": "加载 atomic-ops-and-ordering 卡，给出 Release store + Acquire load 配对，并以 happens-before 论证；计数类操作给 Relaxed。", "notes": "正面：内存序选型"},
+    {"id": "should-trigger-02", "type": "should_trigger", "prompt": "帮我审查一下这段自己写的 Arc 实现，我担心最后一次 drop 有 race。", "expected_behavior": "加载 concurrency-safety-review 卡，按访问表/同步/不变量逐项审查，重点看末次递减的 Release+Acquire fence。", "notes": "正面：已有代码审查"},
+    {"id": "should-trigger-03", "type": "should_trigger", "prompt": "我要给团队写一个并发限流器库，怎么设计 API 才能让调用方误用的时候编译不过，而不是运行时崩？", "expected_behavior": "加载 safe-concurrency-api-design 卡，先列误用，再按 unsafe→运行时检查→类型级给出方案。", "notes": "正面：安全 API 设计"},
+    {"id": "should-trigger-04", "type": "should_trigger", "prompt": "我想自己实现一个带 Weak 的引用计数指针，Arc::clone 和最后一次 drop 应该分别用什么内存序？", "expected_behavior": "加载 build-arc-weak 卡，clone=Relaxed，末次 drop=Release+Acquire fence，并说明 Weak 双计数器。", "notes": "正面：Arc/Weak 实现"},
+    {"id": "should-trigger-05", "type": "should_trigger", "prompt": "自己实现 Mutex 时，无竞争情况下怎么做到完全不触发系统调用？", "expected_behavior": "加载 build-blocking-locks 卡，给出 0/1/2 三态与快路径 CAS，仅在需要阻塞时 wait。", "notes": "正面：阻塞锁实现"},
+    {"id": "should-trigger-06", "type": "should_trigger", "prompt": "两个线程分别写相邻的两个 AtomicU64，第三个线程读中间那个变量，为什么慢了一个数量级？", "expected_behavior": "加载 atomic-performance-and-portability 卡，判定伪共享，给 align(64) 与黑盒基准。", "notes": "正面：性能诊断"},
+    {"id": "should-trigger-07", "type": "should_trigger", "prompt": "线上服务偶尔卡死，线程好像永远等不到唤醒，能帮我看看这段 Mutex/Condvar 代码吗？", "expected_behavior": "加载 concurrency-safety-review 卡，区分 UB 与丢唤醒/活性问题，检查 wait 循环与唤醒对象。", "notes": "正面：并发故障审查"},
+    {"id": "should-trigger-08", "type": "should_trigger", "prompt": "同样的原子代码在 x86 服务器上跑得好好的，到了 M1 笔记本上计数偶尔少几百，是不是内存序问题？", "expected_behavior": "加载 atomic-performance-and-portability 卡，指出弱序暴露缺失 Acquire/Release，给汇编/loom/ARM 验证方案，并声明无目标硬件的结论边界。", "notes": "正面：跨架构可移植性"},
+    {"id": "should-trigger-09", "type": "should_trigger", "prompt": "Linux 上怎么用 futex 实现线程等待和唤醒？", "expected_behavior": "加载 os-primitive-selection 卡，给出 FUTEX_WAIT 带期望值 + FUTEX_WAKE、先改状态再唤醒的最小示例。", "notes": "正面：OS 原语用法"},
+    {"id": "should-trigger-10", "type": "should_trigger", "prompt": "RwLock 的写线程总是拿不到锁，读者一直插队，怎么改？", "expected_behavior": "加载 build-blocking-locks 卡，改为“读者数×2 + 等待写者位”，说明有界等待与代价。", "notes": "正面：写者饥饿"},
+    {"id": "edge-01", "type": "edge_case", "prompt": "这段代码里所有原子操作都用了 SeqCst，同事说可以改成 Relaxed，真的吗？", "expected_behavior": "不直接回答能/不能；给出逐操作判定：发布/锁/引用计数保留 Acq/Rel，纯计数可 Relaxed，Dekker 类保留 SeqCst。", "notes": "边界：批量降级"},
+    {"id": "edge-02", "type": "edge_case", "prompt": "多线程统计用 AtomicUsize 的 fetch_add 够不够？会不会丢计数？", "expected_behavior": "回答不丢计数（单变量修改全序），但提醒溢出与“不能借计数同步其它数据”。", "notes": "边界：概念近似"},
+    {"id": "edge-03", "type": "edge_case", "prompt": "Rust 里 Ordering::Acquire 是什么意思？", "expected_behavior": "直接给出简明定义即可，不必加载完整能力卡或展开选型流程。", "notes": "边界：纯名词解释"},
+    {"id": "should-not-trigger-01", "type": "should_not_trigger", "prompt": "C++ 里 std::mutex 和 std::atomic 有什么区别？", "expected_behavior": "与本书 Rust 能力域无关，不应加载。", "notes": "诱饵：其他语言"},
+    {"id": "should-not-trigger-02", "type": "should_not_trigger", "prompt": "Tokio 的 async Mutex 和 std::sync::Mutex 该选哪个？", "expected_behavior": "async/await 不在能力范围，不应加载；可提示范围外。", "notes": "诱饵：异步运行时"},
+    {"id": "should-not-trigger-03", "type": "should_not_trigger", "prompt": "帮我写一个 Rust 的快速排序。", "expected_behavior": "普通算法题，不应加载。", "notes": "诱饵：无关任务"},
+    {"id": "should-not-trigger-04", "type": "should_not_trigger", "prompt": "Arc 和 Rc 有什么区别？我该用哪个？", "expected_behavior": "一句选择建议即可，不必加载 build-arc-weak 或展开实现。", "notes": "诱饵：简单选型"}
+  ]
+}

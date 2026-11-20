@@ -1,0 +1,17 @@
+{
+  "skill": "leverage-protocol",
+  "version": "1.0",
+  "test_cases": [
+    {"id": "should-trigger-01", "type": "should_trigger", "prompt": "按满力协议把这个需求做完", "expected_behavior": "先判定 S/M/L，再按对应最低动作执行；交付前三问。", "notes": "直接点名协议"},
+    {"id": "should-trigger-02", "type": "should_trigger", "prompt": "别偷工减料，实现完顺便自己验一下", "expected_behavior": "按 M/L 处理，跑验证并给出证据，不口头宣称完成。", "notes": "偷工减料信号"},
+    {"id": "should-trigger-03", "type": "should_trigger", "prompt": "怎么给 Vesta 接入 L0 常驻片段？", "expected_behavior": "读 references/05-project-adapter.md，给 AGENTS.md 12 行 + 项目 L2 步骤。", "notes": "项目接入"},
+    {"id": "should-trigger-04", "type": "should_trigger", "prompt": "复盘一下这次为什么没考虑数据迁移", "expected_behavior": "用 references/06-missed-log.md 记录，并给出回收进触发器表的动作。", "notes": "漏用复盘"},
+    {"id": "should-trigger-05", "type": "should_trigger", "prompt": "这个改动算 S 还是 M？", "expected_behavior": "按分级表判定，不确定按 M；说明升级条件。", "notes": "分级判断"},
+    {"id": "should-trigger-06", "type": "should_trigger", "prompt": "交付前帮我检查一下证据和验证", "expected_behavior": "逐条回答三问；缺证据标未验证草稿。", "notes": "交付前自检"},
+    {"id": "should-not-trigger-01", "type": "should_not_trigger", "prompt": "Rust 里 Mutex 怎么用？", "expected_behavior": "领域知识问答，直接回答；不需要满力协议流程。", "notes": "诱饵：纯知识问答"},
+    {"id": "should-not-trigger-02", "type": "should_not_trigger", "prompt": "帮我写一个快速排序", "expected_behavior": "普通算法题，按常规完成即可，不启动协议。", "notes": "诱饵：无关任务"},
+    {"id": "should-not-trigger-03", "type": "should_not_trigger", "prompt": "把这本书蒸馏成 skill", "expected_behavior": "应由蒸馏类 Skill 处理，不是本协议。", "notes": "诱饵：其他 Skill 领域"},
+    {"id": "edge-01", "type": "edge_case", "prompt": "先跑通就行，别搞太复杂", "expected_behavior": "允许降级，但交付时标明未验证项；不强行升级范围。", "notes": "边界：用户要求最小改动"},
+    {"id": "edge-02", "type": "edge_case", "prompt": "按开发工作流来，先出需求卡", "expected_behavior": "应由 dev-workflow 处理；本协议只在开发环节提供质量底线。", "notes": "边界：相邻 Skill"}
+  ]
+}

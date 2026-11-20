@@ -2,7 +2,7 @@
 
 > 给 AI 的读取说明：先读本文件。按「触发信号」找到对应 Skill，再只加载该 Skill 的 `SKILL.md`；任务跨域时最多再加载 1 个。没有命中任何一行时，不要硬套，直接说明超出本库范围。
 
-本仓库当前收录 **5 个技能包（19 个 Skill 目录）**：`sandra-sales` 系列（8 个）、`game-design` 系列（8 个）、`dsh-cockpit`（1 个）、`ai-comment-protection`（1 个）、`huashu-nuwa`（1 个）。
+本仓库当前收录 **8 个技能包（22 个 Skill 目录）**：`sandra-sales` 系列（8 个）、`game-design` 系列（8 个）、`dsh-cockpit`（1 个）、`ai-comment-protection`（1 个）、`huashu-nuwa`（1 个）、`dev-workflow`（1 个）、`rust-atomics-and-locks`（1 个）、`leverage-protocol`（1 个）。
 
 ---
 
@@ -163,7 +163,67 @@
 > 上游仓库：<https://github.com/alchaincyf/nuwa-skill>（MIT，作者花叔）。为控制仓库体积，同步时剔除了宣传图/视频（`promo/`、根目录大图、`assets/hero.gif`），不影响 Skill 运行。
 
 ---
-## 六、组合用法（常见的跨 Skill 链路）
+## 六、dev-workflow（四角色开发工作流）
+
+| Skill | 何时用（触发信号） | 产出 | 不用于 | 路径 |
+| --- | --- | --- | --- | --- |
+| [`dev-workflow`](skills/dev-workflow/SKILL.md) | 「按开发工作流来」「走流程开发」「用四个 Agent」「先出需求卡再开发」；需求进入实现前需要 G0/G1 确认；需要把开发、评审、总审分开 | `CR-xxx` 需求卡、R/AC/T、G0-G4 门禁、可直接复制的交接 Prompt | 纯问答、一次性脚本、没有文档根目录的临时改动 | `skills/dev-workflow/` |
+
+自带 `references/` 下的四份完整角色提示词：
+
+| 文件 | 角色 |
+| --- | --- |
+| `references/01-doc-agent.md` | Doc Agent：需求受理、R/AC/T、文档审计 |
+| `references/02-dev-agent.md` | Dev Agent：按文档实现、跑验证、G2 报告 |
+| `references/03-review-agent.md` | Review Agent：独立评审、影响面回归、G3 结论 |
+| `references/04-meta-review-agent.md` | Meta Review Agent：五层总审 + UAT、G4 结论 |
+
+推荐安装方式：把四份角色文件分别注册为 AI 工具的自定义子代理（如 `~/.claude/agents/dev-agent.md`），主会话只担任 Doc/协调者；不支持子代理的环境，就把对应文件全文发给一个全新会话。
+
+---
+
+## 七、rust-atomics-and-locks（《Rust Atomics and Locks》蒸馏）
+
+适用场景：Rust 线程 + 共享内存并发——原子操作与内存序选型、并发/unsafe 代码审查、安全并发 API 设计、Arc/Weak 与阻塞锁实现、伪共享与跨架构可移植性。
+不适用：async/await 与异步运行时、分布式/跨进程一致性、其他语言、完整无锁数据结构与 RCU 生产实现。
+
+| Skill | 何时用（触发信号） | 产出 | 不用于 | 路径 |
+| --- | --- | --- | --- | --- |
+| [`rust-atomics-and-locks`](skills/rust-atomics-and-locks/SKILL.md) | 「选哪个 Ordering」「Relaxed 够不够」「帮我 review 并发/unsafe 代码」「实现 Arc/Mutex/一次性通道」「伪共享/为什么多线程更慢」「x86 正常 M1 挂」 | 路由到 9 张能力卡：内存序选型、并发安全审查、安全 API 设计、自旋锁、Arc/Weak、阻塞锁、一次性通道、性能与可移植性、OS 原语选型 | 纯名词解释（直接答）；async/分布式；C++ 等其他语言；普通算法题 | `skills/rust-atomics-and-locks/` |
+
+能力卡位于 `references/capabilities/`；`references/cheatsheet.md` 提供一页速查，`references/glossary.md` 为全书术语表。
+
+---
+
+## 八、leverage-protocol（满力协议：让每个项目默认拉满）
+
+适用场景：任何非平凡工程任务的执行纪律——任务分级、交付前三问、主动调用已有能力、跨项目适配与漏用复盘。
+不适用：纯知识问答、安装新技能、或替代具体领域 Skill（领域能力由被匹配的 Skill 执行）。
+
+| Skill | 何时用（触发信号） | 产出 | 不用于 | 路径 |
+| --- | --- | --- | --- | --- |
+| [`leverage-protocol`](skills/leverage-protocol/SKILL.md) | 「认真做」「别偷工减料」「按满力协议」「把任务做完整」；开始 S/M/L 任务；交付前自检；接入新项目；复盘"本该用却没用的能力" | 三条硬门（读/证据/验证）+ S/M/L 分级 + 触发器表 + 能力地图 + token 纪律 + 项目适配（Theseus 已有 L2） | 纯问答；安装/修改 Skill；具体领域实现（交给对应 Skill） | `skills/leverage-protocol/` |
+
+三层结构：
+
+| 层 | 位置 | 作用 |
+| --- | --- | --- |
+| L0 常驻 | 项目 `AGENTS.md` 顶部 12 行 | 每次会话自动注入：分级、三问、指针 |
+| L1 协议 | `skills/leverage-protocol/` | 硬门、触发器、能力地图、预算、项目适配、复盘 |
+| L2 项目 | `references/projects/<项目>.md` | 真实验证命令、雷区、项目专属信号（`theseus.md` 已建） |
+
+内置能力索引脚本（只用标准库）：
+
+```bash
+python3 scripts/capability_index.py plan "任务原文"
+python3 scripts/capability_index.py query "该用哪个 skill"
+python3 scripts/capability_index.py audit
+python3 scripts/capability_index.py brief --cwd .
+```
+
+---
+
+## 九、组合用法（常见的跨 Skill 链路）
 
 | 场景 | 加载顺序 |
 |---|---|
@@ -189,7 +249,7 @@
 
 ---
 
-## 七、索引维护规则
+## 十、索引维护规则
 
 - 新增 Skill：在「一」下新建小节，表格补齐 Skill 名、触发信号、产出、不用于、路径
 - 触发信号要写**客户/用户的原话**，不要写抽象名词（「含糊即拒绝」不如「客户反复说再考虑考虑」好命中）
