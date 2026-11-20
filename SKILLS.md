@@ -180,7 +180,7 @@
 | `references/05-context-protocol.md` | 上下文协议：大脑、增量、阅读预算、会话复用 |
 | `references/06-authorization.md` | 授权协议：范围信封、A0–A3、台账与角色分工 |
 
-工作日志：角色交付报告后用 `scripts/worklog.sh` 追加到项目根 `WORKLOG.md`（`LOG-*`）；模板见 `templates/project/WORKLOG.md`。
+工作日志：角色填好报告头部 `report-meta` 后运行 `scripts/finish-report.sh`，自动追加项目根 `WORKLOG.md` 与（如填写）`AUTHORIZATIONS.md`；模板见 `templates/project/WORKLOG.md`。
 
 推荐安装方式：把四份角色文件分别注册为 AI 工具的自定义子代理（如 `~/.claude/agents/dev-agent.md`），主会话只担任 Doc/协调者；不支持子代理的环境，就把对应文件全文发给一个全新会话。
 

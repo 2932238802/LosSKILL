@@ -286,7 +286,7 @@ cd LosSKILL
 
 - `references/05-context-protocol.md`：所有角色第 0 步读 `PROJECT_BRAIN.md`，按阅读预算只看改动面；每份报告写「上下文增量」，Steward 在 G2.5 合并；同一 CR 内复用会话。
 - `references/06-authorization.md`：用户在 G1 批准一次范围信封；A1（改代码/分支 commit）由 Review 记账，A2（push/合并/依赖）由 Steward，A3（生产/删库/密钥）只由用户确认；Review 不得自批 G3。
-- 工作日志：每个角色交付报告后用 `scripts/worklog.sh` 追加 `WORKLOG.md`，记录时间、动作、报告链接、commit 与 AUTH；Steward 在 G4 审计。
+- 工作日志：每个角色填好报告头部的 `report-meta` 后运行 `scripts/finish-report.sh`，自动写 `WORKLOG.md` 与（如填写）`AUTHORIZATIONS.md`；Steward 在 G4 审计。
 
 ---
 
@@ -339,7 +339,8 @@ LosSKILL/
    ├─ install-claude-config.sh  # 部署 configs/claude/ 到 ~/.claude（幂等，带备份）
    ├─ install-vscode-config.sh  # 部署 configs/vscode/（settings/keybindings；扩展可选）
    ├─ bootstrap-project.sh  # 给项目生成 AGENTS/CLAUDE + 大脑 + 台账 + 工作日志 + L2
-   ├─ worklog.sh          # 追加 Agent 工作日志到 WORKLOG.md（只追加，自动去重）
+   ├─ worklog.sh          # 追加单条工作日志（底层命令）
+   ├─ finish-report.sh    # 解析报告头，自动写 WORKLOG + AUTH 并回填 LOG-ID
    ├─ sync-skills.sh      # 同步 Skill：copy / link / force / dry-run，自动探测目标
    ├─ new-skill.sh        # 新建 Skill：目录 + frontmatter + SKILLS.md 登记 + 自检
    ├─ install-git-hooks.sh  # 启用 .githooks/pre-commit（validate.sh）

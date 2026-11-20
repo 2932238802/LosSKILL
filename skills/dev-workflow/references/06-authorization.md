@@ -101,6 +101,7 @@ escalate_when:
 - 范围：branch=feat/xxx，commit=待生成
 - 有效期：随 CR 结束
 - 撤销：否
+- 幂等键：CR-004:T-012:提交 feature 分支:A1
 ```
 
 规则：
@@ -110,6 +111,7 @@ escalate_when:
 - commit 生成后回填真实 hash。
 - 撤销时追加 `- 撤销：是（时间 / 原因 / 批准人）`，不要删除原条目。
 - AUTH ID 单调递增，不跳号、不复用；G4 抽查最近 10 条与 commit 是否对得上。
+- 推荐用 `scripts/finish-report.sh --report <报告>` 自动写入：它校验 A1=Review、A2=Steward，并用「幂等键」防止重复追加。
 
 ### 4.1 授权请求与决定（短模板）
 

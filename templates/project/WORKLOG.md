@@ -10,7 +10,8 @@
 
 ## 使用规则
 
-- 用 LosSKILL 仓库的脚本追加（在项目根执行）：
+- 优先用 `finish-report.sh`：填好报告头部 `report-meta` 后运行，自动追加并回填 `LOG-ID`。
+- 手工补录时才直接用脚本：
   ```bash
   {{LOSSKILL_PATH}}/scripts/worklog.sh --file WORKLOG.md \
     --role dev --gate G2 --cr CR-004 --task T-012 \

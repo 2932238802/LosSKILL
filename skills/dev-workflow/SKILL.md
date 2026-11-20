@@ -49,9 +49,9 @@ description: |
 
 ## 0.7 工作日志
 
-每个角色交付报告后，用 LosSKILL 仓库的 `scripts/worklog.sh` 在项目根追加一行到 `WORKLOG.md`（`LOG-*`），链接报告与 commit；Steward 在 G4 审计完整性。它是跨角色、跨 CR 的历史索引，不是 STATUS 或大脑的替代品。
+每个角色交付报告后，填好报告头部的 `report-meta`，运行 LosSKILL 的 `scripts/finish-report.sh --report <报告>`：它同时写 `WORKLOG.md` 与（如填写了 auth 字段）`AUTHORIZATIONS.md`，并回填 `LOG-ID`。Steward 在 G4 审计两本账。
 
-细节见 `references/05-context-protocol.md` 的「工作日志」一节。
+它是跨角色、跨 CR 的历史索引，不是 STATUS 或大脑的替代品。细节见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
 
 ## 1. 开工
 
@@ -139,7 +139,7 @@ G4 是成本最高的门禁，按改动风险选择，不默认全量启动：
 - 交给谁、依据哪个门禁/结论、携带哪些材料；
 - 一段可直接复制发送给下一位 Agent 的 Prompt（真实路径、ID、版本；未知项写“待确认”）；
 - 「上下文增量」：触及模块、不变量/契约变化、测试变化、大脑需要更新的节、发现的过期信息。
-- 「工作日志」：`LOG-ID`（已用 `scripts/worklog.sh` 追加）。
+- 「工作日志」：`LOG-ID`（已用 `scripts/finish-report.sh` 追加；AUTH 条目同一脚本写入）。
 
 报告落盘：`<文档根目录>/reports/<角色>-<YYYY-MM-DD>-<范围>.md`。
 

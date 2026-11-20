@@ -46,7 +46,7 @@
 | 门禁 | `G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成 → `G2.5` 上下文增量合并 → `G3` 评审通过 → `G3.5` 跨模块检查（可选）→ `G4` 总审通过；跳门需用户授权 |
 | 上下文 | 所有角色第 0 步读 `PROJECT_BRAIN.md`；每份报告带「上下文增量」；阅读预算 S ≤ 5 / M ≤ 15 / L 分阶段；同一 CR 内 Dev/Steward 复用会话 |
 | 授权 | 用户在 G1 批准一次「范围信封」；A1 由 Review 记账，A2 由 Steward（信封可委托 Review 批低风险），A3 只由用户；Review 不得自批 G3；台账 `AUTHORIZATIONS.md` 只追加 |
-| 工作日志 | 每个角色交付报告后用 `scripts/worklog.sh` 追加 `WORKLOG.md`（`LOG-*`）；跨角色、跨 CR 的历史索引，只追加、最新在上；Steward 在 G4 审计完整性 |
+| 工作日志 | 每个角色交付报告后填 `report-meta`，运行 `scripts/finish-report.sh`，自动写 `WORKLOG.md` 与（如填写）`AUTH-*`；Steward 在 G4 审计 |
 | 任务状态 | `TODO` / `DOING` / `DONE` / `BLOCKED` / `DROPPED` |
 | 证据格式 | `文件:行号`、命令 + 关键输出、commit hash；无证据必须标 `[推断]` |
 | 严重度 | `P0` 阻断 / `P1` 严重 / `P2` 一般 / `P3` 建议 |
@@ -279,7 +279,7 @@ Meta 的价值恰恰在于**不信任 Review**，并多一层结果验收。如�
 
 ### Q：怎么知道每个 Agent 做过什么？
 
-看项目根 `WORKLOG.md`：每行有 ID、时间、角色、门禁、CR/T、动作、报告链接、commit、AUTH、状态。用 `scripts/worklog.sh` 追加，最新在最上面；详细证据仍在 `reports/`。STATUS 只记当前状态，WORKLOG 记历史流水。
+看项目根 `WORKLOG.md`：每行有 ID、时间、角色、门禁、CR/T、动作、报告链接、commit、AUTH、状态。填好报告头部的 `report-meta` 后运行 `scripts/finish-report.sh`，会自动追加并回填 `LOG-ID`；详细证据仍在 `reports/`。STATUS 只记当前状态，WORKLOG 记历史流水。
 
 ### Q：中文项目 / 英文项目都适用吗？
 

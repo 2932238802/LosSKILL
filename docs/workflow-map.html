@@ -690,7 +690,7 @@
           <span class="branch-index">06 / TOOLING</span>
           <span class="branch-title">工具链</span>
           <span class="branch-desc">脚手架、同步、工作日志、自检、提交钩子与 CI，把协议变成日常动作。</span>
-          <span class="chips"><span class="chip">bootstrap</span><span class="chip">sync-skills</span><span class="chip">worklog</span><span class="chip">validate</span><span class="chip">CI</span></span>
+          <span class="chips"><span class="chip">bootstrap</span><span class="chip">sync-skills</span><span class="chip">finish-report</span><span class="chip">validate</span><span class="chip">CI</span></span>
         </button>
       </div>
     </section>
@@ -805,6 +805,7 @@ LosSKILL/
 ├─ <span class="d">scripts/</span>
 │  ├─ <span class="k">bootstrap-project.sh</span>       <span class="c"># 生成 AGENTS / BRAIN / AUTHORIZATIONS / WORKLOG / L2</span>
 │  ├─ <span class="k">worklog.sh</span>                 <span class="c"># 追加 LOG-* 到 WORKLOG.md</span>
+│  ├─ <span class="k">finish-report.sh</span>            <span class="c"># 解析报告头，写 WORKLOG + AUTH</span>
 │  ├─ <span class="k">new-skill.sh</span>
 │  ├─ <span class="k">sync-skills.sh</span>             <span class="c"># copy / link / force / dry-run</span>
 │  ├─ <span class="k">install-claude-config.sh</span>
@@ -962,7 +963,7 @@ skills/&lt;skill-name&gt;/
       items: [
         ["bootstrap-project.sh", "生成项目的 AGENTS / CLAUDE / BRAIN / AUTHORIZATIONS / L2。"],
         ["new-skill / sync-skills", "新 Skill 建目录并登记；安装支持 copy / link / force / dry-run。"],
-        ["worklog.sh", "追加工作日志；自动生成 ID、同秒去重、链接报告。"],
+        ["worklog.sh / finish-report.sh", "追加工作日志；解析报告头，自动写 WORKLOG 与 AUTH。"],
         ["validate / hooks / CI", "frontmatter、引用、索引与 AGENTS 导入；提交前与 push 后都跑。"],
         ["configs/", "Claude 与 VS Code 配置备份，换机时一键部署。"]
       ],

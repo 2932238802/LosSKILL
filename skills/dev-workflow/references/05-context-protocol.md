@@ -131,7 +131,8 @@ Review 开工时读它，但**不把它当证据**：先独立看 diff 与影响
 | 报告 / Commit / AUTH | 详细证据的指针 |
 | 状态 | 完成 / 返工 / 阻塞 / 有条件通过… |
 
-- 用 LosSKILL 仓库的 `scripts/worklog.sh` 追加（在项目根执行，`--file WORKLOG.md`），避免格式漂移；报告写完后立即记一行，并在报告里写 `LOG-ID`。
+- 优先用 `scripts/finish-report.sh --report <报告路径>`：它解析报告头部的 `report-meta`，同时写 WORKLOG 与 AUTH，并回填 `LOG-ID`。
+- 手工补录时才直接用 `scripts/worklog.sh`（在项目根执行，`--file WORKLOG.md`），避免格式漂移；报告写完后立即记一行，并在报告里写 `LOG-ID`。
 - **不要**把它当 STATUS（当前状态）或大脑（架构事实）：它是历史索引。
 - Steward 在 G4 审计：每个门禁/报告是否都有对应行；缺失记 P1 流程缺陷。
 - 更正不删旧行：追加一条“更正”，在「做了什么」里引用原 `LOG-ID`。
