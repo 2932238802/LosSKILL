@@ -311,11 +311,14 @@ def cmd_query(args) -> int:
         }, ensure_ascii=False, indent=2))
         return 0 if confident or args.allow_empty else 1
     if not confident:
-        if top and top[0][0] >= args.min_score:
+        if not top:
+            print("没有匹配的已装 Skill。不要硬套；先说明将直接处理。")
+        elif top[0][0] >= args.min_score:
             print("分数过线但证据不足（只命中一个泛词，或缺少第二个区分性词）。不要仅凭它硬套；先说明将直接处理。")
         else:
             print(f"没有足够匹配的已装 Skill（最高分 {top[0][0]:.2f} < {args.min_score}）。不要硬套；先说明将直接处理。")
-        print("最接近的候选（仅供参考）：")
+        if top:
+            print("最接近的候选（仅供参考）：")
     for sc, s, inter in top:
         print(f"- [{sc:.2f}] {s['name']}  ({s['kind']})  {s['dir']}")
         if inter:
