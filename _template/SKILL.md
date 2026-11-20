@@ -52,4 +52,4 @@ metadata:
 
 ## 参考资料（可选，按需加载）
 
-- `references/xxx.md` — 何时读它
+- `references/<主题>.md` — 何时读它（没有参考文件就删掉本行）

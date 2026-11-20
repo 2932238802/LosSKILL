@@ -2,7 +2,7 @@
 
 > 给 AI 的读取说明：先读本文件。按「触发信号」找到对应 Skill，再只加载该 Skill 的 `SKILL.md`；任务跨域时最多再加载 1 个。没有命中任何一行时，不要硬套，直接说明超出本库范围。
 
-本仓库当前收录 **8 个技能包（22 个 Skill 目录）**：`sandra-sales` 系列（8 个）、`game-design` 系列（8 个）、`dsh-cockpit`（1 个）、`ai-comment-protection`（1 个）、`huashu-nuwa`（1 个）、`dev-workflow`（1 个）、`rust-atomics-and-locks`（1 个）、`leverage-protocol`（1 个）。
+本仓库当前收录的技能包：`sandra-sales` 系列（8 个）、`game-design` 系列（8 个）、`dsh-cockpit`、`ai-comment-protection`、`huashu-nuwa`、`dev-workflow`、`rust-atomics-and-locks`、`leverage-protocol`。新增 Skill 先在「十、待归类」登记，再按需移入对应小节。
 
 ---
 
@@ -249,9 +249,19 @@ python3 scripts/capability_index.py brief --cwd .
 
 ---
 
-## 十、索引维护规则
+## 十、待归类（新增 Skill 先登记在这里）
 
-- 新增 Skill：在「一」下新建小节，表格补齐 Skill 名、触发信号、产出、不用于、路径
+`./scripts/new-skill.sh` 会自动在这里追加一行；确认内容后把该行移到对应小节。
+
+| Skill | 何时用（触发信号） | 产出 | 不用于 | 路径 |
+|---|---|---|---|---|
+<!-- new-skill-rows -->
+
+---
+
+## 十一、索引维护规则
+
+- 新增 Skill：优先跑 `./scripts/new-skill.sh <name> --desc "……"`；它会建目录、补边界并在「十、待归类」登记
 - 触发信号要写**客户/用户的原话**，不要写抽象名词（「含糊即拒绝」不如「客户反复说再考虑考虑」好命中）
 - 「不用于」列必须写，否则 AI 会在相邻场景误触发
 - 一个 Skill 只解决一类任务；跨域时在「二」里写组合链路，不要合并 Skill

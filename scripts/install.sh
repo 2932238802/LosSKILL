@@ -263,4 +263,9 @@ HIST_EOF
     echo "Personal environment configuration applied successfully!"
 fi
 
+# 启用仓库自带的 pre-commit 自检（仅在 git checkout 中可用）
+if [ -f "$repo_root/scripts/install-git-hooks.sh" ] && [ -d "$repo_root/.githooks" ]; then
+    bash "$repo_root/scripts/install-git-hooks.sh" || true
+fi
+
 echo "Note: some tools need a session restart or skill list refresh before the new skills appear."

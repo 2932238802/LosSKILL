@@ -253,6 +253,7 @@ LosSKILL/
 ├─ CLAUDE.md              # Claude Code 入口：只做 @AGENTS.md 导入
 ├─ LICENSE                # MIT
 ├─ .gitattributes         # 统一 LF，保证 install.sh 在跨平台可用
+├─ .githooks/pre-commit   # 提交前自动跑 validate.sh
 ├─ skills/                # 所有 Skill，一个文件夹一个 Skill
 │  ├─ sandra-sales/       # 书籍蒸馏：路由包 + references/capabilities/
 │  ├─ sandra-sales-*/     # 7 个可单点触发的独立能力 Skill
@@ -286,6 +287,8 @@ LosSKILL/
    ├─ install.ps1         # 分步安装（Windows：Skill + 环境 + SSH + winget）
    ├─ install-claude-config.sh  # 部署 configs/claude/ 到 ~/.claude（幂等，带备份）
    ├─ sync-skills.sh      # 同步 Skill：copy / link / force / dry-run，自动探测目标
+   ├─ new-skill.sh        # 新建 Skill：目录 + frontmatter + SKILLS.md 登记 + 自检
+   ├─ install-git-hooks.sh  # 启用 .githooks/pre-commit（validate.sh）
    ├─ install-dsh-plugins.sh  # 给 dsh 的 profile 批量装插件（幂等，npm 直连）
    ├─ install-blesh.sh    # 可选：装 ble.sh，实现「边打字边列历史」
    ├─ setup-ssh-git.sh    # 只做 SSH 密钥与 GitHub 提交方式
@@ -298,13 +301,27 @@ LosSKILL/
 
 ## 贡献 / 新增 Skill 的约定
 
-1. 复制 `_template/` 为 `skills/<你的skill名>/`
-2. 目录名用 **kebab-case**，与 frontmatter 的 `name` 完全一致
-3. `description` 必须写清三件事：**什么时候用**、**产出什么**、**不用于什么**（第三点决定 AI 会不会误触发）
-4. 正文用相对路径引用附件；不要依赖仓库外的文件
-5. 在 `SKILLS.md` 增加一行索引
-6. 单文件控制在 ~500 行内；长内容拆进 `references/`，正文只留「何时读哪个文件」
-7. 跑一遍自检：Linux/WSL 用 `./scripts/validate.sh`，Windows 用 `powershell -ExecutionPolicy Bypass -File .\scripts\validate.ps1`
+快速方式（推荐）：
+
+```bash
+./scripts/new-skill.sh my-skill \
+  --desc "当用户……时使用，产出……" \
+  --not-for "相邻但不应触发的场景（该用 xxx）"
+./scripts/validate.sh
+```
+
+脚本会创建 `skills/my-skill/SKILL.md`、自动补「不用于」边界，并在 `SKILLS.md` 的「十、待归类」登记一行；确认内容后再移到对应小节。
+
+手工约定：
+
+1. 目录名用 **kebab-case**，与 frontmatter 的 `name` 完全一致
+2. `description` 必须写清三件事：**什么时候用**、**产出什么**、**不用于什么**（第三点决定 AI 会不会误触发）
+3. 正文用相对路径引用附件；不要依赖仓库外的文件
+4. 单文件控制在 ~500 行内；长内容拆进 `references/`，正文只留「何时读哪个文件」
+5. 在 `SKILLS.md` 登记（脚手架已自动做）
+6. 跑一遍自检：Linux/WSL 用 `./scripts/validate.sh`，Windows 用 `powershell -ExecutionPolicy Bypass -File .\scripts\validate.ps1`
+
+提交前自检：运行 `./scripts/install-git-hooks.sh` 启用仓库自带的 pre-commit；之后每次提交都会先跑 `validate.sh`（`git commit --no-verify` 可临时跳过）。
 
 详细规范见 [_template/GUIDE.md](_template/GUIDE.md)。
 
