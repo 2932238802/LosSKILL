@@ -271,9 +271,18 @@ cd LosSKILL
 
 - 项目根 `AGENTS.md`（L0 + 验证命令 + 雷区）
 - 项目根 `CLAUDE.md`（`@AGENTS.md`）
+- 项目根 `PROJECT_BRAIN.md`（共享大脑：架构、不变量、契约、热点、测试地图）
+- 项目根 `AUTHORIZATIONS.md`（G1 范围信封 + 授权台账，只追加）
 - `skills/leverage-protocol/references/projects/<slug>.md`（L2：验证命令、专属信号、雷区）
 
-已存在的文件默认跳过；`--force` 覆盖并备份为 `*.losskill.bak`。
+已存在的文件默认跳过；`--force` 覆盖并备份为 `*.losskill.bak`，但**授权台账永不覆盖**。
+
+### 上下文与授权协议
+
+`dev-workflow` 现在带两份跨角色协议：
+
+- `references/05-context-protocol.md`：所有角色第 0 步读 `PROJECT_BRAIN.md`，按阅读预算只看改动面；每份报告写「上下文增量」，Steward 在 G2.5 合并；同一 CR 内复用会话。
+- `references/06-authorization.md`：用户在 G1 批准一次范围信封；A1（改代码/分支 commit）由 Review 记账，A2（push/合并/依赖）由 Steward，A3（生产/删库/密钥）只由用户确认；Review 不得自批 G3。
 
 ---
 
@@ -289,7 +298,7 @@ LosSKILL/
 ├─ .gitattributes         # 统一 LF，保证 install.sh 在跨平台可用
 ├─ .githooks/pre-commit   # 提交前自动跑 validate.sh
 ├─ .github/workflows/     # CI：shell/PowerShell 语法 + validate.sh
-├─ templates/project/     # 新项目模板：AGENTS / CLAUDE / L2
+├─ templates/project/     # 新项目模板：AGENTS / CLAUDE / BRAIN / AUTHORIZATIONS / L2
 ├─ skills/                # 所有 Skill，一个文件夹一个 Skill
 │  ├─ sandra-sales/       # 书籍蒸馏：路由包 + references/capabilities/
 │  ├─ sandra-sales-*/     # 7 个可单点触发的独立能力 Skill

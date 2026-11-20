@@ -110,10 +110,19 @@ echo
 
 write_file "$template_dir/AGENTS.md" "$project_abs/AGENTS.md"
 write_file "$template_dir/CLAUDE.md" "$project_abs/CLAUDE.md"
+write_file "$template_dir/PROJECT_BRAIN.md" "$project_abs/PROJECT_BRAIN.md"
+# 台账 append-only：即使 --force 也不覆盖已有授权记录
+if [ -e "$project_abs/AUTHORIZATIONS.md" ]; then
+  echo "  [skip] $project_abs/AUTHORIZATIONS.md 已存在（台账只追加，不覆盖）"
+else
+  write_file "$template_dir/AUTHORIZATIONS.md" "$project_abs/AUTHORIZATIONS.md"
+fi
 write_file "$template_dir/L2.md" "$l2_dir/$slug.md"
 
 echo
 echo "完成。下一步："
-echo "  1. 补全 $project_abs/AGENTS.md 的验证命令与雷区"
-echo "  2. 补全 $l2_dir/$slug.md 的项目专属信号"
-echo "  3. 新开 Claude Code 会话让 @AGENTS.md 生效"
+echo "  1. 补全 $project_abs/PROJECT_BRAIN.md 的架构、不变量、验证命令"
+echo "  2. 补全 $project_abs/AGENTS.md 的雷区与指针"
+echo "  3. 在 $project_abs/AUTHORIZATIONS.md 确认本轮范围信封（G1 时由用户批准）"
+echo "  4. 补全 $l2_dir/$slug.md 的项目专属信号"
+echo "  5. 新开 Claude Code 会话让 @AGENTS.md 生效"

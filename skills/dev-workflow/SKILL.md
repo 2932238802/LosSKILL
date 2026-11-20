@@ -15,11 +15,37 @@ description: |
 | `references/01-doc-agent.md` | Doc Agent | 需求受理、写 R/AC/T、文档审计 |
 | `references/02-dev-agent.md` | Dev Agent | G1 确认后实现任务、处理评审返工 |
 | `references/03-review-agent.md` | Review Agent | G2 自检完成后独立评审（G3） |
-| `references/04-meta-review-agent.md` | Meta Review Agent | G3 通过后全链路总审 + UAT（G4） |
+| `references/04-meta-review-agent.md` | Meta Review Agent | G3 通过后全链路总审 + UAT（G4）；兼 Steward 模式维护大脑 |
+| `references/05-context-protocol.md` | 上下文协议 | 所有角色开工第 0 步；大脑 / 增量 / 阅读预算 / 会话复用 |
+| `references/06-authorization.md` | 授权协议 | 范围信封 / A0–A3 分级 / 台账 / 角色分工 |
 
 `references/00-workflow-readme.md` 是四个角色的总说明与使用建议。
 
 如果当前环境支持自定义子代理（如 Claude Code 的 `~/.claude/agents/`），把四份角色文件分别注册为 `doc-agent` / `dev-agent` / `review-agent` / `meta-review-agent`，由主会话调度；否则把对应文件全文发给一个全新会话，作为该角色的系统提示词。
+
+## 0. 共享大脑（先读这个）
+
+项目根应有一个 `PROJECT_BRAIN.md`（没有时找 `<文档根目录>/PROJECT_BRAIN.md`），保存架构地图、模块边界、不变量、契约、验证命令、热点、测试地图、决策索引与最近变更。
+
+- 所有角色**开工第 0 步读它**，再读任务相关文档与改动面代码，不通读全仓库。
+- 每份报告必须有「上下文增量」；Steward 在 G2.5 合并回大脑。
+- 新项目用 `scripts/bootstrap-project.sh` 生成；协议细节见 `references/05-context-protocol.md`。
+
+## 0.6 授权（委托信封）
+
+用户只在 G1 批准一次「范围信封」（允许路径、命令、提交上限、到期、禁止项），写进 `<文档根目录>/AUTHORIZATIONS.md`。日常动作按级别执行并记账：
+
+| 级别 | 例子 | 批准人 |
+|---|---|---|
+| A0 | 读代码、跑测试、lint、build | Agent 自主 |
+| A1 | 改代码、写文档、feature 分支 commit | Review（记账） |
+| A2 | push、PR、合并 main、依赖/构建配置 | Steward/Meta（记账） |
+| A3 | 生产部署、删库、force push、密钥/权限 | 用户本人，永不委托 |
+
+- Review **不能**批准自己的 G3 结论；G3 接受由 Steward 或用户记账。
+- 越出信封一律停下问用户；过期/超提交上限自动失效。
+- Agent 不能替代 Claude Code 的权限弹窗；宿主权限仍由 harness 控制。
+- 细节见 `references/06-authorization.md`。
 
 ## 1. 开工
 
@@ -32,14 +58,16 @@ description: |
 
 ```
 G0 需求受理（Doc + 用户）
- → G1 需求/AC/任务确认（Doc + 用户）
+ → G1 需求/AC/任务确认（Doc + Steward 影响预判）
  → G2 开发完成（Dev Agent）
+ → G2.5 上下文增量合并（Steward，轻量）
  → G3 评审通过（Review Agent）
- → G4 总审通过（Meta Agent + 用户）
+ → G3.5 跨模块检查（Steward，可选）
+ → G4 总审通过（Steward/Meta + 用户，风险触发）
 ```
 
 - **G1 未确认，不得启动 Dev**。
-- **G2 未完成，不得启动 Review**。
+- **G2 未完成，不得启动 Review**；G2.5 只合并增量，不替代评审。
 - **G3 未通过，不得启动 Meta**。
 - 跳门必须由用户明确授权，并写进 `STATUS.md` 与报告。
 - 角色独立性：Review 不采信 Dev 报告作证据；Meta 不采信 Review 结论作证据。
@@ -47,7 +75,7 @@ G0 需求受理（Doc + 用户）
 ### 2.1 提交与推送（G3 通过后）
 
 - **新任务开工前先检查工作区**：`git status` 若有未提交改动，先按提交机制提交（与用户确认 commit 信息并推送），再开始新需求；不得把上一个需求的改动带进新任务。
-- **G3 评审通过后即可提交**，不再默认等 G4；G4 如需复验，以提交后的 HEAD 为基线，或在报告中说明“提交发生在总审期间”。
+- **G3 评审通过后即可提交**，但提交前必须有对应的 A1 授权条目（Review 批准并记账）；push 属 A2，由 Steward 批准。不再默认等 G4；G4 如需复验，以提交后的 HEAD 为基线，或在报告中说明“提交发生在总审期间”。
 - **一个需求一个 commit**：不同 CR 的代码、文档、报告不混在同一个提交里；跨 CR 的同一文件用 hunk 级暂存。
 - **提交信息与用户交互式确认**：先给出一条建议信息（`[feat]` / `[fix]` / `[docs]` + 一句话），请用户补充或修改，确认后再执行 `git commit`。
 - 推送目标遵循项目约定，默认 `origin/main`；推送前确认工作区只包含本次需求的内容。
@@ -70,14 +98,16 @@ G4 是成本最高的门禁，按改动风险选择，不默认全量启动：
 ```
 【项目路径】<绝对路径>
 【文档根目录】<绝对路径>
+【项目大脑】<PROJECT_BRAIN.md 路径；没有写"缺失">
 【本次任务】T-xxx / CR-xxx / R-xxx（版本）
 【上一轮反馈】无 / 评审报告路径 + 返工项编号
 【授权】用户已确认 G1（或 G2/G3），可直接开工
 【验证环境】<启动命令、端口、临时数据目录、浏览器路径等>
+【阅读预算】S ≤ 5 / M ≤ 15 / L 分阶段（超出需说明）
 【报告】<落盘路径>
 ```
 
-一次只派发一个阶段；等该角色返回并核对报告后，再进入下一阶段。返工时把报告路径与编号原样传回，不要重写证据链。
+一次只派发一个阶段；等该角色返回并核对报告后，再进入下一阶段。返工时把报告路径与编号原样传回，不要重写证据链。同一 CR 内 Dev/Steward 复用同一会话；Review 跨 CR 新建会话。
 
 ## 4. 主会话（Doc）只做这些
 
@@ -101,12 +131,19 @@ G4 是成本最高的门禁，按改动风险选择，不默认全量启动：
 每份报告（包括主会话的交付报告）结尾必须有：
 
 - 交给谁、依据哪个门禁/结论、携带哪些材料；
-- 一段可直接复制发送给下一位 Agent 的 Prompt（真实路径、ID、版本；未知项写“待确认”）。
+- 一段可直接复制发送给下一位 Agent 的 Prompt（真实路径、ID、版本；未知项写“待确认”）；
+- 「上下文增量」：触及模块、不变量/契约变化、测试变化、大脑需要更新的节、发现的过期信息。
 
 报告落盘：`<文档根目录>/reports/<角色>-<YYYY-MM-DD>-<范围>.md`。
 
 ## 7. 上下文控制
 
-- 每个任务一个 Dev 会话；每次评审一个 Review 会话；每轮总审一个 Meta 会话。
+完整协议见 `references/05-context-protocol.md`，要点：
+
+- 开工第 0 步读 `PROJECT_BRAIN.md`，只读任务相关模块卡；代码只读改动面 + 调用方 + 测试。
+- 遵守阅读预算（S ≤ 5、M ≤ 15、L 分阶段），超出需在报告中说明。
+- 每份报告带「上下文增量」；Steward 在 G2.5 合并回大脑。
+- 同一 CR 内 Dev/Steward 复用会话；Review 跨 CR 新建，返工可复用。
 - 执行角色只返回摘要与报告路径；大段细节落盘，不塞回主会话。
 - 主会话只保留：当前门禁、任务状态、阻塞、下一步、报告路径。
+- 授权按 `references/06-authorization.md`：A0/A1 在信封内自动执行并记账；A2 由 Steward；A3 回用户。

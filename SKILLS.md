@@ -176,7 +176,9 @@
 | `references/01-doc-agent.md` | Doc Agent：需求受理、R/AC/T、文档审计 |
 | `references/02-dev-agent.md` | Dev Agent：按文档实现、跑验证、G2 报告 |
 | `references/03-review-agent.md` | Review Agent：独立评审、影响面回归、G3 结论 |
-| `references/04-meta-review-agent.md` | Meta Review Agent：五层总审 + UAT、G4 结论 |
+| `references/04-meta-review-agent.md` | Meta Review Agent：五层总审 + UAT、G4 结论；兼 Steward 维护大脑 |
+| `references/05-context-protocol.md` | 上下文协议：大脑、增量、阅读预算、会话复用 |
+| `references/06-authorization.md` | 授权协议：范围信封、A0–A3、台账与角色分工 |
 
 推荐安装方式：把四份角色文件分别注册为 AI 工具的自定义子代理（如 `~/.claude/agents/dev-agent.md`），主会话只担任 Doc/协调者；不支持子代理的环境，就把对应文件全文发给一个全新会话。
 
