@@ -43,6 +43,21 @@ escalate_when:
 
 <!-- auth:rows -->
 
+## AUTH-20261120-003
+
+- 时间：2026-11-20 14:39:12 +0800
+- CR/T：CR-001 / T-003
+- 动作：批准 T-003 的 roots 缓存感知
+- 级别：A1
+- 策略条款：POLICY-CR-001（allowed_paths、max_commits）
+- 证据：AC-003-1～3 + 回归 + validate.sh + scope diff
+- 批准：review-agent
+- 范围：skills/leverage-protocol/scripts/capability_index.py（commit 待生成）
+- 有效期：随 CR 结束
+- 撤销：否
+- 幂等键：CR-001:T-003:批准 roots 缓存感知:A1
+
+
 ## AUTH-20261120-002
 
 - 时间：2026-11-20 14:01:37 +0800

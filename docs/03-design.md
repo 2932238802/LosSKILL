@@ -52,6 +52,7 @@
 
 - CLI 参数、索引 JSON 字段不变。
 - 旧缓存可读；roots 不一致时自动重建。
+- 部署注意（T-002 G3 P1）：脚本升级后需执行一次 `capability_index.py build` 重建缓存；脚本版本感知由候选 CR-005 处理，不在 T-003 范围。
 - 回滚：单文件 `git revert` / `git checkout -- skills/leverage-protocol/scripts/capability_index.py`。
 - 不涉及数据迁移与外部服务。
 

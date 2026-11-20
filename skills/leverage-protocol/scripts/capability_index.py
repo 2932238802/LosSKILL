@@ -231,8 +231,21 @@ def write_index(index: dict, out: Path) -> None:
     (out.parent / "INDEX.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def normalize_roots(roots) -> list[str]:
+    """Canonicalize roots for cache comparison: resolve, dedupe, sort."""
+    out: set[str] = set()
+    for r in roots:
+        try:
+            out.add(str(Path(r).expanduser().resolve()))
+        except OSError:
+            out.add(str(r))
+    return sorted(out)
+
+
 def stale(index: dict, roots: list[Path]) -> bool:
     if not index.get("skills"):
+        return True
+    if normalize_roots(index.get("roots", [])) != normalize_roots(roots):
         return True
     newest = max((p.stat().st_mtime for p in discover_skill_files(roots)), default=0)
     return newest > index.get("generated_at", 0)
