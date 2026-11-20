@@ -1,6 +1,11 @@
-# 04 — 任务（CR-001）
+# 04 — 任务（CR-001～CR-002）
 
-> 维护者：Doc Agent ｜ 最近更新：2026-11-20 ｜ 状态：CR-002 G1 已确认；T-004 G3 有条件通过（`4f341e3`）；T-005 开发完成（G2），待 G3
+> 维护者：Doc Agent ｜ 最近更新：2026-11-20 ｜ 状态：CR-002 G4 通过；收尾提交待授权
+
+## G4 结论（CR-002）
+
+- 2026-11-20：通过，0 阻断；18/18 AC 与 UAT 由 Meta 独立复现；AUTH-006 的 CI 变更由 Meta 追认 A2，AUTH-005 scope 以 G4 报告交叉覆盖。
+- 后续：F-5～F-10（P3）转后续 CR；文档收尾 F-1～F-4 已完成。
 
 ## T-001 查询空结果判空（状态：DONE）
 
@@ -173,7 +178,7 @@
 - **规模**：M
 - **阻塞原因**：无（G1 已确认；T-004/T-005 已提交；G2 开发完成）。
 - **完成说明**（2026-11-20，G2）：新增 `scripts/selftest.sh`（13 个用例，mktemp 沙箱 + trap 清理，支持 `SELFTEST_SRC_DIR` 覆盖以便故障注入）；`.github/workflows/validate.yml` 在 `validate.sh` 后新增 `Run script selftest` 步骤。`./scripts/selftest.sh` → PASS=13 FAIL=0，exit 0；篡改去重后 exit 1 且对应用例 FAIL。`validate.sh` 0 ERROR，`bash -n scripts/*.sh setup.sh` 通过，YAML 可解析。证据见 `docs/reports/dev-2026-11-20-T-006.md`（未提交，待 G3）。
-- **G3 结论**：通过（2026-11-20，`AUTH-20261120-006`，`LOG-20261120-155125`）；无 P0/P1/P2。P3：`make_bin` 白名单缺 `head`；头部注释称 9 脚本插行但仅 finish-report 验证；无 python3/realpath 时用例 SKIP 但整体 exit 0。
+- **G3 结论**：通过（2026-11-20，`AUTH-20261120-006`，`LOG-20261120-155125`）；无 P0/P1/P2。P3：`make_bin` 白名单缺 `head`；头部注释称 9 脚本插行但仅 finish-report 验证；无 python3/realpath 时用例 SKIP 但整体 exit 0。提交：`4573bbd`。
 
 ## CR-002 任务顺序
 

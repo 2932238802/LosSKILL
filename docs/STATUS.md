@@ -1,69 +1,58 @@
 # STATUS
 
-> 维护者：Doc Agent ｜ 最近更新：2026-11-20 ｜ 状态：CR-002 T-006 G3 通过，待提交
+> 维护者：Doc Agent ｜ 最近更新：2026-11-20 ｜ 状态：CR-002 已关闭（G4 通过）；待下一 CR
 
 ## 当前
 
-- **当前 CR**：CR-002 报告与日志脚本可靠性
-- **当前门禁**：G3 通过（T-006，`AUTH-20261120-006`）→ 待提交 → G4 Meta 总审
-- **进行中任务**：T-006 提交确认（用户）
+- **当前 CR**：无（CR-001 / CR-002 均已关闭）
+- **当前门禁**：G4 通过 → 已收尾
+- **进行中任务**：无
 - **阻塞**：无
-- **下一步**：用户确认提交信息 → commit → 派发 G4 Meta
-- **范围信封**：POLICY-CR-002（已扩展 `setup.sh`；2026-11-20 批准，2026-11-27 到期，最多 3 次提交）
+- **下一步**：选择下一 CR（建议 CR-003 协议一致性）或启动正式项目 G0
+- **范围信封**：POLICY-CR-002 已结束（3/3 + 1 次收尾 docs 提交）
+- **G4 结论**：18/18 AC 与 UAT 独立复现通过；AUTH-006 的 CI 变更由 Meta 追认 A2；P3 转后续。
 
 ## 已完成
 
-- **CR-001**：G4 通过（0 阻断），收尾提交 `edd0a1b`；CR-005（缓存版本化）、CR-006（分号枚举）转后续。
-- T-001 `27d08f3`、T-002 `f149b96`、T-003 `37774e2`；AUTH-20261120-001/002/003。
+- **CR-001**：G4 通过；提交 `27d08f3` / `f149b96` / `37774e2`；收尾 `edd0a1b`。
+- **CR-002**：T-004 `4f341e3`、T-005 `beac653`、T-006 `4573bbd`；AUTH-20261120-004/005/006。
 
 ## CR-002 任务状态
 
-| 任务 | 状态 | 阻塞原因 |
+| 任务 | 状态 | 备注 |
 |---|---|---|
-| T-004 finish-report 回填与幂等 | DONE（G3 有条件通过，4f341e3） | P2/P3 转 T-005/T-006 |
-| T-005 worklog / usage 小修 | DONE（G3 通过，beac653） | P3 AUTH scope 交 G4 |
-| T-006 selftest 与 CI | DONE（G3 通过） | P3 见备注 |
+| T-004 回填与幂等 | DONE（G3 有条件通过，4f341e3） | R-1/R-2 返工后通过 |
+| T-005 usage / --time / relpath | DONE（G3 通过，beac653） | P2 返工补齐 4 脚本 |
+| T-006 selftest 与 CI | DONE（G3 通过，4573bbd） | P3 见备注 |
 
 ## 文档
 
-- 需求卡：`docs/00-requirements-intake.md`（CR-001 已完成；CR-002 G0 已确认）
+- 需求卡：`docs/00-requirements-intake.md`（CR-001、CR-002 均已完成）
 - 需求/AC：`docs/01-requirements.md`（R-001～R-008）
 - 设计：`docs/03-design.md`（§1～§6）
 - 任务/追溯：`docs/04-tasks.md`（T-001～T-006）
 - 决策：`docs/05-decisions.md`（D-001～D-008）
 - 大脑：`docs/PROJECT_BRAIN.md`
+- 变更记录：`docs/CHANGELOG.md`
 
 ## 报告
 
-- CR-001：Doc/Dev/Review/Meta 报告见 `docs/reports/`，索引 `docs/reports/review-index.md`
-- CR-002 Doc G1 报告：`docs/reports/doc-2026-11-20-CR-002.md`（LOG-20261120-145405）
-- CR-002 Dev T-004 报告：`docs/reports/dev-2026-11-20-T-004.md`（LOG-20261120-145704，G3 不通过，返工中）
-- CR-002 Review T-004 报告：`docs/reports/review-2026-11-20-T-004.md`（LOG-20261120-150444，不通过，无 AUTH）
-- CR-002 Dev T-004 r2 报告：`docs/reports/dev-2026-11-20-T-004-r2.md`（LOG-20261120-150702，待复审）
-- CR-002 Review T-004 r2 报告：`docs/reports/review-2026-11-20-T-004-r2.md`（LOG-20261120-151315，AUTH-20261120-004，G3 有条件通过）
-- CR-002 Dev T-005 报告：`docs/reports/dev-2026-11-20-T-005.md`（LOG-20261120-151754，待 G3）
-- CR-002 Review T-005 报告：`docs/reports/review-2026-11-20-T-005.md`（LOG-20261120-152748，AUTH-20261120-005，G3 有条件通过）
-- CR-002 Dev T-005 r2 报告：`docs/reports/dev-2026-11-20-T-005-r2.md`（LOG-20261120-153315，待复审）
-- CR-002 Review T-005 r2 报告：`docs/reports/review-2026-11-20-T-005-r2.md`（LOG-20261120-154044，AUTH-20261120-005，G3 通过）
-- CR-002 Dev T-006 报告：`docs/reports/dev-2026-11-20-T-006.md`（LOG-20261120-154439，待 G3）
-- CR-002 Review T-006 报告：`docs/reports/review-2026-11-20-T-006.md`（LOG-20261120-155125，AUTH-20261120-006，G3 通过）
+- CR-001：`docs/reports/` 下 Doc/Dev/Review/Meta，索引 `docs/reports/review-index.md`
+- CR-002 Doc：`docs/reports/doc-2026-11-20-CR-002.md`
+- CR-002 Dev/Review：T-004 / T-005 / T-006（含 r2）
+- CR-002 G4：`docs/reports/meta-2026-11-20-CR-002.md`（LOG-20261120-160510）
 
 ## 最近提交
 
+- `4573bbd` test(scripts): 新增 selftest 并接入 CI（T-006）
 - `beac653` fix(scripts): 统一各脚本 usage 与 --time 格式（T-005）
 - `4f341e3` fix(scripts): 修复报告回填静默失败与 WORKLOG 幂等键（T-004）
 - `edd0a1b` docs(workflow): 收尾 CR-001 G4 总审记录
-- `37774e2` fix(leverage-protocol): 缓存感知 roots 变化（T-003）
-- `f149b96` fix(leverage-protocol): 剥离否定边界从句，修正技能路由（T-002）
-- `27d08f3` fix(leverage-protocol): 空查询安全退出并提示无匹配（T-001）
 
 ## 备注
 
-- CR-001 非阻断后续：CR-005 缓存版本化、CR-006 分号枚举；默认缓存已重建。
-- CR-002 关键设计：D-006 范围、D-007 幂等键、D-008 无 python3 回退。
-- F-16 修正：pre-commit 已生效（`core.hooksPath=.githooks`），缺的是 selftest/CI。
-- T-004 偏差待评审：`--force` 不再产生重复 WORKLOG 行；去重键为「报告链接 + action」，未显式比较 role/gate/cr/task。
-- T-004 G3 复审：有条件通过（`AUTH-20261120-004`）；R-1/R-2 已修；P2 `--force` 文案 → T-005，P3 dry-run/meta 未闭合 → T-005/T-006。
-- T-005 G3 P2：R-006「所有脚本」只覆盖 5/8；4 个脚本已返工补齐，复审通过。信封已扩展 `setup.sh`。
-- T-005 P3：AUTH-20261120-005 的 scope 未含返工新增的 4 个脚本（幂等 skip）；G4 需以复审报告为准记录授权链。
-- T-006 P3：`make_bin` 白名单缺 `head`（断言不受影响）；头部注释称 9 脚本插行但仅 finish-report 验证；无 python3/realpath 时用例 SKIP 但整体 exit 0。
+- 收尾项 F-1～F-4 已处理：台账更正、状态串、架构表、CHANGELOG。
+- 收尾提交：`docs(workflow): 收尾 CR-002 G4 总审记录`（hash 见 git log）。
+- 后续 P3（F-5～F-10）：worklog mv 临时文件、`--no-worklog` relpath、`--force` AUTH、`--time` 帮助、selftest 补 `head`/插行/SKIP 计失败；建议下一轮或 CR-007。
+- CR-003 协议矛盾（A1/commit/A2/台账）仍未修；正式开工前建议先做。
+- T-005 P3 AUTH-005 scope 已在台账更正记录与 G4 报告交叉覆盖。

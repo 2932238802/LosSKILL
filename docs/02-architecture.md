@@ -25,6 +25,8 @@ capability_index.py ──读──▶ skills/*/SKILL.md + references/*
 | `cmd_query` / `cmd_plan` | 输出候选与计划 | 不执行 Skill |
 | `stale` / `load_or_build` | 缓存复用与重建 | 不修正 roots 输入 |
 | `scripts/validate.sh` | Skill 规范自检 | 不跑能力索引测试 |
+| `scripts/selftest.sh` | 脚本文本回归（回填/幂等/时间/usage/relpath） | 不做端到端/网络测试 |
+| `.github/workflows/validate.yml` | CI：validate + selftest | 不负责发布 |
 
 ## 关键数据流
 

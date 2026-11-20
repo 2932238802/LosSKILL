@@ -1,6 +1,6 @@
 # PROJECT_BRAIN — LosSKILL
 
-> 维护者：Doc Agent ｜ 最近更新：2026-11-20 ｜ 状态：已确认（G4 通过 2026-11-20）
+> 维护者：Doc Agent ｜ 最近更新：2026-11-20 ｜ 状态：已确认（CR-001 G4 通过；CR-002 G4 通过 2026-11-20）
 
 ## 1. 项目定位
 
@@ -43,9 +43,10 @@ git status --short
 - G4 总审通过（`docs/reports/meta-2026-11-20-CR-001.md`，2026-11-20）：三任务 AC 独立复现全通过；无 P0/P1。
 - 已知限制（T-002 G3）：P1 缓存不感知脚本版本（默认缓存已重建缓解，根治 CR-005）；P2 分号枚举残留负向词（候选 CR-006）；P3 `not\s+for` 无词边界。
 - 历史：否定词缺陷曾导致 `plan "给游戏调数值平衡"` 返回 tetrad 第一、mechanics 缺席；T-002 已修复。
-- 报告工具链：F-06 回填/幂等、F-15.1/2/5、selftest/CI 进入 CR-002（G1 待确认）；F-06 在 CR-001 期间用匹配标题绕过，正式报告仍可能踩。
+- 报告工具链：CR-002 已修复回填锚点、全键幂等、`--time` 格式、usage 硬编码、无 python3 相对链接，并新增 `scripts/selftest.sh` + CI；G4 通过（`meta-2026-11-20-CR-002.md`）。
+  - 已知限制（CR-002 G4 P3）：`worklog.sh` mv 失败路径会残留临时文件；`--no-worklog` 仍强制计算相对路径；`--force` 会为同一幂等键追加 AUTH；`selftest.sh` 的 `make_bin` 缺 `head`、仅 finish-report 做插行、SKIP 不计失败；`docs/CHANGELOG.md` 尚未建立。
 - 修复输入：`docs/fix-report-2026-11-20.md`（commit `69f1830`）。
-- pre-commit 已生效：`core.hooksPath=.githooks`；缺的是 `scripts/selftest.sh` 与 CI 自测步骤。
+- pre-commit 已生效：`core.hooksPath=.githooks`；`scripts/selftest.sh` 与 CI 自测已补齐（CR-002）。
 - 残留风险：索引缓存不感知脚本版本（`stale()` 只比 Skill 文件 mtime）；升级后需 `build` 重建缓存。候选 CR-005。
 
 ## 6. 决策索引
@@ -58,4 +59,4 @@ git status --short
 
 - 2026-11-20：提交修复报告 `69f1830`；建立 CR-001 文档与任务；T-001 完成并提交 `27d08f3`（G3 通过，AUTH-20261120-001）；T-002 完成并提交 `f149b96`（G3 有条件通过，AUTH-20261120-002，默认缓存已重建）；T-003 完成并提交 `37774e2`（G3 通过，AUTH-20261120-003）。 G4 总审通过：F-01/F-09/F-10 主例达成，残留分号枚举（CR-006）与缓存版本化（CR-005）转后续，非阻断。
 - 2026-11-20：CR-001 收尾提交 `edd0a1b`；启动 CR-002（报告/日志脚本可靠性 + selftest），G1 待确认。
-- 2026-11-20：CR-002 T-004 完成并提交 `4f341e3`（G3 有条件通过，AUTH-20261120-004）；T-005 完成并提交 `beac653`（G3 通过，AUTH-20261120-005）；T-006 完成，G3 通过（AUTH-20261120-006，待提交）；G4 总审待启动。
+- 2026-11-20：CR-002 T-004 完成并提交 `4f341e3`（G3 有条件通过，AUTH-20261120-004）；T-005 完成并提交 `beac653`（G3 通过，AUTH-20261120-005）；T-006 完成并提交 `4573bbd`（G3 通过，AUTH-20261120-006）。G4 总审通过（`docs/reports/meta-2026-11-20-CR-002.md`）：18 条 AC 与 UAT 独立复现全通过，无 P0/P1；AUTH-006 的 CI 变更按 A2 由 Meta 追认；文档收尾（F-1～F-4）与脚本健壮性（F-5～F-10）转后续。

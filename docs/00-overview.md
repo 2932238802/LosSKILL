@@ -25,6 +25,7 @@
 | 命令 | 用途 | 已验证 |
 |---|---|---|
 | `./scripts/validate.sh` | Skill 自检 | 是，当前 `All skills OK.` |
+| `./scripts/selftest.sh` | 脚本回归 | 是，13/13 PASS |
 | `python3 skills/leverage-protocol/scripts/capability_index.py query "…"` | 查 Skill | 是 |
 | `python3 skills/leverage-protocol/scripts/capability_index.py plan "…"` | 组合能力计划 | 是 |
 | `./scripts/new-skill.sh my-skill --desc "…"` | 新建 Skill | 未在本次执行 |
@@ -43,10 +44,10 @@
 
 ## 当前状态
 
-- `HEAD`：`69f1830`（修复报告已入库）。
-- `validate.sh`：0 ERROR。
+- `HEAD`：`4573bbd`（CR-002 三任务已提交；G4 通过；收尾提交待授权）。
+- `validate.sh`：0 ERROR；`selftest.sh`：13/13 PASS。
 - 流程文件：本轮新建 `PROJECT_BRAIN.md`、`STATUS.md`、`00-requirements-intake.md`、`01-requirements.md`、`02-architecture.md`、`03-design.md`、`04-tasks.md`、`05-decisions.md`、`WORKLOG.md`。
-- 已知限制：`PROJECT_BRAIN.md` 与 `STATUS.md` 为最小版本，后续 CR 逐步补全。
+- 已知限制：CR-003 的协议矛盾（A1/commit/A2/台账）未修；CR-005 / CR-006 与 CR-002 的 P3 待办。
 
 ## 术语
 

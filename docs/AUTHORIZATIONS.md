@@ -172,3 +172,8 @@ escalate_when:
 - 撤销：否
 - 幂等键：CR-001:T-001:批准空查询修复:A1
 
+
+## 更正记录
+
+- 2026-11-20：AUTH-20261120-006 原记 A1；按 `06-authorization.md` §1.1，`.github/workflows/validate.yml` 属构建/CI 配置（A2）。Meta/Steward 在 G4 复核后追认 A2，授权链以 `docs/reports/meta-2026-11-20-CR-002.md` 为准；不改旧条。
+- 2026-11-20：AUTH-20261120-005 的 scope 未列 T-005 r2 新增的 4 个脚本；该 4 文件在 POLICY-CR-002 `allowed_paths` 内，由 r2 A1 结论与 G4 报告交叉覆盖；不改旧条。
