@@ -15,7 +15,7 @@ ok()   { printf '  ✅ %s\n' "$1"; }
 
 ITEMS=(
   "安装 AI Skills（复制到 ~/.dsh/skills）"
-  "个人环境 + WSL2 增强（中文/oh-my-posh/C++/Rust/历史/SSH）"
+  "个人环境 + Claude 配置 + WSL2 增强（中文/oh-my-posh/C++/Rust/历史/SSH）"
   "单独配置 SSH（密钥 + origin 切 SSH，可重复跑）"
   "安装 dsh 插件（npm 直连，幂等）"
   "安装 ble.sh（边打字边列历史候选，可选）"

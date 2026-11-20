@@ -84,6 +84,7 @@ Skill 安装部分只做复制，不联网、不执行 Skill 里的任何指令�
 1. **AI Skill 部分**：原有技能目录，包含可被 AI 工具直接加载的工作流、方法指南（含 `ai-comment-protection` 规则，保护你的手动注释）
 2. **环境配置部分**：
    - `configs/`：个人配置文件（git 配置、bash 别名、Neovim 配置等）
+   - `configs/claude/`：Claude Code 配置（settings、通知 hook、状态栏、主题；四个子代理由 `dev-workflow` 角色文件生成）
    - 一键配置脚本：`./scripts/install.sh` 完成 Skill 安装后，可选择自动部署个人配置
 
 ### 一键恢复环境（新电脑专用）
@@ -102,8 +103,9 @@ cd LosSKILL
 
 脚本会先安装所有 AI Skill（包括注释保护规则），然后询问是否应用个人环境配置：
 - 部署 `.gitconfig` 与 Neovim 配置（覆盖前自动备份为 `*.losskill.bak`）；`.bashrc` 只作为**模板**参考，脚本只向真实 `.bashrc` 追加受管配置块，不会整文件覆盖
+- **Claude Code 配置**：部署 `settings.json`、通知 hook、状态栏、主题，并从 `dev-workflow` 角色文件生成四个子代理（覆盖前备份）
 - 自动识别系统包管理器（apt/brew/yum），安装常用开发工具（git、curl 等）
-- 同步 Neovim、VS Code 等编辑器配置
+- 同步 Neovim 配置（VS Code 尚未纳入备份）
 - **WSL2 环境专属**：安装 Oh My Posh（huvix 主题）、中文语言包、C++ 和 Rust 开发工具，以及历史前缀搜索（↑/↓、Ctrl+X Ctrl+H、Ctrl+R）
 - **Git SSH 自动配置**：无论 WSL 还是普通 Linux，自动创建 ED25519 SSH 密钥，并提示你将公钥添加到 GitHub（`https://github.com/settings/keys`），配置 SSH 提交方式，无需每次输入 Git 密码。
 
@@ -119,6 +121,21 @@ cd LosSKILL
    - **Ctrl+X Ctrl+H**：把匹配的最近 10 条打印成 `<History(N)>` 列表
    - **Ctrl+R**：fzf 弹层模糊搜索历史（未装 fzf 时退回 bash 自带的增量搜索）
 4. **C++/Rust 开发环境**：安装编译工具和 Rust 语言环境
+
+### Claude Code 配置（自动部署）
+应用个人环境配置时，会把 `configs/claude/` 部署到 `~/.claude`：
+- `settings.json`：权限、模型、通知 hook、状态栏、主题（命令路径改用 `~`，换用户名不失效）
+- `statusline.py`：模型 · 目录 · git · 上下文 · 花费
+- `themes/catppuccin-mocha.json`：Catppuccin Mocha 主题
+- `hooks/`：WSL → Windows Toast 通知。队列目录默认 `D:\Temp\claude-toast`；改盘符时 WSL 与 Windows 两侧都要设 `CLAUDE_TOAST_DIR`
+- `agents/`：`doc-agent` / `dev-agent` / `review-agent` / `meta-review-agent`，从 `skills/dev-workflow/references/01–04-*.md` 生成，角色正文只保留一份
+
+单独部署或试运行：
+```bash
+./scripts/install-claude-config.sh
+./scripts/install-claude-config.sh --dry-run
+```
+覆盖前备份为 `*.losskill.bak`。Windows 原生 `install.ps1` 只同步主题与 agents，不覆盖 settings/hooks。
 
 #### 要「边打字边列历史」就装 ble.sh
 截图里的 `<-/10>` + `[History]` 列表是 **PowerShell 的 PSReadLine ListView 预测**；bash/readline 没有对等机制。要最接近的效果，可额外装 `ble.sh`（bash 行编辑器，自带历史补全菜单）：
@@ -224,11 +241,17 @@ LosSKILL/
 │  ├─ .gitconfig          # git 别名与行为
 │  ├─ .bashrc             # bash 模板（含历史搜索块，仅作参考/示例）
 │  ├─ powershell-profile.ps1  # PowerShell 7 配置：PSReadLine 历史预测(Layout 列表)、别名、Oh My Posh
-│  └─ nvim/init.vim       # Neovim 配置
+│  ├─ nvim/init.vim       # Neovim 配置
+│  └─ claude/             # Claude Code：settings / hooks / statusline / theme
+│     ├─ settings.json
+│     ├─ statusline.py
+│     ├─ hooks/           # WSL → Windows Toast 通知
+│     └─ themes/          # Catppuccin Mocha
 ├─ setup.sh              # 一键总入口：技能 → 环境 → SSH → dsh 插件 → 自检
 └─ scripts/
    ├─ install.sh          # 分步安装（WSL2 / Linux / macOS：Skill + 环境 + SSH）
    ├─ install.ps1         # 分步安装（Windows：Skill + 环境 + SSH + winget）
+   ├─ install-claude-config.sh  # 部署 configs/claude/ 到 ~/.claude（幂等，带备份）
    ├─ install-dsh-plugins.sh  # 给 dsh 的 profile 批量装插件（幂等，npm 直连）
    ├─ install-blesh.sh    # 可选：装 ble.sh，实现「边打字边列历史」
    ├─ setup-ssh-git.sh    # 只做 SSH 密钥与 GitHub 提交方式

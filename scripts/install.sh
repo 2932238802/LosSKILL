@@ -122,6 +122,12 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "  ✅ Neovim 配置已同步到 ~/.config/nvim"
     fi
     
+    # Claude Code 配置（settings / hooks / statusline / theme / agents）
+    if [ -f "$repo_root/scripts/install-claude-config.sh" ]; then
+        echo "  Deploying Claude Code config..."
+        bash "$repo_root/scripts/install-claude-config.sh"
+    fi
+
     # --- WSL2/Dev environment setup
     # Detect WSL2 environment
     if grep -qi Microsoft /proc/version; then
