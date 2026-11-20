@@ -69,6 +69,11 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         bash "$repo_root/scripts/install-claude-config.sh"
     fi
 
+    # VS Code 配置（settings / keybindings；扩展需显式 --with-extensions）
+    if [ -f "$repo_root/scripts/install-vscode-config.sh" ]; then
+        bash "$repo_root/scripts/install-vscode-config.sh" || true
+    fi
+
     # --- WSL2/Dev environment setup
     # Detect WSL2 environment
     if grep -qi Microsoft /proc/version; then

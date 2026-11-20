@@ -121,8 +121,9 @@ cd LosSKILL
 脚本会先安装所有 AI Skill（包括注释保护规则），然后询问是否应用个人环境配置：
 - 部署 `.gitconfig` 与 Neovim 配置（覆盖前自动备份为 `*.losskill.bak`）；`.bashrc` 只作为**模板**参考，脚本只向真实 `.bashrc` 追加受管配置块，不会整文件覆盖
 - **Claude Code 配置**：部署 `settings.json`、通知 hook、状态栏、主题，并从 `dev-workflow` 角色文件生成四个子代理（覆盖前备份）
+- **VS Code 配置**：部署 `settings.json` 与 `keybindings.json`（覆盖前备份）；扩展列表单独维护，默认不联网安装
 - 自动识别系统包管理器（apt/brew/yum），安装常用开发工具（git、curl 等）
-- 同步 Neovim 配置（VS Code 尚未纳入备份）
+- 同步 Neovim 与 VS Code 配置（扩展列表单独维护，默认不自动安装）
 - **WSL2 环境专属**：安装 Oh My Posh（huvix 主题）、中文语言包、C++ 和 Rust 开发工具，以及历史前缀搜索（↑/↓、Ctrl+X Ctrl+H、Ctrl+R）
 - **Git SSH 自动配置**：无论 WSL 还是普通 Linux，自动创建 ED25519 SSH 密钥，并提示你将公钥添加到 GitHub（`https://github.com/settings/keys`），配置 SSH 提交方式，无需每次输入 Git 密码。
 
@@ -153,6 +154,19 @@ cd LosSKILL
 ./scripts/install-claude-config.sh --dry-run
 ```
 覆盖前备份为 `*.losskill.bak`。Windows 原生 `install.ps1` 只同步主题与 agents，不覆盖 settings/hooks。
+
+### VS Code 配置（自动部署）
+应用个人环境配置时会部署 `configs/vscode/`：
+- `settings.json`、`keybindings.json`：原样备份，覆盖前备份为 `*.losskill.bak`
+- `extensions.txt`：从 Windows 侧 `~/.vscode/extensions` 去重导出（约 295 个）
+
+单独部署：
+```bash
+./scripts/install-vscode-config.sh                    # 自动探测用户目录
+./scripts/install-vscode-config.sh --with-extensions  # 额外安装扩展（联网，较慢）
+./scripts/install-vscode-config.sh --dry-run
+```
+`settings.json` 含机器专属路径（如 `clangd.path`），恢复后按目标机器删改；详见 `configs/vscode/README.md`。
 
 #### 要「边打字边列历史」就装 ble.sh
 截图里的 `<-/10>` + `[History]` 列表是 **PowerShell 的 PSReadLine ListView 预测**；bash/readline 没有对等机制。要最接近的效果，可额外装 `ble.sh`（bash 行编辑器，自带历史补全菜单）：
@@ -243,6 +257,26 @@ cd LosSKILL
 
 ---
 
+## 新项目接入
+
+给任意项目一键生成常驻规则与 L2 项目卡：
+
+```bash
+./scripts/bootstrap-project.sh /path/to/Project \
+  --name Forus --stack "Rust + Vue" \
+  --verify "cargo test && npm run build" --docs docs
+```
+
+会写入：
+
+- 项目根 `AGENTS.md`（L0 + 验证命令 + 雷区）
+- 项目根 `CLAUDE.md`（`@AGENTS.md`）
+- `skills/leverage-protocol/references/projects/<slug>.md`（L2：验证命令、专属信号、雷区）
+
+已存在的文件默认跳过；`--force` 覆盖并备份为 `*.losskill.bak`。
+
+---
+
 ## 仓库结构
 
 ```
@@ -254,6 +288,8 @@ LosSKILL/
 ├─ LICENSE                # MIT
 ├─ .gitattributes         # 统一 LF，保证 install.sh 在跨平台可用
 ├─ .githooks/pre-commit   # 提交前自动跑 validate.sh
+├─ .github/workflows/     # CI：shell/PowerShell 语法 + validate.sh
+├─ templates/project/     # 新项目模板：AGENTS / CLAUDE / L2
 ├─ skills/                # 所有 Skill，一个文件夹一个 Skill
 │  ├─ sandra-sales/       # 书籍蒸馏：路由包 + references/capabilities/
 │  ├─ sandra-sales-*/     # 7 个可单点触发的独立能力 Skill
@@ -276,6 +312,7 @@ LosSKILL/
 │  ├─ .bashrc             # bash 模板（含历史搜索块，仅作参考/示例）
 │  ├─ powershell-profile.ps1  # PowerShell 7 配置：PSReadLine 历史预测(Layout 列表)、别名、Oh My Posh
 │  ├─ nvim/init.vim       # Neovim 配置
+│  ├─ vscode/             # VS Code：settings / keybindings / extensions.txt
 │  └─ claude/             # Claude Code：settings / hooks / statusline / theme
 │     ├─ settings.json
 │     ├─ statusline.py
@@ -286,6 +323,8 @@ LosSKILL/
    ├─ install.sh          # 分步安装（WSL2 / Linux / macOS：Skill + 环境 + SSH）
    ├─ install.ps1         # 分步安装（Windows：Skill + 环境 + SSH + winget）
    ├─ install-claude-config.sh  # 部署 configs/claude/ 到 ~/.claude（幂等，带备份）
+   ├─ install-vscode-config.sh  # 部署 configs/vscode/（settings/keybindings；扩展可选）
+   ├─ bootstrap-project.sh  # 给项目生成 AGENTS/CLAUDE + L2 项目卡
    ├─ sync-skills.sh      # 同步 Skill：copy / link / force / dry-run，自动探测目标
    ├─ new-skill.sh        # 新建 Skill：目录 + frontmatter + SKILLS.md 登记 + 自检
    ├─ install-git-hooks.sh  # 启用 .githooks/pre-commit（validate.sh）

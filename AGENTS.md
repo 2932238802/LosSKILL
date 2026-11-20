@@ -40,10 +40,12 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 ./scripts/validate.sh                         # Skill 自检（0 ERROR 才交付）
 ./scripts/new-skill.sh my-skill --desc "……"   # 新建 Skill + 索引登记
 ./scripts/install-git-hooks.sh                # 启用 pre-commit 自检
+./scripts/bootstrap-project.sh <项目路径>      # 接入 AGENTS/CLAUDE + L2 项目卡
 ./scripts/sync-skills.sh --dry-run            # 预览同步
 ./scripts/sync-skills.sh --link --force       # 软链接到 ~/.claude/skills
 ./scripts/sync-skills.sh --copy --force       # 覆盖复制
 ./scripts/install-claude-config.sh --dry-run  # 预览 Claude 配置部署
+./scripts/install-vscode-config.sh --dry-run  # 预览 VS Code 配置部署
 ```
 
 ## 指针
