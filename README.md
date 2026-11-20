@@ -229,12 +229,28 @@ cd LosSKILL
 
 ---
 
+## AI 常驻规则
+
+根目录 `AGENTS.md` 是 canonical，任何 AI 工具都读这一份：
+
+- 任务分级（S/M/L）与交付前三问（`leverage-protocol` 的 L0）
+- 改完必须跑 `./scripts/validate.sh`
+- 新增 Skill 的目录、frontmatter 边界与 `SKILLS.md` 登记
+- 提交信息格式、分支策略、`LOS:` 手动注释保护
+- 本地产物与敏感信息不提交
+
+`CLAUDE.md` 只做 `@AGENTS.md` 导入，避免两份规则各写一遍再漂移；Codex / Cursor 等直接读 `AGENTS.md`。`validate.sh` 会检查这个导入是否存在。
+
+---
+
 ## 仓库结构
 
 ```
 LosSKILL/
 ├─ README.md              # 本文件：怎么用、怎么装
 ├─ SKILLS.md              # 全部 Skill 的索引（AI 优先读这个）
+├─ AGENTS.md              # AI 常驻规则：分级 / 交付三问 / 验证 / 提交 / 注释保护
+├─ CLAUDE.md              # Claude Code 入口：只做 @AGENTS.md 导入
 ├─ LICENSE                # MIT
 ├─ .gitattributes         # 统一 LF，保证 install.sh 在跨平台可用
 ├─ skills/                # 所有 Skill，一个文件夹一个 Skill

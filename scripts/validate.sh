@@ -94,6 +94,13 @@ for dir in "$skills_root"/*/; do
     fi
 done
 
+# ---- 常驻规则文件 ----
+if [ -f "$repo_root/AGENTS.md" ]; then
+    if [ ! -f "$repo_root/CLAUDE.md" ] || ! grep -qF '@AGENTS.md' "$repo_root/CLAUDE.md"; then
+        warn "CLAUDE.md 未导入 @AGENTS.md（Claude Code 不会自动读 AGENTS.md）"
+    fi
+fi
+
 echo "Checked $checked skill(s) under $skills_root"
 echo
 [ "$warnings" -gt 0 ] && echo "WARNINGS ($warnings)"
