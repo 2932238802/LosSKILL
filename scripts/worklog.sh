@@ -19,7 +19,7 @@
 #   --commit HASH    提交 hash（可空）
 #   --auth ID        授权条目 ID（可空）
 #   --status TEXT    完成 / 返工 / 阻塞 / 有条件通过…（默认 完成）
-#   --time TEXT      覆盖时间（默认当前本地时间，便于测试）
+#   --time TEXT      覆盖时间（默认当前本地时间，便于测试；取 14 位数字，可带分隔符）
 #   --dry-run        只打印将写入的行
 #   -h, --help       帮助
 
@@ -38,7 +38,16 @@ status="完成"
 time_override=""
 dry_run=0
 
-usage() { sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() {
+  # 截取开头连续注释块（直到第一行代码），不依赖固定行号（设计 §6.4）
+  awk '
+    NR == 1 { next }
+    /^#/ { while (pending > 0) { print ""; pending-- }
+           line = $0; sub(/^# ?/, "", line); print line; started = 1; next }
+    /^[[:space:]]*$/ { if (started) pending++; next }
+    { exit }
+  ' "$0"
+}
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -70,7 +79,14 @@ esac
 
 now="${time_override:-$(date '+%Y-%m-%d %H:%M:%S %z')}"
 if [ -n "$time_override" ]; then
-  base_id="LOG-$(printf '%s' "$time_override" | tr -cd '0-9' | cut -c1-14)"
+  # 任何时间输入统一为 LOG-YYYYMMDD-HHMMSS；不足 14 位数字则拒绝（设计 §6.3）
+  digits="$(printf '%s' "$time_override" | tr -cd '0-9')"
+  if [ "${#digits}" -lt 14 ]; then
+    echo "Error: --time 需包含至少 14 位数字（YYYYMMDDHHMMSS）：$time_override" >&2
+    exit 2
+  fi
+  digits="${digits:0:14}"
+  base_id="LOG-${digits:0:8}-${digits:8:8}"
 else
   base_id="LOG-$(date '+%Y%m%d-%H%M%S')"
 fi

@@ -1,6 +1,6 @@
 # 04 — 任务（CR-001）
 
-> 维护者：Doc Agent ｜ 最近更新：2026-11-20 ｜ 状态：CR-002 G1 已确认；T-004 返工完成（G2 r2），待 G3
+> 维护者：Doc Agent ｜ 最近更新：2026-11-20 ｜ 状态：CR-002 G1 已确认；T-004 G3 有条件通过（`4f341e3`）；T-005 开发完成（G2），待 G3
 
 ## T-001 查询空结果判空（状态：DONE）
 
@@ -101,15 +101,15 @@
 | AC-004-2 | 无后缀标题连跑两次，1 行 / 1 条 | T-004 | 已通过 |
 | AC-004-3 | 无匹配标题 → WARN，WORKLOG 1 行 | T-004 | 已通过 |
 | AC-004-4 | 不同报告不误去重 | T-004 | 已通过 |
-| AC-005-1 | `--time` → `LOG-YYYYMMDD-HHMMSS` | T-005 | 待验证 |
-| AC-005-2 | 默认时间格式不变 | T-005 | 待验证 |
-| AC-005-3 | 同一秒 `-2` 后缀 | T-005 | 待验证 |
-| AC-006-1 | `-h` 含关键选项 | T-005 | 待验证 |
-| AC-006-2 | 头部插行后 `-h` 仍完整 | T-005 | 待验证 |
-| AC-006-3 | `bash -n` 通过 | T-005 | 待验证 |
-| AC-007-1 | 有 python3 → 相对链接 | T-005 | 待验证 |
-| AC-007-2 | 无 python3 → realpath 相对链接 | T-005 | 待验证 |
-| AC-007-3 | 两者都无 → exit 2 | T-005 | 待验证 |
+| AC-005-1 | `--time` → `LOG-YYYYMMDD-HHMMSS` | T-005 | 已通过 |
+| AC-005-2 | 默认时间格式不变 | T-005 | 已通过 |
+| AC-005-3 | 同一秒 `-2` 后缀 | T-005 | 已通过 |
+| AC-006-1 | `-h` 含关键选项 | T-005 | 已通过 |
+| AC-006-2 | 头部插行后 `-h` 仍完整 | T-005 | 已通过 |
+| AC-006-3 | `bash -n` 通过 | T-005 | 已通过 |
+| AC-007-1 | 有 python3 → 相对链接 | T-005 | 已通过 |
+| AC-007-2 | 无 python3 → realpath 相对链接 | T-005 | 已通过 |
+| AC-007-3 | 两者都无 → exit 2 | T-005 | 已通过 |
 | AC-008-1 | `selftest.sh` exit 0 | T-006 | 待验证 |
 | AC-008-2 | 故障注入后 selftest 失败 | T-006 | 待验证 |
 | AC-008-3 | CI 调用 selftest | T-006 | 待验证 |
@@ -134,24 +134,29 @@
 - **阻塞原因**：G3 不通过（2 P1），返工 R-1/R-2；评审报告 `docs/reports/review-2026-11-20-T-004.md`。
 - **G3 结论**：不通过（2026-11-20，`LOG-20261120-150444`，无 AUTH）。R-1：WORKLOG 写入失败被静默吞掉；R-2：去重键缺 role/gate/cr/task，与 D-007 / 设计 §6.2 不符。
 - **返工**：R-1/R-2 已修，报告 `docs/reports/dev-2026-11-20-T-004-r2.md`（`LOG-20261120-150702`）；待 G3 复审。
-- **G3 复审**：有条件通过（2026-11-20，`AUTH-20261120-004`，`LOG-20261120-151315`）；无 P0/P1；P2 `--force` 文案、P3 dry-run/meta 未闭合等转 T-005/T-006。
+- **G3 复审**：有条件通过（2026-11-20，`AUTH-20261120-004`，`LOG-20261120-151315`）；无 P0/P1；P2 `--force` 文案、P3 dry-run/meta 未闭合等转 T-005/T-006。提交：`4f341e3`。
 - **完成说明**：`finish-report.sh` 回填锚点改为「meta 结束后的第一个空行 → 首个 `## ` 标题 → WARN 跳过」；`worklog.sh` 写前按 D-007 全键（report + role + gate + cr + task + action）去重。4 条 AC 均在 mktemp 沙箱复现通过；`validate.sh` 0 ERROR，`bash -n scripts/*.sh setup.sh` 通过。
 - **G3 返工（2026-11-20）**：R-1（`worklog.sh` 失败被 `set -e` 吞掉、临时文件残留）与 R-2（去重键缺 role/gate/cr/task）已修复；失败路径回显 stderr 并以原退出码退出，去重按全键匹配。证据见 `docs/reports/dev-2026-11-20-T-004-r2.md`（未提交，待 G3）。P2 `--force` 文案与 P3 项记录在报告中，留 T-005 / T-006。
 
-### T-005 worklog 与 usage 小修（状态：TODO）
+### T-005 worklog 与 usage 小修（状态：DONE（G3 通过））
 
 - **来源**：CR-002 / R-005、R-006、R-007（v1）
 - **关联需求**：AC-005-1～3、AC-006-1～3、AC-007-1～3
 - **目标**：统一 `--time` 格式、去掉 usage 硬编码、无 python3 时不写绝对链接。
-- **涉及文件/模块**：`scripts/worklog.sh`、`scripts/finish-report.sh`、各脚本 `usage()`
+- **涉及文件/模块**：`scripts/worklog.sh`、`scripts/finish-report.sh`、`scripts/install-*.sh`、`setup.sh`、各脚本 `usage()`
 - **前置依赖**：G1 确认
 - **DoR**：AC 可测；设计 §6.3–6.5 已定；环境可用
-- **验证方式**：三种时间格式；`-h` 完整性；PATH 模拟无 python3
+- **验证方式**：三种时间格式；`-h` 完整性（含 install-* 与 setup.sh）；PATH 模拟无 python3
 - **回归范围**：worklog 默认路径、finish-report 正常回填
 - **发布/回滚**：无发布；脚本回滚
 - **风险**：低
 - **规模**：M
-- **阻塞原因**：无（G1 已确认；依赖 T-004）
+- **阻塞原因**：无
+- **P2 返工**：用户已批准信封扩展 `setup.sh`；补齐 `install-claude-config.sh`、`install-git-hooks.sh`、`install-vscode-config.sh`、`setup.sh` 的 usage，去掉固定行号。
+- **完成说明**（2026-11-20，G2）：`worklog.sh --time` 取 14 位数字统一输出 `LOG-YYYYMMDD-HHMMSS`，不足 14 位 exit 2；5 个脚本的 `usage()` 改为 awk 截取开头连续注释块（去掉固定行号）；`finish-report.sh` `--force` 帮助文案与实际行为对齐；无 python3 时用 `realpath --relative-to` 回退，两者都无则 exit 2 且不写链接。证据见 `docs/reports/dev-2026-11-20-T-005.md`（未提交，待 G3）。
+- **G3 结论**：有条件通过（2026-11-20，`AUTH-20261120-005`，`LOG-20261120-152748`）；无 P0/P1。P2：R-006「所有脚本」只覆盖 5/8——`install-claude-config.sh`、`install-git-hooks.sh`、`install-vscode-config.sh` 与根目录 `setup.sh` 仍用固定行号；P3：`--force` 重跑 AUTH 追加、`--time` 帮助说明、T-005 在 G3 前标 DONE。
+- **G3 复审**：通过（2026-11-20，`AUTH-20261120-005` 沿用，`LOG-20261120-154044`）；4 个脚本已补齐；P3 AUTH scope 未含返工文件，交 G4 记录。
+- **P2 返工完成**（2026-11-20，G2 r2）：4 个脚本（`install-claude-config.sh`、`install-git-hooks.sh`、`install-vscode-config.sh`、`setup.sh`）改用与 T-005 相同的 awk `usage()`；头部插入 1 行/5 行后 `-h` 均输出到最后一个选项，`setup.sh -h` 不再输出 `set`/`cd` 代码行。证据见 `docs/reports/dev-2026-11-20-T-005-r2.md`（未提交，待 G3 复审）。
 
 ### T-006 selftest 与 CI（状态：TODO）
 

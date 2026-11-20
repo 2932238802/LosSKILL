@@ -51,6 +51,7 @@ allowed_paths:
   - scripts/
   - .github/workflows/
   - docs/
+  - setup.sh
 allowed_commands:
   - ./scripts/validate.sh
   - ./scripts/selftest.sh
@@ -76,10 +77,26 @@ escalate_when:
 ```
 
 - 2026-11-20：用户批准 CR-002 范围信封（G1）。
+- 2026-11-20：CR-002 信封扩展 `allowed_paths` 增加 `setup.sh`（T-005 P2 返工，用户批准）。
 
 ## AUTH 记录
 
 <!-- auth:rows -->
+
+## AUTH-20261120-005
+
+- 时间：2026-11-20 15:27:48 +0800
+- CR/T：CR-002 / T-005
+- 动作：批准 T-005 的脚本小修
+- 级别：A1
+- 策略条款：POLICY-CR-002（allowed_paths、max_commits）
+- 证据：AC-005～007 + 回归 + validate.sh + scope diff
+- 批准：review-agent
+- 范围：scripts/worklog.sh、scripts/finish-report.sh、scripts/bootstrap-project.sh、scripts/new-skill.sh、scripts/sync-skills.sh（commit 待生成）
+- 有效期：随 CR 结束
+- 撤销：否
+- 幂等键：CR-002:T-005:批准脚本小修:A1
+
 
 ## AUTH-20261120-004
 

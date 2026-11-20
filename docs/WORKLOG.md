@@ -5,6 +5,10 @@
 | ID | 时间 | 角色 | 门禁 | CR / T | 做了什么 | 报告 | Commit | AUTH | 状态 |
 |---|---|---|---|---|---|---|---|---|---|
 <!-- worklog:rows -->
+| LOG-20261120-154044 | 2026-11-20 15:40:44 +0800 | review | G3 | CR-002 / T-005 | T-005 P2 返工复审通过 G3：4 个脚本 usage 已去固定行号，AC-005～007 与 AC-004-1～4 全量复跑通过 | [review-2026-11-20-T-005-r2.md](reports/review-2026-11-20-T-005-r2.md) | - | AUTH-20261120-005 | 完成 |
+| LOG-20261120-153315 | 2026-11-20 15:33:15 +0800 | dev | G2 | CR-002 / T-005 | 补齐 4 个脚本的 awk usage（install-claude-config/install-git-hooks/install-vscode-config/setup.sh），-h 不再依赖固定行号或输出代码行 | [dev-2026-11-20-T-005-r2.md](reports/dev-2026-11-20-T-005-r2.md) | - | - | 完成 |
+| LOG-20261120-152748 | 2026-11-20 15:27:48 +0800 | review | G3 | CR-002 / T-005 | T-005 通过 G3（有条件通过：AC-005～007 与回归独立复现均通过；P2 遗留 3 个 install-* 脚本与 setup.sh 的 usage 仍硬编码行号） | [review-2026-11-20-T-005.md](reports/review-2026-11-20-T-005.md) | - | AUTH-20261120-005 | 完成 |
+| LOG-20261120-151754 | 2026-11-20 15:17:54 +0800 | dev | G2 | CR-002 / T-005 | 统一 --time 为 LOG-YYYYMMDD-HHMMSS、usage 改 awk 截取、无 python3 用 realpath 回退并明确报错 | [dev-2026-11-20-T-005.md](reports/dev-2026-11-20-T-005.md) | - | - | 完成 |
 | LOG-20261120-151315 | 2026-11-20 15:13:15 +0800 | review | G3 | CR-002 / T-004 | T-004 返工后通过 G3（有条件通过：R-1/R-2 已修复，仅余 P2/P3 已记录并转 T-005/T-006） | [review-2026-11-20-T-004-r2.md](reports/review-2026-11-20-T-004-r2.md) | - | AUTH-20261120-004 | 完成 |
 | LOG-20261120-150702 | 2026-11-20 15:07:02 +0800 | dev | G2 | CR-002 / T-004 | 修复 worklog 失败静默与去重键缺 role/gate/cr/task，R-1/R-2 与 4 条 AC 复验通过 | [dev-2026-11-20-T-004-r2.md](reports/dev-2026-11-20-T-004-r2.md) | - | - | 完成 |
 | LOG-20261120-150444 | 2026-11-20 15:04:44 +0800 | review | G3 | CR-002 / T-004 | T-004 回填与幂等不通过：worklog 失败被静默吞掉，去重键缺 role/gate/cr/task | [review-2026-11-20-T-004.md](reports/review-2026-11-20-T-004.md) | - | - | 不通过 |

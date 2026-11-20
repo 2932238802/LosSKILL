@@ -33,7 +33,7 @@
 #   --role / --gate / --cr / --task / --status / --action / --commit   覆盖解析结果
 #   --no-worklog       不写工作日志
 #   --no-auth          不写授权台账
-#   --force            已存在 LOG/AUTH 时仍追加
+#   --force            忽略已存在记录，重跑回填与 AUTH；WORKLOG 仍按全键去重
 #   --dry-run          只打印，不写入
 #   -h, --help
 
@@ -53,7 +53,16 @@ force=0
 role_override=""; gate_override=""; cr_override=""; task_override=""
 status_override=""; action_override=""; commit_override=""
 
-usage() { sed -n '2,37p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() {
+  # 截取开头连续注释块（直到第一行代码），不依赖固定行号（设计 §6.4）
+  awk '
+    NR == 1 { next }
+    /^#/ { while (pending > 0) { print ""; pending-- }
+           line = $0; sub(/^# ?/, "", line); print line; started = 1; next }
+    /^[[:space:]]*$/ { if (started) pending++; next }
+    { exit }
+  ' "$0"
+}
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -191,6 +200,16 @@ fi
 rel_report="$report"
 if command -v python3 >/dev/null 2>&1; then
   rel_report="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$report_abs" "$worklog_dir")"
+elif command -v realpath >/dev/null 2>&1; then
+  # 无 python3 时用 realpath 回退，仍只写相对链接（设计 §6.5）
+  rel_report="$(realpath --relative-to="$worklog_dir" "$report_abs" 2>/dev/null)" || rel_report=""
+  if [ -z "$rel_report" ]; then
+    echo "Error: 无法计算相对路径（realpath --relative-to 失败）：$report_abs 相对于 $worklog_dir" >&2
+    exit 2
+  fi
+else
+  echo "Error: 缺少 python3 与 realpath，无法计算相对路径；请安装其一（脚本不写绝对链接）" >&2
+  exit 2
 fi
 
 # 授权台账

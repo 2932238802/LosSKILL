@@ -10,6 +10,17 @@
 set -uo pipefail
 cd "$(dirname "$0")"
 
+usage() {
+  # 截取开头连续注释块（直到第一行代码），不依赖固定行号（设计 §6.4）
+  awk '
+    NR == 1 { next }
+    /^#/ { while (pending > 0) { print ""; pending-- }
+           line = $0; sub(/^# ?/, "", line); print line; started = 1; next }
+    /^[[:space:]]*$/ { if (started) pending++; next }
+    { exit }
+  ' "$0"
+}
+
 step() { printf '\n\033[1;36m== %s ==\033[0m\n' "$1"; }
 ok()   { printf '  ✅ %s\n' "$1"; }
 
@@ -56,7 +67,7 @@ run_all() {
 for a in "$@"; do
   case "$a" in
     --validate-only) ./scripts/validate.sh; exit $? ;;
-    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) usage; exit 0 ;;
   esac
 done
 for a in "$@"; do

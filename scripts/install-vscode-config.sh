@@ -18,6 +18,17 @@ user_dir=""
 with_extensions=0
 dry_run=0
 
+usage() {
+  # 截取开头连续注释块（直到第一行代码），不依赖固定行号（设计 §6.4）
+  awk '
+    NR == 1 { next }
+    /^#/ { while (pending > 0) { print ""; pending-- }
+           line = $0; sub(/^# ?/, "", line); print line; started = 1; next }
+    /^[[:space:]]*$/ { if (started) pending++; next }
+    { exit }
+  ' "$0"
+}
+
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --dir)
@@ -28,7 +39,7 @@ while [ "$#" -gt 0 ]; do
     --dry-run)
       dry_run=1; shift ;;
     -h|--help)
-      sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+      usage; exit 0 ;;
     *)
       echo "Unknown argument: $1" >&2; exit 2 ;;
   esac

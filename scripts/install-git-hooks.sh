@@ -9,6 +9,17 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 
+usage() {
+  # 截取开头连续注释块（直到第一行代码），不依赖固定行号（设计 §6.4）
+  awk '
+    NR == 1 { next }
+    /^#/ { while (pending > 0) { print ""; pending-- }
+           line = $0; sub(/^# ?/, "", line); print line; started = 1; next }
+    /^[[:space:]]*$/ { if (started) pending++; next }
+    { exit }
+  ' "$0"
+}
+
 if [ ! -d "$repo_root/.git" ] && ! git -C "$repo_root" rev-parse --git-dir >/dev/null 2>&1; then
   echo "Not a git checkout: $repo_root" >&2
   exit 0
@@ -21,7 +32,7 @@ case "${1:-}" in
     exit 0 ;;
   "") ;;
   -h|--help)
-    sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    usage; exit 0 ;;
   *)
     echo "Unknown argument: $1" >&2; exit 2 ;;
 esac
