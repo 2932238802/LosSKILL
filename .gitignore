@@ -17,3 +17,13 @@ desktop.ini
 
 # 安装脚本的自动备份（.gitconfig.losskill.bak、.bashrc.losskill.bak 等）
 *.losskill.bak
+
+# Python
+__pycache__/
+*.pyc
+
+# 本地产物：蒸馏流水线中间件、构建输出、E2E 模板与 Windows 快捷方式
+/books/
+/dist/
+/scripts/vesta-e2e/
+*.lnk

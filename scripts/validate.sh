@@ -63,7 +63,7 @@ for dir in "$skills_root"/*/; do
             err "$rel: frontmatter missing 'description'"
         else
             [ "$desc_len" -lt 40 ] && warn "$rel: description shorter than 40 chars ($desc_len)"
-            if ! printf '%s' "$desc" | grep -qE '不用于|不适用|Not for|not for'; then
+            if ! printf '%s' "$desc" | grep -qE '不用于|不适用|不涉及|Not for|not for'; then
                 warn "$rel: description has no explicit 'not for' clause (AI may over-trigger)"
             fi
         fi
@@ -76,6 +76,8 @@ for dir in "$skills_root"/*/; do
     while IFS= read -r r; do
         [ -z "$r" ] && continue
         case "$r" in http*|/*) continue ;; esac
+        # 跳过占位符与通配符（如 references/projects/<项目>.md、capabilities/*.md）
+        case "$r" in *'<'*|*'>'*|*'*'*) continue ;; esac
         [ -f "$dir/$r" ] || err "$rel: referenced file not found -> $r"
     done <<< "$refs"
 
