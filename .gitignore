@@ -27,3 +27,7 @@ __pycache__/
 /dist/
 /scripts/vesta-e2e/
 *.lnk
+
+# Claude Code 本地设置（含项目级授权）及其写入临时文件
+.claude/settings.local.json
+.claude/settings.local.json.tmp.*
