@@ -116,6 +116,19 @@ def clean_scalar(s: str) -> str:
     return s.strip()
 
 
+NEG_CLAUSE_RE = re.compile(r"(?:不适用于|不用于|不涉及|not\s+for)[^。；;\n]*", re.IGNORECASE)
+
+
+def strip_negated(text: str) -> str:
+    """Drop explicit negative-boundary clauses from index-side text only.
+
+    Removes each marker and everything up to the next terminator (。；; or
+    newline). The original description is kept for output/INDEX; this only
+    shapes what reaches tokenize().
+    """
+    return NEG_CLAUSE_RE.sub("", text)
+
+
 def tokenize(text: str) -> set[str]:
     text = text.lower()
     out: set[str] = set(re.findall(r"[a-z0-9][a-z0-9_+#.\-]*", text))
@@ -179,7 +192,7 @@ def build_index(roots: list[Path]) -> dict:
         desc = meta.get("description") or first_para(fm["body"])
         skill_dir = path.parent
         is_router = (skill_dir / "references" / "capabilities").is_dir()
-        all_text = name + " " + desc + " " + extra_text(skill_dir)
+        all_text = name + " " + strip_negated(desc) + " " + extra_text(skill_dir)
         skills.append({
             "name": name,
             "description": desc,

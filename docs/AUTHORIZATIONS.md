@@ -43,6 +43,21 @@ escalate_when:
 
 <!-- auth:rows -->
 
+## AUTH-20261120-002
+
+- 时间：2026-11-20 14:01:37 +0800
+- CR/T：CR-001 / T-002
+- 动作：批准 T-002 的否定边界剥离
+- 级别：A1
+- 策略条款：POLICY-CR-001（allowed_paths、max_commits）
+- 证据：AC-002-1～4 + 回归 + validate.sh + scope diff
+- 批准：review-agent
+- 范围：skills/leverage-protocol/scripts/capability_index.py（commit 待生成）
+- 有效期：随 CR 结束
+- 撤销：否
+- 幂等键：CR-001:T-002:批准否定从句剥离:A1
+
+
 ## AUTH-20261120-001
 
 - 时间：2026-11-20 13:50:13 +0800
