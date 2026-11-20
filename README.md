@@ -7,6 +7,8 @@
 
 目标很简单：**用这个仓库，在新电脑上最快 5 分钟就能恢复自己的全部开发环境，包含 AI 技能和工作流，不用重新设置，不用整理配置。**
 
+> 工作流可视化：[`docs/workflow-map.html`](docs/workflow-map.html)（单文件，直接用浏览器打开）
+
 - 「AI Skill」部分：保持原有 Skill 目录结构，可被任意 AI 工具直接加载
 - 「环境配置」部分：新增 `configs/`（个人配置文件）和 `scripts/install.sh` / `scripts/install.ps1`（环境安装脚本）
 - 新增 `install.sh`/`install.ps1` 扩展功能：除了复制 AI Skill，还能执行环境安装指令
@@ -273,9 +275,10 @@ cd LosSKILL
 - 项目根 `CLAUDE.md`（`@AGENTS.md`）
 - 项目根 `PROJECT_BRAIN.md`（共享大脑：架构、不变量、契约、热点、测试地图）
 - 项目根 `AUTHORIZATIONS.md`（G1 范围信封 + 授权台账，只追加）
+- 项目根 `WORKLOG.md`（跨角色工作日志，只追加，最新在上）
 - `skills/leverage-protocol/references/projects/<slug>.md`（L2：验证命令、专属信号、雷区）
 
-已存在的文件默认跳过；`--force` 覆盖并备份为 `*.losskill.bak`，但**授权台账永不覆盖**。
+已存在的文件默认跳过；`--force` 覆盖并备份为 `*.losskill.bak`，但**授权台账与工作日志永不覆盖**。
 
 ### 上下文与授权协议
 
@@ -283,6 +286,7 @@ cd LosSKILL
 
 - `references/05-context-protocol.md`：所有角色第 0 步读 `PROJECT_BRAIN.md`，按阅读预算只看改动面；每份报告写「上下文增量」，Steward 在 G2.5 合并；同一 CR 内复用会话。
 - `references/06-authorization.md`：用户在 G1 批准一次范围信封；A1（改代码/分支 commit）由 Review 记账，A2（push/合并/依赖）由 Steward，A3（生产/删库/密钥）只由用户确认；Review 不得自批 G3。
+- 工作日志：每个角色交付报告后用 `scripts/worklog.sh` 追加 `WORKLOG.md`，记录时间、动作、报告链接、commit 与 AUTH；Steward 在 G4 审计。
 
 ---
 
@@ -298,7 +302,8 @@ LosSKILL/
 ├─ .gitattributes         # 统一 LF，保证 install.sh 在跨平台可用
 ├─ .githooks/pre-commit   # 提交前自动跑 validate.sh
 ├─ .github/workflows/     # CI：shell/PowerShell 语法 + validate.sh
-├─ templates/project/     # 新项目模板：AGENTS / CLAUDE / BRAIN / AUTHORIZATIONS / L2
+├─ docs/workflow-map.html # 工作流思维导图（单文件，无外部依赖）
+├─ templates/project/     # 新项目模板：AGENTS / CLAUDE / BRAIN / AUTHORIZATIONS / WORKLOG / L2
 ├─ skills/                # 所有 Skill，一个文件夹一个 Skill
 │  ├─ sandra-sales/       # 书籍蒸馏：路由包 + references/capabilities/
 │  ├─ sandra-sales-*/     # 7 个可单点触发的独立能力 Skill
@@ -333,7 +338,8 @@ LosSKILL/
    ├─ install.ps1         # 分步安装（Windows：Skill + 环境 + SSH + winget）
    ├─ install-claude-config.sh  # 部署 configs/claude/ 到 ~/.claude（幂等，带备份）
    ├─ install-vscode-config.sh  # 部署 configs/vscode/（settings/keybindings；扩展可选）
-   ├─ bootstrap-project.sh  # 给项目生成 AGENTS/CLAUDE + L2 项目卡
+   ├─ bootstrap-project.sh  # 给项目生成 AGENTS/CLAUDE + 大脑 + 台账 + 工作日志 + L2
+   ├─ worklog.sh          # 追加 Agent 工作日志到 WORKLOG.md（只追加，自动去重）
    ├─ sync-skills.sh      # 同步 Skill：copy / link / force / dry-run，自动探测目标
    ├─ new-skill.sh        # 新建 Skill：目录 + frontmatter + SKILLS.md 登记 + 自检
    ├─ install-git-hooks.sh  # 启用 .githooks/pre-commit（validate.sh）

@@ -43,7 +43,8 @@
 - G1 确认前，和 Steward 做一次影响预判：本次会碰哪些模块/不变量/契约，大脑是否已过期。
 - 阅读预算：S ≤ 5、M ≤ 15、L 分阶段；报告列出实际读过的文件。
 - 报告必须包含「上下文增量」块；完整协议见 `references/05-context-protocol.md`。
-- G1 时把「范围信封」写进 `<文档根目录>/AUTHORIZATIONS.md`：允许路径、命令、提交上限、到期时间、禁止项。用户只批准这一次；后续在信封内由 Review/Steward 记账。协议见 `references/06-authorization.md`。
+- G1 时把「范围信封」写进 `<文档根目录>/AUTHORIZATIONS.md`：允许路径、命令、提交上限、到期时间、禁止项，以及 `delegate_a2_to_review` 是否开启。用户只批准这一次；后续在信封内由 Review/Steward 记账。协议见 `references/06-authorization.md`。
+- 交付报告后，用 LosSKILL 仓库的 `scripts/worklog.sh` 在项目根执行，追加 `WORKLOG.md`，报告里写回 `LOG-ID`。
 
 ## 1. 共享约定（四个角色通用，不得自行改动）
 
@@ -452,6 +453,7 @@
 ```markdown
 ## Doc Agent 交付报告
 
+- 工作日志：LOG-xxx（已追加）
 - 本次目标：A / B / C
 - G0 / G1 状态：CR-xxx 已确认 / 待确认；G1 摘要是否已发送
 - 写入/更新文件：文件 → 一句话变更摘要

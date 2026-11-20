@@ -167,7 +167,7 @@
 
 | Skill | 何时用（触发信号） | 产出 | 不用于 | 路径 |
 | --- | --- | --- | --- | --- |
-| [`dev-workflow`](skills/dev-workflow/SKILL.md) | 「按开发工作流来」「走流程开发」「用四个 Agent」「先出需求卡再开发」；需求进入实现前需要 G0/G1 确认；需要把开发、评审、总审分开 | `CR-xxx` 需求卡、R/AC/T、G0-G4 门禁、可直接复制的交接 Prompt | 纯问答、一次性脚本、没有文档根目录的临时改动 | `skills/dev-workflow/` |
+| [`dev-workflow`](skills/dev-workflow/SKILL.md) | 「按开发工作流来」「走流程开发」「用四个 Agent」「先出需求卡再开发」；需求进入实现前需要 G0/G1 确认；需要把开发、评审、总审分开 | `CR-xxx` 需求卡、R/AC/T、G0-G4 门禁、上下文/授权/工作日志协议、可直接复制的交接 Prompt | 纯问答、一次性脚本、没有文档根目录的临时改动 | `skills/dev-workflow/` |
 
 自带 `references/` 下的四份完整角色提示词：
 
@@ -179,6 +179,8 @@
 | `references/04-meta-review-agent.md` | Meta Review Agent：五层总审 + UAT、G4 结论；兼 Steward 维护大脑 |
 | `references/05-context-protocol.md` | 上下文协议：大脑、增量、阅读预算、会话复用 |
 | `references/06-authorization.md` | 授权协议：范围信封、A0–A3、台账与角色分工 |
+
+工作日志：角色交付报告后用 `scripts/worklog.sh` 追加到项目根 `WORKLOG.md`（`LOG-*`）；模板见 `templates/project/WORKLOG.md`。
 
 推荐安装方式：把四份角色文件分别注册为 AI 工具的自定义子代理（如 `~/.claude/agents/dev-agent.md`），主会话只担任 Doc/协调者；不支持子代理的环境，就把对应文件全文发给一个全新会话。
 

@@ -39,13 +39,19 @@ description: |
 |---|---|---|
 | A0 | 读代码、跑测试、lint、build | Agent 自主 |
 | A1 | 改代码、写文档、feature 分支 commit | Review（记账） |
-| A2 | push、PR、合并 main、依赖/构建配置 | Steward/Meta（记账） |
+| A2 | push、PR、合并 main、依赖/构建配置 | Steward/Meta（信封可委托 Review 批低风险） |
 | A3 | 生产部署、删库、force push、密钥/权限 | 用户本人，永不委托 |
 
 - Review **不能**批准自己的 G3 结论；G3 接受由 Steward 或用户记账。
 - 越出信封一律停下问用户；过期/超提交上限自动失效。
 - Agent 不能替代 Claude Code 的权限弹窗；宿主权限仍由 harness 控制。
 - 细节见 `references/06-authorization.md`。
+
+## 0.7 工作日志
+
+每个角色交付报告后，用 LosSKILL 仓库的 `scripts/worklog.sh` 在项目根追加一行到 `WORKLOG.md`（`LOG-*`），链接报告与 commit；Steward 在 G4 审计完整性。它是跨角色、跨 CR 的历史索引，不是 STATUS 或大脑的替代品。
+
+细节见 `references/05-context-protocol.md` 的「工作日志」一节。
 
 ## 1. 开工
 
@@ -133,6 +139,7 @@ G4 是成本最高的门禁，按改动风险选择，不默认全量启动：
 - 交给谁、依据哪个门禁/结论、携带哪些材料；
 - 一段可直接复制发送给下一位 Agent 的 Prompt（真实路径、ID、版本；未知项写“待确认”）；
 - 「上下文增量」：触及模块、不变量/契约变化、测试变化、大脑需要更新的节、发现的过期信息。
+- 「工作日志」：`LOG-ID`（已用 `scripts/worklog.sh` 追加）。
 
 报告落盘：`<文档根目录>/reports/<角色>-<YYYY-MM-DD>-<范围>.md`。
 

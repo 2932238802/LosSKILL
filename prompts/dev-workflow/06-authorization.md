@@ -19,6 +19,31 @@
 
 拿不准时**升级一级**，不要降级。
 
+### 1.1 风险分类参考
+
+| 改动 | 默认级别 |
+|---|---|
+| `docs/**`、`*.md`、注释、文案 | A1 |
+| `src/**`（在 `allowed_paths` 内） | A1 |
+| `tests/**` | A1 |
+| 依赖清单 / lockfile（`package.json`、`Cargo.toml`、`requirements.txt`） | A2 |
+| 构建/CI 配置 | A2 |
+| `migrations/**`、schema、种子数据 | A3（或 A2 + 人工确认） |
+| `auth/**`、权限、角色、鉴权中间件 | A3 |
+| `deploy/**`、`.env`、密钥、生产配置 | A3 |
+| `rm -rf`、`git push --force`、删库、批量删除 | A3 |
+
+### 1.2 A2 是否可以委托给 Review
+
+默认 A2 由 Steward 批准。如果用户在信封里显式写 `delegate_a2_to_review: true`，Review 可以批准**低风险 A2**，但必须同时满足：
+
+- G3 已由 Steward 或用户接受（Review 不能自批 G3）；
+- 只做：push 当前 feature 分支、创建 PR、合并到 main；
+- 不碰 `forbidden`、依赖、鉴权、数据模型、`deploy/`；
+- 验证命令与回归全绿，且报告里有证据。
+
+高风险 A2 与所有 A3 仍然回到 Steward/用户。
+
 ## 2. 角色
 
 | 角色 | 授权职责 |
@@ -46,6 +71,7 @@ allowed_commands:          # 允许自动执行的高频命令
   - ./scripts/validate.sh
   - cargo test
 max_commits: 5
+delegate_a2_to_review: false   # true 时允许 Review 批准低风险 A2（见 1.2）
 forbidden:                 # 显式禁止，优先级最高
   - deploy/
   - .env
@@ -83,6 +109,44 @@ escalate_when:
 - 证据必须能定位：命令输出、测试名、diff、报告路径。
 - commit 生成后回填真实 hash。
 - 撤销时追加 `- 撤销：是（时间 / 原因 / 批准人）`，不要删除原条目。
+- AUTH ID 单调递增，不跳号、不复用；G4 抽查最近 10 条与 commit 是否对得上。
+
+### 4.1 授权请求与决定（短模板）
+
+请求（Dev/Review 提出）：
+
+```markdown
+## 授权请求
+- 动作：
+- 级别：A1 / A2 / A3
+- 策略条款：P-xx
+- 证据：命令 / 测试 / diff
+- 回滚：
+- 请求人：
+```
+
+决定（Review/Steward 回复）：
+
+```markdown
+## 授权决定
+- 决定：批准 / 拒绝 / 升级
+- 依据：
+- AUTH ID：AUTH-YYYYMMDD-NNN
+- 范围与有效期：
+```
+
+### 4.2 STATUS.md 授权字段
+
+`<文档根目录>/STATUS.md` 增加：
+
+```markdown
+## 授权状态
+- 当前信封：POLICY-CR-xxx
+- 提交额度：2 / 5
+- 到期：2026-11-27
+- 待用户 A3：无
+- 最近 AUTH：AUTH-20261120-002
+```
 
 ## 5. 门禁怎么走
 
@@ -99,7 +163,23 @@ G4  Steward 审计台账；发布相关 A2 由 Steward 批准；A3 回到用户
 ## 6. 执行与强制
 
 - **协议层**：Agent 读本文件与 `AUTHORIZATIONS.md`；越界即停。
-- **宿主层**：Claude Code 的权限弹窗仍由 harness 控制。想减少弹窗，用项目级 `.claude/settings.local.json` 加窄allowlist（如 `./scripts/validate.sh`、`git status`），不要把 `Bash(*)` 放开。
+- **宿主层**：Claude Code 的权限弹窗仍由 harness 控制。想减少弹窗，用项目级 `.claude/settings.local.json` 加窄 allowlist，不要把 `Bash(*)` 放开。示例（按项目裁剪）：
+
+  ```json
+  {
+    "permissions": {
+      "allow": [
+        "Bash(./scripts/validate.sh)",
+        "Bash(git status)",
+        "Bash(git diff:*)",
+        "Bash(git add:*)",
+        "Bash(git commit:*)"
+      ]
+    }
+  }
+  ```
+
+  允许 `git commit` 只减少弹窗，不等于绕过授权：台账仍要 Review 记账。不要允许 push / deploy / rm。
 - **Hook 层（可选）**：`PreToolUse` hook 可拦截高危命令（`rm -rf`、`git push --force`、`deploy/*`）并要求人工确认或直接拒绝；先上协议与台账，稳定后再加 hook。
 - **审计**：G4 检查台账是否覆盖本轮所有 A1/A2；缺失记为流程缺陷（P1）。
 

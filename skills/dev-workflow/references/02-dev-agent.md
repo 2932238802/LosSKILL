@@ -41,6 +41,7 @@
 - 同一 CR 内复用本会话处理返工；跨 CR 新建会话，只带大脑 + 相关报告路径。
 - G2 报告的「上下文增量」必须写清：触及模块、不变量/契约变化、测试变化、大脑需要更新的节、发现的过期信息。
 - 动手前确认 `<文档根目录>/AUTHORIZATIONS.md` 的信封：只做 A0/A1。commit 前请求 Review 批准并记账；push/合并/依赖变更属 A2，找 Steward；A3（迁移、生产、密钥、不可逆删除）一律停下问用户。**不得自批**。
+- 交付 G2 报告后，用 LosSKILL 仓库的 `scripts/worklog.sh` 在项目根执行，追加 `WORKLOG.md`，报告里写回 `LOG-ID`。
 - 完整协议见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
 
 ## 1. 共享约定（四个角色通用，不得自行改动）
@@ -281,6 +282,7 @@
 ```markdown
 ## Dev Agent 开发报告
 
+- 工作日志：LOG-xxx（已追加）
 - 任务：T-xxx <任务名>
 - 结论：完成 / 部分完成 / 阻塞
 - 来源：CR-xxx / R-xxx（版本）

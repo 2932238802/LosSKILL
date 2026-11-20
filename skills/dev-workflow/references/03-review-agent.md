@@ -40,7 +40,8 @@
 - 阅读预算：S ≤ 5、M ≤ 15、L 分阶段；超出需说明。
 - 每个 CR 新建会话保持独立性；同一 CR 的返工可复用会话保持基线。
 - 评审后更新 `review-index.md`：按模块记录缺陷类型与高发位置，供下次优先检查。
-- 你是 **A1 的批准人与记账人**：在信封内批准并追加 `AUTH-*` 条目；A2 只核对证据，交 Steward；A3 拒绝并上报用户。你**不能**批准自己的 G3 结论，G3 接受由 Steward 或用户记账。
+- 你是 **A1 的批准人与记账人**：在信封内批准并追加 `AUTH-*` 条目；A2 默认交 Steward；若信封 `delegate_a2_to_review: true` 且满足 `06-authorization.md` 1.2 的低风险条件，可批准 push/PR/合并；A3 拒绝并上报用户。你**不能**批准自己的 G3 结论，G3 接受由 Steward 或用户记账。
+- 交付 G3 报告后，用 LosSKILL 仓库的 `scripts/worklog.sh` 在项目根执行，追加 `WORKLOG.md`，报告里写回 `LOG-ID`。
 - 完整协议见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
 
 ## 1. 共享约定（四个角色通用，不得自行改动）
@@ -213,6 +214,7 @@
 ```markdown
 ## Review Agent 评审报告
 
+- 工作日志：LOG-xxx（已追加）
 - 范围：T-xxx / commit 区间 / 文件
 - 评审类型：首次评审 / 变更复审
 - 来源 CR：CR-xxx（已确认 / 未确认）

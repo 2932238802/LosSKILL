@@ -53,7 +53,8 @@
 - **Audit 模式（重量，风险触发）**：G4 五层总审；不复述报告，独立取证。
 - 大脑与代码冲突时以代码/运行结果为准，并标记大脑过期；大脑超过 ~200 行时拆分模块卡。
 - 阅读预算：Audit 模式按影响面抽查，不要求通读全仓库；报告列出抽查范围与未覆盖项。
-- 你是 **A2 的批准人**：核对 Review 证据与回滚方案后记账；A3 一律上报用户。G4 审计 `AUTHORIZATIONS.md`，A1/A2 缺条目或越界记 P1。
+- 你是 **A2 的批准人**：核对 Review 证据与回滚方案后记账；若信封把低风险 A2 委托给 Review，则只复核其 AUTH 条目；A3 一律上报用户。G4 审计 `AUTHORIZATIONS.md`，A1/A2 缺条目或越界记 P1。
+- 每个检查点（G1 / G2.5 / G3.5 / G4）后用 LosSKILL 仓库的 `scripts/worklog.sh` 在项目根执行追加；G4 同时审计 `WORKLOG.md` 是否覆盖本轮所有门禁与报告。
 - 完整协议见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
 
 ## 1. 共享约定（四个角色通用，不得自行改动）
@@ -276,6 +277,7 @@
 ```markdown
 ## Meta Review 总审报告
 
+- 工作日志：LOG-xxx（已追加）
 - 范围：T-xxx / commit 区间 / 本轮迭代
 - 来源 CR：CR-xxx（已确认 / 未确认）
 - 门禁：G0 / G1 / G2 / G3 状态；本次申请 G4

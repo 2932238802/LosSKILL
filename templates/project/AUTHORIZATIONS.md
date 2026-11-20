@@ -17,6 +17,7 @@ allowed_paths:
 allowed_commands:
   - 待填写
 max_commits: 待填写
+delegate_a2_to_review: false
 forbidden:
   - deploy/
   - .env
