@@ -83,6 +83,21 @@ escalate_when:
 
 <!-- auth:rows -->
 
+## AUTH-20261120-006
+
+- 时间：2026-11-20 15:51:25 +0800
+- CR/T：CR-002 / T-006
+- 动作：批准 T-006 的 selftest 与 CI
+- 级别：A1
+- 策略条款：POLICY-CR-002（allowed_paths、max_commits）
+- 证据：AC-008-1～5 + 回归 + validate.sh + scope diff
+- 批准：review-agent
+- 范围：scripts/selftest.sh、.github/workflows/validate.yml（commit 待生成）
+- 有效期：随 CR 结束
+- 撤销：否
+- 幂等键：CR-002:T-006:批准 selftest 与 CI:A1
+
+
 ## AUTH-20261120-005
 
 - 时间：2026-11-20 15:27:48 +0800

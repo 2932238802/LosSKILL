@@ -16,6 +16,7 @@
 | 2026-11-20 | CR-001 | meta | G4 | 通过（0 阻断） | [meta-2026-11-20-CR-001.md](meta-2026-11-20-CR-001.md) |
 | 2026-11-20 | CR-002 / T-004 | review | G3 | 不通过（P1×2：失败静默、去重键缺字段） | [review-2026-11-20-T-004.md](review-2026-11-20-T-004.md) |
 | 2026-11-20 | CR-002 / T-004 | review | G3 | 有条件通过（AUTH-20261120-004；r2 复审） | [review-2026-11-20-T-004-r2.md](review-2026-11-20-T-004-r2.md) |
+| 2026-11-20 | CR-002 / T-006 | review | G3 | 通过（AUTH-20261120-006） | [review-2026-11-20-T-006.md](review-2026-11-20-T-006.md) |
 
 ## 模块热点
 
@@ -23,6 +24,7 @@
 |---|---|---|---|
 | `skills/leverage-protocol/scripts/capability_index.py` | `cmd_query`（空候选）/ `strip_negated`（否定从句）/ `stale`+`normalize_roots`（缓存） | 空输入崩溃、否定边界被当正向信号（分号枚举残留）、缓存不感知脚本版本与相对 roots | CR-005 缓存版本化；CR-006 分号枚举；selftest 固化（CR-002） |
 | `scripts/finish-report.sh` / `scripts/worklog.sh` | 回填锚点 / 幂等匹配 / stderr 捕获 | R-1/R-2 已修复（失败可见、全键去重）；首轮曾现失败静默与去重键过窄 | 有条件通过 AUTH-20261120-004；P2 `--force` 文案与 P3 留 T-005/T-006；selftest 固化 |
+| `scripts/selftest.sh` | 用例断言 / 受限 PATH 夹具 `make_bin` / SKIP 语义 | 受限 PATH 白名单缺 `head`（无假绿）；SKIP 不失败；头部注释覆盖范围夸大 | P3 非阻断；后续补 `head` 与 CI 下 SKIP 计失败 |
 
 ## 使用约定
 

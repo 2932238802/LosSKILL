@@ -110,11 +110,11 @@
 | AC-007-1 | 有 python3 → 相对链接 | T-005 | 已通过 |
 | AC-007-2 | 无 python3 → realpath 相对链接 | T-005 | 已通过 |
 | AC-007-3 | 两者都无 → exit 2 | T-005 | 已通过 |
-| AC-008-1 | `selftest.sh` exit 0 | T-006 | 待验证 |
-| AC-008-2 | 故障注入后 selftest 失败 | T-006 | 待验证 |
-| AC-008-3 | CI 调用 selftest | T-006 | 待验证 |
-| AC-008-4 | 覆盖 CR-002 用例 | T-006 | 待验证 |
-| AC-008-5 | 不污染仓库 | T-006 | 待验证 |
+| AC-008-1 | `selftest.sh` exit 0 | T-006 | 已通过 |
+| AC-008-2 | 故障注入后 selftest 失败 | T-006 | 已通过 |
+| AC-008-3 | CI 调用 selftest | T-006 | 已通过 |
+| AC-008-4 | 覆盖 CR-002 用例 | T-006 | 已通过 |
+| AC-008-5 | 不污染仓库 | T-006 | 已通过 |
 
 ## CR-002 任务
 
@@ -155,10 +155,10 @@
 - **P2 返工**：用户已批准信封扩展 `setup.sh`；补齐 `install-claude-config.sh`、`install-git-hooks.sh`、`install-vscode-config.sh`、`setup.sh` 的 usage，去掉固定行号。
 - **完成说明**（2026-11-20，G2）：`worklog.sh --time` 取 14 位数字统一输出 `LOG-YYYYMMDD-HHMMSS`，不足 14 位 exit 2；5 个脚本的 `usage()` 改为 awk 截取开头连续注释块（去掉固定行号）；`finish-report.sh` `--force` 帮助文案与实际行为对齐；无 python3 时用 `realpath --relative-to` 回退，两者都无则 exit 2 且不写链接。证据见 `docs/reports/dev-2026-11-20-T-005.md`（未提交，待 G3）。
 - **G3 结论**：有条件通过（2026-11-20，`AUTH-20261120-005`，`LOG-20261120-152748`）；无 P0/P1。P2：R-006「所有脚本」只覆盖 5/8——`install-claude-config.sh`、`install-git-hooks.sh`、`install-vscode-config.sh` 与根目录 `setup.sh` 仍用固定行号；P3：`--force` 重跑 AUTH 追加、`--time` 帮助说明、T-005 在 G3 前标 DONE。
-- **G3 复审**：通过（2026-11-20，`AUTH-20261120-005` 沿用，`LOG-20261120-154044`）；4 个脚本已补齐；P3 AUTH scope 未含返工文件，交 G4 记录。
+- **G3 复审**：通过（2026-11-20，`AUTH-20261120-005` 沿用，`LOG-20261120-154044`）；4 个脚本已补齐；P3 AUTH scope 未含返工文件，交 G4 记录。提交：`beac653`。
 - **P2 返工完成**（2026-11-20，G2 r2）：4 个脚本（`install-claude-config.sh`、`install-git-hooks.sh`、`install-vscode-config.sh`、`setup.sh`）改用与 T-005 相同的 awk `usage()`；头部插入 1 行/5 行后 `-h` 均输出到最后一个选项，`setup.sh -h` 不再输出 `set`/`cd` 代码行。证据见 `docs/reports/dev-2026-11-20-T-005-r2.md`（未提交，待 G3 复审）。
 
-### T-006 selftest 与 CI（状态：TODO）
+### T-006 selftest 与 CI（状态：DONE（G3 通过））
 
 - **来源**：CR-002 / R-008（v1）
 - **关联需求**：AC-008-1～5
@@ -171,7 +171,9 @@
 - **发布/回滚**：无发布；删除新增文件即可
 - **风险**：中；需保证沙箱不污染仓库
 - **规模**：M
-- **阻塞原因**：无（G1 已确认；依赖 T-004/T-005）
+- **阻塞原因**：无（G1 已确认；T-004/T-005 已提交；G2 开发完成）。
+- **完成说明**（2026-11-20，G2）：新增 `scripts/selftest.sh`（13 个用例，mktemp 沙箱 + trap 清理，支持 `SELFTEST_SRC_DIR` 覆盖以便故障注入）；`.github/workflows/validate.yml` 在 `validate.sh` 后新增 `Run script selftest` 步骤。`./scripts/selftest.sh` → PASS=13 FAIL=0，exit 0；篡改去重后 exit 1 且对应用例 FAIL。`validate.sh` 0 ERROR，`bash -n scripts/*.sh setup.sh` 通过，YAML 可解析。证据见 `docs/reports/dev-2026-11-20-T-006.md`（未提交，待 G3）。
+- **G3 结论**：通过（2026-11-20，`AUTH-20261120-006`，`LOG-20261120-155125`）；无 P0/P1/P2。P3：`make_bin` 白名单缺 `head`；头部注释称 9 脚本插行但仅 finish-report 验证；无 python3/realpath 时用例 SKIP 但整体 exit 0。
 
 ## CR-002 任务顺序
 
