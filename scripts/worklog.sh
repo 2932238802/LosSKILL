@@ -118,8 +118,24 @@ if [ "$report" != "-" ] && [ -n "$report" ]; then
       ;;
   esac
 fi
+role_cell="$(escape_cell "$role")"
+gate_cell="$(escape_cell "$gate")"
+cr_task_cell="$(escape_cell "$cr") / $(escape_cell "$task")"
+action_cell="$(escape_cell "$action")"
+report_cell_esc="$(escape_cell "$report_cell")"
 
-row="| $(escape_cell "$id") | $(escape_cell "$now") | $(escape_cell "$role") | $(escape_cell "$gate") | $(escape_cell "$cr") / $(escape_cell "$task") | $(escape_cell "$action") | $(escape_cell "$report_cell") | $(escape_cell "$commit") | $(escape_cell "$auth") | $(escape_cell "$status") |"
+# 幂等：同一 report + role + gate + cr + task + action 已写入则跳过（D-007 / 设计 §6.2）
+if [ "$dry_run" -eq 0 ] && [ "$report_cell" != "-" ]; then
+  needle="| $role_cell | $gate_cell | $cr_task_cell | $action_cell | $report_cell_esc |"
+  existing_id="$(grep -F -- "$needle" "$file" 2>/dev/null | head -1 | awk -F'|' '{ gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2 }' || true)"
+  if [ -n "$existing_id" ]; then
+    echo "[skip] WORKLOG $existing_id（幂等键已存在）" >&2
+    echo "$existing_id"
+    exit 0
+  fi
+fi
+
+row="| $(escape_cell "$id") | $(escape_cell "$now") | $role_cell | $gate_cell | $cr_task_cell | $action_cell | $report_cell_esc | $(escape_cell "$commit") | $(escape_cell "$auth") | $(escape_cell "$status") |"
 
 if [ "$dry_run" -eq 1 ]; then
   echo "$row"

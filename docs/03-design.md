@@ -60,3 +60,42 @@
 
 - 否定标记的具体正则写法、是否抽成独立函数、是否加单元测试，由 Dev 决定；但必须满足第 1–3 节的行为契约。
 - 不在本设计里规定代码行数或函数命名。
+
+## 6. CR-002 脚本可靠性设计
+
+### 6.1 回填锚点
+
+- 优先：`<!-- report-meta ... -->` 结束后的第一个空行。
+- 回退：首个 `## ` 标题后。
+- 两者都没有：stderr 输出 `[warn] 未找到日志插入点`，跳过回填，但 WORKLOG 仍写一次。
+- 已存在 `- 工作日志：` 行时替换，不重复插入。
+
+### 6.2 幂等键
+
+- 同一次交付 = 同一报告路径 + role + gate + cr + task + action。
+- `worklog.sh` 写入前检查 WORKLOG 是否已有同一报告链接 + role + gate + cr/task + action 的行；有则跳过。
+- 不同报告路径不互相去重；不同 action 不互相去重。
+- 不改变 WORKLOG 表结构；用现有列判断。
+
+### 6.3 `--time` 格式
+
+- 提取数字后统一格式化为 `YYYYMMDD-HHMMSS`；长度不足时补齐或拒绝。
+- 默认路径保持 `LOG-YYYYMMDD-HHMMSS`。
+- 同一秒的 `-2` 后缀逻辑保留。
+
+### 6.4 usage 提取
+
+- 用显式标记或 `awk` 截取开头连续注释块；禁止固定行号。
+- 所有脚本统一一种方式。
+
+### 6.5 无 python3 的相对路径
+
+- 优先 `python3`；否则 `realpath --relative-to="$(dirname "$worklog")" "$report_abs"`。
+- 两者都不可用：exit 2，stderr 明确，不写绝对路径。
+
+### 6.6 selftest
+
+- `scripts/selftest.sh` 在 mktemp 沙箱中复制脚本与最小夹具。
+- 故障注入只改临时副本，绝不改仓库文件。
+- 每个用例打印 PASS/FAIL，失败 exit 1；结束时清理。
+- CI 在 `validate.sh` 之后执行。

@@ -39,9 +39,62 @@ escalate_when:
 
 - 2026-11-20：用户批准 CR-001 范围信封（G1）。
 
+## 范围信封（CR-002）
+
+```yaml
+policy: POLICY-CR-002
+granted_by: user
+granted_at: 2026-11-20
+expires: 2026-11-27
+branch: main
+allowed_paths:
+  - scripts/
+  - .github/workflows/
+  - docs/
+allowed_commands:
+  - ./scripts/validate.sh
+  - ./scripts/selftest.sh
+  - bash -n scripts/*.sh setup.sh
+  - git status
+  - git diff
+  - git add
+  - git commit
+max_commits: 3
+delegate_a2_to_review: false
+forbidden:
+  - push
+  - deploy/
+  - .env
+  - books/
+  - dist/
+  - scripts/vesta-e2e/
+escalate_when:
+  - 新增依赖
+  - 修改鉴权/权限
+  - 改动数据模型
+  - 跨模块
+```
+
+- 2026-11-20：用户批准 CR-002 范围信封（G1）。
+
 ## AUTH 记录
 
 <!-- auth:rows -->
+
+## AUTH-20261120-004
+
+- 时间：2026-11-20 15:13:15 +0800
+- CR/T：CR-002 / T-004
+- 动作：批准 T-004 的回填与幂等（返工后）
+- 级别：A1
+- 策略条款：POLICY-CR-002（allowed_paths、max_commits）
+- 证据：AC-004-1～4 + R-1/R-2 + 回归 + validate.sh + scope diff
+- 批准：review-agent
+- 范围：scripts/finish-report.sh、scripts/worklog.sh（commit 待生成）
+- 有效期：随 CR 结束
+- 撤销：否
+- 幂等键：CR-002:T-004:批准回填与幂等:A1
+
 
 ## AUTH-20261120-003
 

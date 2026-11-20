@@ -287,24 +287,57 @@ if [ "$do_worklog" -eq 1 ]; then
     if [ "$dry_run" -eq 1 ]; then
       echo "WORKLOG (dry-run): $("$worklog_script" "${args[@]}" --dry-run)"
     else
-      log_id="$("$worklog_script" "${args[@]}")"
-      echo "[write] WORKLOG $log_id"
+      errfile="$(mktemp)"
+      rc=0
+      log_id="$("$worklog_script" "${args[@]}" 2>"$errfile")" || rc=$?
+      if [ "$rc" -ne 0 ]; then
+        if [ -s "$errfile" ]; then cat "$errfile" >&2; fi
+        rm -f "$errfile"
+        exit "$rc"
+      fi
+      # 成功时透传 WARN 等提示；[skip] 由下方统一打印，避免重复
+      if [ -s "$errfile" ]; then
+        grep -v '^\[skip\] WORKLOG' "$errfile" >&2 || true
+      fi
+      if grep -qF '[skip] WORKLOG' "$errfile"; then
+        echo "[skip] WORKLOG $log_id（幂等键已存在）"
+      else
+        echo "[write] WORKLOG $log_id"
+      fi
+      rm -f "$errfile"
     fi
   fi
 fi
 
 # 回填报告里的工作日志行
 if [ "$dry_run" -eq 0 ] && [ -n "$log_id" ]; then
+  log_line="- 工作日志：$log_id（已追加）"
   tmp="$(mktemp)"
   if grep -q '^- 工作日志：' "$report"; then
-    sed "s|^- 工作日志：.*|- 工作日志：$log_id（已追加）|" "$report" > "$tmp"
+    sed "s|^- 工作日志：.*|$log_line|" "$report" > "$tmp"
+    mv "$tmp" "$report"
   else
-    awk -v line="- 工作日志：$log_id（已追加）" '
-      /^## .*报告[[:space:]]*$/ { print; print ""; print line; next }
-      { print }
-    ' "$report" > "$tmp"
+    # 锚点：优先 report-meta 结束后的第一个空行；回退首个 ## 标题（设计 §6.1）
+    anchor="$(awk '
+      /<!--[[:space:]]*report-meta/ { inmeta = 1; next }
+      inmeta { if ($0 ~ /-->/) { inmeta = 0; metadone = 1 } next }
+      metadone && !found && $0 ~ /^[[:space:]]*$/ { print NR; found = 1; exit }
+      END { exit(found ? 0 : 1) }
+    ' "$report" || true)"
+    if [ -n "$anchor" ]; then
+      awk -v n="$anchor" -v line="$log_line" 'NR == n { print; print line; next } { print }' "$report" > "$tmp"
+      mv "$tmp" "$report"
+    else
+      heading="$(awk '/^## / { print NR; exit }' "$report")"
+      if [ -n "$heading" ]; then
+        awk -v n="$heading" -v line="$log_line" 'NR == n { print; print ""; print line; next } { print }' "$report" > "$tmp"
+        mv "$tmp" "$report"
+      else
+        echo "[warn] 未找到日志插入点" >&2
+      fi
+    fi
   fi
-  mv "$tmp" "$report"
+  rm -f "$tmp"
 fi
 
 echo

@@ -63,3 +63,90 @@
 | 受影响文档 | `docs/01-requirements.md`、`docs/03-design.md`、`docs/04-tasks.md`；`leverage-protocol/SKILL.md` 的退出码说明（如 A-001 改变语义） |
 | 兼容与迁移 | 旧缓存可读；roots 不一致时自动重建；无需数据迁移 |
 | 风险 | 中：剥离否定从句会改变全局排名，可能影响其他查询；用 AC-002-3 与抽样回归缓解 |
+
+## R-004 finish-report 回填与幂等（P1，v1）
+
+- **来源**：CR-002
+- **背景**：标题带后缀时回填静默失败；重跑同一报告会重复追加 WORKLOG。
+- **描述**：报告头部的 meta 块结束处或首个 `## ` 标题应作为回填锚点；同一报告重复运行只产生一条 WORKLOG 与一条回填。
+- **成功指标**：带后缀标题连跑两次 → 1 行 / 1 条；不同报告不误去重。
+- **验收标准**：
+  - AC-004-1：标题 `## Dev Agent 交付报告 — T-099`、meta 完整；运行两次 → WORKLOG 中 T-099 行数=1，报告中 `- 工作日志：` 恰好 1 条。
+  - AC-004-2：标题 `## 报告`（无后缀）连跑两次 → 1 行 / 1 条（回归）。
+  - AC-004-3：有 meta 但无匹配 `## ` 标题 → stderr 含 WARN「未找到日志插入点」，WORKLOG 仍只写 1 行；重跑不重复。
+  - AC-004-4：两个不同报告（同 role/gate/cr/task、不同 action）→ WORKLOG 2 行（不误去重）。
+- **NFR 影响**：失败必须可见；不改变 WORKLOG 表结构。
+- **影响面**：`scripts/finish-report.sh`、`scripts/worklog.sh`。
+- **不在范围内**：AUTH 幂等逻辑（已有）。
+- **变更历史**：v1 2026-11-20 初始。
+
+## R-005 worklog --time 格式统一（P2，v1）
+
+- **来源**：CR-002
+- **背景**：`--time` 路径生成无连字符 ID，与默认格式不一致。
+- **描述**：任何时间输入都格式化为 `LOG-YYYYMMDD-HHMMSS`。
+- **验收标准**：
+  - AC-005-1：`--time "2026-11-20 10:00:00"` → `LOG-20261120-100000`。
+  - AC-005-2：默认时间仍是 `LOG-YYYYMMDD-HHMMSS`。
+  - AC-005-3：同一秒多条仍生成 `-2` 后缀。
+- **NFR 影响**：不改表结构；旧 ID 仍可读。
+- **影响面**：`scripts/worklog.sh`。
+- **不在范围内**：历史 ID 迁移。
+- **变更历史**：v1 2026-11-20 初始。
+
+## R-006 usage() 去硬编码（P2，v1）
+
+- **来源**：CR-002
+- **背景**：`usage()` 用固定行号截取注释，头部一改就错位。
+- **描述**：`-h` 输出应覆盖全部选项注释，不依赖 `sed -n '2,37p'` 这类固定范围。
+- **验收标准**：
+  - AC-006-1：`scripts/finish-report.sh -h` 含 `--force`；`scripts/worklog.sh -h` 含 `--time`。
+  - AC-006-2：在临时副本头部注释插入一行后，`-h` 仍包含最后一个选项。
+  - AC-006-3：`bash -n scripts/*.sh setup.sh` 通过。
+- **NFR 影响**：无新增依赖。
+- **影响面**：各脚本 `usage()`。
+- **不在范围内**：重写帮助文案。
+- **变更历史**：v1 2026-11-20 初始。
+
+## R-007 无 python3 时的报告链接（P2，v1）
+
+- **来源**：CR-002
+- **背景**：`finish-report.sh:191-194` 在无 `python3` 时可能写出绝对链接。
+- **描述**：优先用 `python3` 计算相对路径；否则用 `realpath --relative-to`；两者都无则明确报错。
+- **验收标准**：
+  - AC-007-1：有 `python3` → WORKLOG 中为相对链接。
+  - AC-007-2：无 `python3`、有 `realpath` → 仍为相对链接。
+  - AC-007-3：两者都无 → exit 2，stderr 明确，不写绝对链接。
+- **NFR 影响**：不改变现有默认路径。
+- **影响面**：`scripts/finish-report.sh`。
+- **不在范围内**：重写报告路径规则。
+- **变更历史**：v1 2026-11-20 初始。
+
+## R-008 脚本自测与 CI（效率，v1）
+
+- **来源**：CR-002
+- **背景**：脚本没有回归，F-06 这类缺陷只能靠人工发现。
+- **描述**：新增 `scripts/selftest.sh`，覆盖 CR-002 行为并接入 CI。
+- **验收标准**：
+  - AC-008-1：`./scripts/selftest.sh` exit 0。
+  - AC-008-2：复制 `worklog.sh` 到临时目录并破坏去重 → selftest 对应用例非零。
+  - AC-008-3：CI `validate.yml` 调用 selftest。
+  - AC-008-4：覆盖 worklog 追加/去重、finish-report 回填/幂等、`--time` 格式、无 python3 路径、usage 完整性、`query qqqzzz` 空结果（T-001 回归）。
+  - AC-008-5：selftest 不修改仓库文件，使用 mktemp 并清理。
+- **NFR 影响**：CI 时长增加可接受；无新依赖。
+- **影响面**：`scripts/selftest.sh`、`.github/workflows/validate.yml`。
+- **不在范围内**：全量端到端测试。
+- **变更历史**：v1 2026-11-20 初始。
+
+## 影响分析（CR-002）
+
+| 维度 | 内容 |
+|---|---|
+| 受影响需求 | R-004、R-005、R-006、R-007、R-008（新增） |
+| 受影响 AC | AC-004-1～4、AC-005-1～3、AC-006-1～3、AC-007-1～3、AC-008-1～5 |
+| 受影响模块 / 接口 | `scripts/finish-report.sh`、`scripts/worklog.sh`、各脚本 `usage()`、`scripts/selftest.sh`（新）、CI |
+| 受影响数据 / 配置 | WORKLOG / AUTH 表结构不变；旧 ID 可读 |
+| 受影响测试 | 新增 selftest；CI 增加一步 |
+| 受影响文档 | `docs/03-design.md`、`docs/04-tasks.md`、`docs/05-decisions.md` |
+| 兼容与迁移 | 旧报告仍可处理；无需迁移 |
+| 风险 | 中：幂等键过宽会误跳过，过窄会重复；用 AC-004-4 与 selftest 覆盖 |

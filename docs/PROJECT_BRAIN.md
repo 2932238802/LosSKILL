@@ -43,6 +43,7 @@ git status --short
 - G4 总审通过（`docs/reports/meta-2026-11-20-CR-001.md`，2026-11-20）：三任务 AC 独立复现全通过；无 P0/P1。
 - 已知限制（T-002 G3）：P1 缓存不感知脚本版本（默认缓存已重建缓解，根治 CR-005）；P2 分号枚举残留负向词（候选 CR-006）；P3 `not\s+for` 无词边界。
 - 历史：否定词缺陷曾导致 `plan "给游戏调数值平衡"` 返回 tetrad 第一、mechanics 缺席；T-002 已修复。
+- 报告工具链：F-06 回填/幂等、F-15.1/2/5、selftest/CI 进入 CR-002（G1 待确认）；F-06 在 CR-001 期间用匹配标题绕过，正式报告仍可能踩。
 - 修复输入：`docs/fix-report-2026-11-20.md`（commit `69f1830`）。
 - pre-commit 已生效：`core.hooksPath=.githooks`；缺的是 `scripts/selftest.sh` 与 CI 自测步骤。
 - 残留风险：索引缓存不感知脚本版本（`stale()` 只比 Skill 文件 mtime）；升级后需 `build` 重建缓存。候选 CR-005。
@@ -51,7 +52,9 @@ git status --short
 
 - D-001：修复工作拆为 CR-001～CR-004，首轮 CR-001（路由正确性）。
 - D-002：本轮流程文档根目录 = `docs/`；`WORKLOG.md` / `AUTHORIZATIONS.md` / `STATUS.md` 也放 `docs/`，与 `bootstrap-project.sh` 的项目根约定暂不一致，留待 CR-003 统一。
+- D-006～D-008（CR-002）：范围 = F-06 + F-15.1/2/5 + selftest/CI；幂等键 = 报告路径 + role/gate/cr/task/action；无 python3 时用 `realpath --relative-to` 回退。
 
 ## 7. 最近变更
 
 - 2026-11-20：提交修复报告 `69f1830`；建立 CR-001 文档与任务；T-001 完成并提交 `27d08f3`（G3 通过，AUTH-20261120-001）；T-002 完成并提交 `f149b96`（G3 有条件通过，AUTH-20261120-002，默认缓存已重建）；T-003 完成并提交 `37774e2`（G3 通过，AUTH-20261120-003）。 G4 总审通过：F-01/F-09/F-10 主例达成，残留分号枚举（CR-006）与缓存版本化（CR-005）转后续，非阻断。
+- 2026-11-20：CR-001 收尾提交 `edd0a1b`；启动 CR-002（报告/日志脚本可靠性 + selftest），G1 待确认。
