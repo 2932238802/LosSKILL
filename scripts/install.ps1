@@ -12,7 +12,9 @@
   Skill folder name (e.g. sandra-sales), a comma separated list, or "all" (default).
 
 .PARAMETER Target
-  Destination skills directory. Defaults to <UserProfile>\.dsh\skills.
+  Destination skills directory. Defaults to auto: %CLAUDE_CONFIG_DIR%\skills,
+  else an existing %UserProfile%\.claude\skills, else an existing
+  %UserProfile%\.dsh\skills, else %UserProfile%\.claude\skills.
 
 .PARAMETER Force
   Overwrite a skill folder that already exists in the target.
@@ -38,7 +40,16 @@ if (-not (Test-Path -LiteralPath $sourceRoot)) {
 }
 
 if (-not $Target) {
-  $Target = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.dsh\skills'
+  $userHome = [Environment]::GetFolderPath('UserProfile')
+  if ($env:CLAUDE_CONFIG_DIR) {
+    $Target = Join-Path $env:CLAUDE_CONFIG_DIR 'skills'
+  } elseif (Test-Path -LiteralPath (Join-Path $userHome '.claude\skills')) {
+    $Target = Join-Path $userHome '.claude\skills'
+  } elseif (Test-Path -LiteralPath (Join-Path $userHome '.dsh\skills')) {
+    $Target = Join-Path $userHome '.dsh\skills'
+  } else {
+    $Target = Join-Path $userHome '.claude\skills'
+  }
 }
 
 $Target = [System.IO.Path]::GetFullPath($Target)

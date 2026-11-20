@@ -28,14 +28,14 @@
 在仓库根目录执行：
 
 ```powershell
-# Windows PowerShell（默认目标：%USERPROFILE%\.dsh\skills）
+# Windows PowerShell（默认目标自动探测：.claude\skills 或 .dsh\skills）
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1                                # 全部
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Skill sandra-sales             # 只装这一套
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Target 'D:\MyProject\.claude\skills' -Force
 ```
 
 ```bash
-# macOS / Linux（默认目标：~/.dsh/skills，可用 LOSSKILL_TARGET 覆盖）
+# macOS / Linux（默认目标自动探测，可用 LOSSKILL_TARGET 覆盖）
 ./scripts/install.sh                # 全部
 ./scripts/install.sh sandra-sales   # 单个
 ./scripts/install.sh all ~/.claude/skills
@@ -45,9 +45,26 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Target 'D:\MyPro
 
 脚本参数：`-Skill` 支持单名、逗号分隔多个、或 `all`；`-Target` 指定目录；`-Force` 覆盖已存在的同名 Skill（只删除目标目录下那一个文件夹）。
 
-Skill 安装部分只做复制，不联网、不执行 Skill 里的任何指令；只有你确认执行「个人环境配置」步骤后，脚本才会联网安装软件并写入 home 配置。
+Skill 安装部分只做复制，不联网、不执行 Skill 里的任何指令；只有你确认执行「个人环境配置」步骤后，脚本才会联网安装软件并写入 home 配置。`install.sh` 内部调用 `sync-skills.sh --copy`，两者行为一致。
 
-### 方式三：让 AI 自己装
+### 方式三：同步已安装的 Skill（更新 / 软链接）
+
+`install.sh` 只负责首次复制。日常改完仓库后，用 `sync-skills.sh` 原地更新；想彻底避免副本漂移，用软链接：
+
+```bash
+./scripts/sync-skills.sh --link --force              # 把已安装副本换成指向仓库的软链接
+./scripts/sync-skills.sh --copy --force all          # 复制模式原地覆盖
+./scripts/sync-skills.sh sandra-sales,game-design --link
+./scripts/sync-skills.sh --dry-run                   # 先看会改什么
+```
+
+- `--link`：目标目录里是软链接，仓库一改立即生效；适合自己迭代 Skill。
+- `--copy`（默认）：复制目录；`--force` 覆盖旧副本。
+- 目标默认自动探测：`LOSSKILL_TARGET` > `CLAUDE_CONFIG_DIR/skills` > 已存在的 `~/.claude/skills` > 已存在的 `~/.dsh/skills` > `~/.claude/skills`；也可用第二个位置参数或 `--target` 显式指定。
+- `--force` 只删除目标目录下的那一个同名 Skill，不会清空整个目标目录。
+- 软链接在 Windows 原生 Git Bash 可能需要开发者模式；WSL 下无此问题。
+
+### 方式四：让 AI 自己装
 
 对任何有文件读写能力的 AI 说：
 
@@ -65,7 +82,7 @@ Skill 安装部分只做复制，不联网、不执行 Skill 里的任何指令�
 | Cursor / Windsurf / Cline 等 | 项目内 `.cursor/rules`、`.windsurfrules` 等 | 可把某个 `SKILL.md` 内容贴为规则；或使用支持 skills 目录的插件 |
 | 任意自研 Agent | 任意目录 | 加载规则：读 `SKILL.md` 的 frontmatter，`description` 命中即加载正文 |
 
-> 本仓库两个安装脚本的默认目标都是 `~/.dsh/skills`（Windows 与 Linux/macOS 一致）。装到别的工具时用 `-Target` 或第二个参数显式指定即可，例如 `./scripts/install.sh all ~/.claude/skills`。
+> 两个安装脚本默认都会自动探测目标：`CLAUDE_CONFIG_DIR` / `LOSSKILL_TARGET` > 已存在的 `~/.claude/skills` > 已存在的 `~/.dsh/skills` > `~/.claude/skills`。装到别的工具时用 `-Target` 或第二个参数显式指定即可，例如 `./scripts/install.sh all ~/.claude/skills`。
 
 ---
 
@@ -252,6 +269,7 @@ LosSKILL/
    ├─ install.sh          # 分步安装（WSL2 / Linux / macOS：Skill + 环境 + SSH）
    ├─ install.ps1         # 分步安装（Windows：Skill + 环境 + SSH + winget）
    ├─ install-claude-config.sh  # 部署 configs/claude/ 到 ~/.claude（幂等，带备份）
+   ├─ sync-skills.sh      # 同步 Skill：copy / link / force / dry-run，自动探测目标
    ├─ install-dsh-plugins.sh  # 给 dsh 的 profile 批量装插件（幂等，npm 直连）
    ├─ install-blesh.sh    # 可选：装 ble.sh，实现「边打字边列历史」
    ├─ setup-ssh-git.sh    # 只做 SSH 密钥与 GitHub 提交方式
