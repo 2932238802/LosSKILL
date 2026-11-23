@@ -269,3 +269,23 @@ python3 scripts/capability_index.py brief --cwd .
 - 触发信号要写**客户/用户的原话**，不要写抽象名词（「含糊即拒绝」不如「客户反复说再考虑考虑」好命中）
 - 「不用于」列必须写，否则 AI 会在相邻场景误触发
 - 一个 Skill 只解决一类任务；跨域时在「二」里写组合链路，不要合并 Skill
+
+---
+## 十一、本地个人 Skill（2026-11-23 归档）
+
+| Skill | 用途 | 路径 |
+|---|---|---|
+| [`red-tie-xhs`](skills/red-tie-xhs/SKILL.md) | 小红书知识图文生成（选题纠偏 + 卡片 + 标题/正文/标签） | `skills/red-tie-xhs/` |
+| [`cangjie-skill`](skills/cangjie-skill/SKILL.md) | 拆书 / 长视频 / 播客 / 课程蒸馏成可执行 skill | `skills/cangjie-skill/` |
+| [`frontend-design`](skills/frontend-design/SKILL.md) | 前端视觉设计与审美方向 | `skills/frontend-design/` |
+| [`humanizer-zh-academic`](skills/humanizer-zh-academic/SKILL.md) | 中文学术写作去 AIGC 痕迹 | `skills/humanizer-zh-academic/` |
+| [`prose-micro`](skills/prose-micro/SKILL.md) | 中文散文 / 随笔（小切口、平铺叙事） | `skills/prose-micro/` |
+| [`shuting-perspective`](skills/shuting-perspective/SKILL.md) | 舒婷视角：亲密关系与对等模型 | `skills/shuting-perspective/` |
+| [`space-xhs-account-audit`](skills/space-xhs-account-audit/SKILL.md) | 小红书账号诊断与竞品对标 | `skills/space-xhs-account-audit/` |
+| [`space-xhs-buddy`](skills/space-xhs-buddy/SKILL.md) | 小红书创作总控台 | `skills/space-xhs-buddy/` |
+| [`space-xhs-hotspot`](skills/space-xhs-hotspot/SKILL.md) | 小红书热点与选题 | `skills/space-xhs-hotspot/` |
+| [`space-xhs-note-analytics`](skills/space-xhs-note-analytics/SKILL.md) | 小红书笔记数据复盘 | `skills/space-xhs-note-analytics/` |
+| [`space-xhs-positioning`](skills/space-xhs-positioning/SKILL.md) | 小红书起号定位 | `skills/space-xhs-positioning/` |
+| [`space-xhs-title`](skills/space-xhs-title/SKILL.md) | 小红书标题生成与评分 | `skills/space-xhs-title/` |
+| [`space-xhs-writer`](skills/space-xhs-writer/SKILL.md) | 小红书正文撰写 | `skills/space-xhs-writer/` |
+| [`webapp-testing`](skills/webapp-testing/SKILL.md) | 本地 Web 应用测试（Playwright） | `skills/webapp-testing/` |

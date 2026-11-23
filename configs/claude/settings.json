@@ -78,5 +78,6 @@
     "type": "command",
     "command": "python3 ~/.claude/statusline.py"
   },
-  "theme": "custom:catppuccin-mocha"
+  "theme": "custom:catppuccin-mocha",
+  "skipWorkflowUsageWarning": true
 }
