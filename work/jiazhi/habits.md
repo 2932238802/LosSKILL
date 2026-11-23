@@ -9,5 +9,6 @@
   - 备注：只放进度、阻塞、上机状态。
 - **MCP**：Teambition 官方 HTTP MCP（OAuth）读写任务；`dingtalk-doc` Cookie 只读；`dws` 组织 CLI 权限未开通。
 - **项目口径**：车端参数统一用 `flash-agv-parameters`；App 遥控 WS 协议 V1.0；设计文档与协议冲突时以协议为准。
-- **Git/CI**：`flash-agv` 分支/ tag；一单一个 commit；tag `1.2611.1+remote-control`；本次 branch `#163776`、tag `#163777` 均 Passed。
+- **Git/CI**：`flash-agv` 分支/ tag；一单一个 commit；tag `1.2611.1+remote-control`。旧基线 `1f808aaa` 的 branch `#163776`、tag `#163777` 均 Passed；2026-11-23 嫁接后分支 `feat/remote-control-web` @ `da2ae3e1` 已推送，tag 是否跟随待定。
 - **公司边界**：任务 ID、链接、字段 ID、凭证、MCP 配置只在本目录使用。
+- **文档归档**：Doc Agent 开发文档 → `docs/archive/<YYYYMMDD>/N-<主题>-开发文档.md`，同日放 `README.md` 子索引（状态总览 + 待决事项）；角色执行报告 → `docs/reports/`；两者都登记 `WORKLOG.md`。
