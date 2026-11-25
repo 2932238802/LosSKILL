@@ -197,18 +197,18 @@ if [ -d "$(dirname "$worklog")" ]; then
 else
   worklog_dir="$(pwd)"
 fi
-rel_report="$report"
+rel_report=""
+# Windows 上 python3 可能是 Store 假壳（存在但执行失败），失败时回退 realpath
 if command -v python3 >/dev/null 2>&1; then
-  rel_report="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$report_abs" "$worklog_dir")"
-elif command -v realpath >/dev/null 2>&1; then
-  # 无 python3 时用 realpath 回退，仍只写相对链接（设计 §6.5）
-  rel_report="$(realpath --relative-to="$worklog_dir" "$report_abs" 2>/dev/null)" || rel_report=""
-  if [ -z "$rel_report" ]; then
-    echo "Error: 无法计算相对路径（realpath --relative-to 失败）：$report_abs 相对于 $worklog_dir" >&2
-    exit 2
+  rel_report="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$report_abs" "$worklog_dir" 2>/dev/null || true)"
+fi
+if [ -z "$rel_report" ]; then
+  if command -v realpath >/dev/null 2>&1; then
+    rel_report="$(realpath --relative-to="$worklog_dir" "$report_abs" 2>/dev/null || true)"
   fi
-else
-  echo "Error: 缺少 python3 与 realpath，无法计算相对路径；请安装其一（脚本不写绝对链接）" >&2
+fi
+if [ -z "$rel_report" ]; then
+  echo "Error: 无法计算相对路径（python3 与 realpath 均不可用）：$report_abs 相对于 $worklog_dir" >&2
   exit 2
 fi
 
@@ -220,7 +220,11 @@ if [ "$do_auth" -eq 1 ] && [ -n "$auth_level" ] && [ "$auth_level" != "-" ]; the
     echo "Error: $ledger 缺少 <!-- auth:rows --> 标记" >&2; exit 1
   }
   case "$auth_level" in
-    A1) [ "$role" = "review" ] || { echo "Error: A1 只能由 review 记录" >&2; exit 2; } ;;
+    A1) case "$role" in
+          review) ;;
+          steward|meta) ;;   # 例外：用户要求 Dev 自行提交时，由 Steward/Meta 记账
+          *) echo "Error: A1 只能由 review（或例外场景下的 steward/meta）记录" >&2; exit 2 ;;
+        esac ;;
     A2) case "$role" in steward|meta) ;; *) echo "Error: A2 只能由 steward/meta 记录" >&2; exit 2 ;; esac ;;
     A3) echo "Error: A3 只能由用户确认，脚本不代记" >&2; exit 2 ;;
     *) echo "Error: 未知 auth_level：$auth_level" >&2; exit 2 ;;

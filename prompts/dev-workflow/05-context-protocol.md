@@ -17,7 +17,8 @@
 
 ## 2. 开工第 0 步（所有角色）
 
-1. 读 `PROJECT_BRAIN.md` 与 `<文档根目录>/DOCS_CONTRACT.md`。不存在时：说明缺失，建议先跑 `scripts/bootstrap-project.sh` / `scripts/init-docs.sh` 或让 Steward 补建；不要假装自己知道全局。只写契约登记的路径。
+1. 读 `PROJECT_BRAIN.md` 与 `<文档根目录>/DOCS_CONTRACT.md`。不存在时：说明缺失，建议先跑 `$LOSSKILL_HOME/scripts/bootstrap-project.sh` / `$LOSSKILL_HOME/scripts/init-docs.sh` 或让 Steward 补建；不要假装自己知道全局。只写契约登记的路径。
+   - `LOSSKILL_HOME` 应从大脑第 1 节读取；缺失时问用户，不得假设当前项目下有 `scripts/`。
 2. 读与任务相关的模块卡 `brain/modules/<module>.md`（如果有）。
 3. 按角色读取任务文档（CR/AC/设计/任务/决策）。
 4. 只读**改动面 + 直接调用方 + 相关测试**的代码。
@@ -75,7 +76,7 @@
 - 验证命令带「最后验证」日期；超过 90 天标「可能过期」。
 - 架构、契约、不变量变化时，Steward 必须在「最近变更」留记录。
 - 大脑超过 ~200 行时，把模块细节拆到项目根 `brain/modules/<module>.md`（与 `PROJECT_BRAIN.md` 同级，不放进文档根目录）。
-- 新增文档路径必须更新 `<文档根目录>/DOCS_CONTRACT.md` 并获用户批准；未登记路径由 `scripts/check-docs.sh` 拦截。
+- 新增文档路径必须更新 `<文档根目录>/DOCS_CONTRACT.md` 并获用户批准；未登记路径由 `$LOSSKILL_HOME/scripts/check-docs.sh` 拦截。
 - 大脑与代码冲突时，**以代码 + 实际运行结果为准**，并立即标记大脑过期。
 
 ### 7.1 成熟度
@@ -135,8 +136,8 @@ Review 开工时读它，但**不把它当证据**：先独立看 diff 与影响
 | 报告 / Commit / AUTH | 详细证据的指针 |
 | 状态 | 完成 / 返工 / 阻塞 / 有条件通过… |
 
-- 优先用 `scripts/finish-report.sh --report <报告路径>`：它解析报告头部的 `report-meta`，同时写 WORKLOG 与 AUTH，并回填 `LOG-ID`。
-- 手工补录时才直接用 `scripts/worklog.sh`（在项目根执行，`--file WORKLOG.md`），避免格式漂移；报告写完后立即记一行，并在报告里写 `LOG-ID`。
+- 优先用 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告路径>`：它解析报告头部的 `report-meta`，同时写 WORKLOG 与 AUTH，并回填 `LOG-ID`。
+- 手工补录时才直接用 `$LOSSKILL_HOME/scripts/worklog.sh`（在项目根执行，`--file WORKLOG.md`），避免格式漂移；报告写完后立即记一行，并在报告里写 `LOG-ID`。
 - **不要**把它当 STATUS（当前状态）或大脑（架构事实）：它是历史索引。
 - Steward 在 G4 审计：每个门禁/报告是否都有对应行；缺失记 P1 流程缺陷。
 - 更正不删旧行：追加一条“更正”，在「做了什么」里引用原 `LOG-ID`。

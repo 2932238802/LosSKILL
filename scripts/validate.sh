@@ -101,6 +101,14 @@ if [ -f "$repo_root/AGENTS.md" ]; then
     fi
 fi
 
+# ---- dev-workflow 渲染一致性 ----
+render_script="$repo_root/scripts/render-dev-workflow.sh"
+if [ -x "$render_script" ]; then
+    if ! "$render_script" --check >/dev/null 2>&1; then
+        err "dev-workflow: 角色文件或 prompts/ 副本落后（运行 scripts/render-dev-workflow.sh）"
+    fi
+fi
+
 echo "Checked $checked skill(s) under $skills_root"
 echo
 [ "$warnings" -gt 0 ] && echo "WARNINGS ($warnings)"

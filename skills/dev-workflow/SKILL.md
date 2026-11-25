@@ -29,7 +29,8 @@ description: |
 
 - 所有角色**开工第 0 步读它**，再读任务相关文档与改动面代码，不通读全仓库。
 - 每份报告必须有「上下文增量」；Steward 在 G2.5 合并回大脑。
-- 新项目用 `scripts/bootstrap-project.sh` 生成；协议细节见 `references/05-context-protocol.md`。
+- 新项目用 `$LOSSKILL_HOME/scripts/bootstrap-project.sh` 生成；协议细节见 `references/05-context-protocol.md`。
+- `LOSSKILL_HOME` 指向 LosSKILL 仓库根目录，记录在 `PROJECT_BRAIN.md` 第 1 节（bootstrap 会自动写入）。所有脚本命令统一写成 `$LOSSKILL_HOME/scripts/...`；`LOSSKILL_HOME` 缺失时先问用户，**不得假设当前项目下有 `scripts/`**。
 
 ## 0.6 授权（委托信封）
 
@@ -49,7 +50,7 @@ description: |
 
 ## 0.7 工作日志
 
-每个角色交付报告后，填好报告头部的 `report-meta`，运行 LosSKILL 的 `scripts/finish-report.sh --report <报告>`：它同时写 `WORKLOG.md` 与（如填写了 auth 字段）`AUTHORIZATIONS.md`，并回填 `LOG-ID`。Steward 在 G4 审计两本账。
+每个角色交付报告后，填好报告头部的 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告>`：它同时写 `WORKLOG.md` 与（如填写了 auth 字段）`AUTHORIZATIONS.md`，并回填 `LOG-ID`。Steward 在 G4 审计两本账。
 
 它是跨角色、跨 CR 的历史索引，不是 STATUS 或大脑的替代品。细节见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
 
@@ -57,19 +58,19 @@ description: |
 
 `<文档根目录>/DOCS_CONTRACT.md` 是文档根目录的**唯一契约**：列出允许的文件/目录、唯一职责、维护者、写入规则，以及「单一事实来源」表。未登记的路径一律视为流程违规。
 
-- **首次建立文档**：`./scripts/init-docs.sh <文档根目录>`，一次性铺齐 `DOCS_CONTRACT.md`、`STATUS.md`、`00`–`05`、`CHANGELOG.md`、`reports/review-index.md`、`reports/archive/`、`assets/`。
+- **首次建立文档**：`$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>`，一次性铺齐 `DOCS_CONTRACT.md`、`STATUS.md`、`00`–`05`、`CHANGELOG.md`、`reports/review-index.md`、`reports/archive/`、`assets/`。
 - **开工第 0 步**：读 `PROJECT_BRAIN.md` 后读 `DOCS_CONTRACT.md`，再读任务文档。
 - **不得新建未登记的文件/目录**。确需新增时，由 Doc 说明用途、与现有路径的重叠、维护者，经用户批准后更新契约，再创建。
 - **报告命名固定**：`reports/<角色>-<YYYY-MM-DD>-<范围>.md`；只允许 `archive/`、`ci/` 两个子目录。
 - **CI 区域只读**：`ci/` 与 `reports/ci/` 由 ci-artifacts MCP 写入，Agent 只读。
 - **G1 出口三件套**（缺一不得派发 Dev）：
   1. 用户明确确认 CR/R/AC/T；
-  2. `./scripts/check-docs.sh <文档根目录> --gate g1` 退出码 0（0 ERROR）；
+  2. `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录> --gate g1` 退出码 0（0 ERROR）；
   3. `STATUS.md` 写 `G1 已确认：是`。
 
 ## 1. 开工
 
-1. 确认 **文档根目录**。默认 `LosAngelousDocs/`；不得使用 `docs/`（易与项目自带 docs 重名）。项目已有自己的文档目录时，先确认沿用还是新建 `LosAngelousDocs/`；新建时运行 `scripts/init-docs.sh <文档根目录>`。
+1. 确认 **文档根目录**。默认 `LosAngelousDocs/`；不得使用 `docs/`（易与项目自带 docs 重名）。项目已有自己的文档目录时，先确认沿用还是新建 `LosAngelousDocs/`；新建时运行 `$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>`。
 2. 收集 **项目现状** 与 **本次需求**；缺什么问什么，不猜。
 3. 新需求 / 变更先做 **G0**：产出 `CR-xxx` 需求卡（问题、价值、成功指标、NFR、选项与代价），由用户选择做 / 拆小 / spike / 缓 / 不做。
 4. G0 通过后写 R/AC/T、影响分析与追溯矩阵，发 **G1 摘要**，等用户明确确认。
@@ -88,19 +89,26 @@ G0 需求受理（Doc + 用户）
 
 - **G1 未确认，不得启动 Dev**。
 - **G1 出口硬检查**：用户确认 + `check-docs --gate g1` 0 ERROR + `STATUS.md` 的 `G1 已确认：是`，三者缺一不得派发。
+- **G2/G3/G4 同样是机器检查**：`$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录> --gate g2|g3|g4`，角色交付前必须 0 ERROR（g2 验 dev 报告与 AC 映射；g3 验 review 报告、结论与 review-index；g4 验 meta 报告或「G4 豁免」）。
 - **G2 未完成，不得启动 Review**；G2.5 只合并增量，不替代评审。
 - **G3 未通过，不得启动 Meta**。
 - 跳门必须由用户明确授权，并写进 `STATUS.md` 与报告。
 - 角色独立性：Review 不采信 Dev 报告作证据；Meta 不采信 Review 结论作证据。
 
-### 2.1 提交与推送（G3 通过后）
+### 2.1 提交与推送（固定时序）
 
-- **新任务开工前先检查工作区**：`git status` 若有未提交改动，先按提交机制提交（与用户确认 commit 信息并推送），再开始新需求；不得把上一个需求的改动带进新任务。
-- **G3 评审通过后即可提交**，但提交前必须有对应的 A1 授权条目（Review 批准并记账）；push 属 A2，由 Steward 批准。不再默认等 G4；G4 如需复验，以提交后的 HEAD 为基线，或在报告中说明“提交发生在总审期间”。
+**谁在什么时候提交只有这一条链，其他写法一律视为流程违规：**
+
+1. **Dev 不 commit**：G2 交付工作区改动 + 变更清单 + 报告（commit 列写「工作区未提交」）。
+2. **Review 审工作区**：用 `git diff` 评审；G3 结论给出后，**仅在通过 / 有条件通过时**记 A1（commit 授权）并回填 `AUTH-*`。
+3. **主会话执行 commit**：核对 A1 条目、与用户确认提交信息后，由主会话执行 `git add` / `git commit`；主会话不改业务代码。提交后把真实 hash 回填报告、`STATUS.md` 与版本表。
+4. **push 属 A2**：由 Steward 批准并记账；用户明确要求才推送，默认 `origin/main`。
+
+- **例外（用户明确要求 Dev 自行提交）**：Dev 可在 G2 提交，但 A1 必须由 Steward 记账（Review 此时尚未评审，不得自证）；G3 的评审对象即该 commit。
 - **一个需求一个 commit**：不同 CR 的代码、文档、报告不混在同一个提交里；跨 CR 的同一文件用 hunk 级暂存。
+- **新任务开工前先检查工作区**：`git status` 有未提交改动时，先结束上一个需求的提交，再开始新需求；不得把上一个需求的改动带进新任务。
 - **提交信息与用户交互式确认**：先给出一条建议信息（`[feat]` / `[fix]` / `[docs]` + 一句话），请用户补充或修改，确认后再执行 `git commit`。
-- 推送目标遵循项目约定，默认 `origin/main`；推送前确认工作区只包含本次需求的内容。
-- 提交后回填版本表 commit 列与归档状态，并把真实 hash 写进报告与 `STATUS.md`。
+- **G4 复验基线**：以提交后的 HEAD 为准；若提交发生在总审期间，在报告中说明。
 - 未经用户确认的提交信息或推送目标，不得自行决定。
 
 ### 2.2 G4 触发规则（按复杂度，避免过度总审）
@@ -112,12 +120,46 @@ G4 是成本最高的门禁，按改动风险选择，不默认全量启动：
 - **跳过时**：在 `STATUS.md` 记“G4 豁免（用户授权 + 适用规则）”，保留 G3 报告与提交；版本表、归档状态与发布说明仍要回填。
 - **拿不准**：默认启动 G4，或先问用户；不得以“节省 token”为由跳过高风险改动。
 
+### 2.3 返工轮次上限
+
+同一 CR 在同一门禁的返工**最多 2 轮**；第 3 轮必须停下，由用户在以下选项中决定：
+
+- 继续（写明为什么前两轮没收敛、本轮改法有何不同）；
+- 回到 G1 重定范围或 AC；
+- 拆成更小的 CR；
+- 暂停或放弃。
+
+补充规则：
+
+- Review「不通过」只把 P0/P1 列为阻断项；P2/P3 不阻断，可给「有条件通过」并转后续任务。
+- 每轮返工把上一轮的 finding 编号原样带回，不重写证据链。
+- 超过 2 轮仍不收敛，通常是需求/AC 问题，不是 Dev 手速问题：优先回 Doc，而不是继续加压 Dev。
+
+### 2.4 S 快车道（与 AGENTS.md 的 S 小改对齐）
+
+**适用条件（全部满足）**：单文件或 ≤ 3 个文件；不改接口 / 数据模型 / 鉴权 / 依赖 / 构建配置；不新增文档路径；风险低。
+
+**流程**：
+
+```
+G0 一行记录（问题 + 范围）→ G1-lite（1 个 CR / R / AC / T，用户确认）
+→ Dev 实现并自证 → Review 快评（跑构建与相关测试 + 看 diff + 判 AC）
+→ 主会话 commit（Review 记 A1）→ 用户验收
+```
+
+- **保留**：编号、AC、证据格式、`check-docs --gate g1`、A1 记账、主会话 commit。
+- **跳过**：G0 的选项讨论（拆小/spike 等）、G2.5、G3.5、G4、Review 的 15 维全量清单。
+- **Review 快评**：只跑构建 + 相关测试 + 看 diff + 逐条判 AC；结论仍用「通过 / 有条件通过 / 不通过」。
+- **升级触发**：一旦碰到接口、数据、鉴权、依赖、多模块或新增路径，立即停止 S 通道，转完整流程并说明原因。
+- **记录**：`STATUS.md` 写 `通道：S`，报告与 WORKLOG 标注「S 通道」。
+
 ## 3. 派发开发 / 评审 / 总审
 
 每个执行角色使用独立上下文，简报必须自包含：
 
 ```
 【项目路径】<绝对路径>
+【LOSSKILL_HOME】<LosSKILL 仓库根目录绝对路径；脚本统一用 $LOSSKILL_HOME/scripts/...>
 【文档根目录】<绝对路径>
 【项目大脑】<PROJECT_BRAIN.md 路径；没有写"缺失">
 【本次任务】T-xxx / CR-xxx / R-xxx（版本）
@@ -135,7 +177,8 @@ G4 是成本最高的门禁，按改动风险选择，不默认全量启动：
 
 - 维护文档：需求卡、R/AC/T、设计、影响分析、追溯矩阵、决策、STATUS。
 - 维护 `DOCS_CONTRACT.md` 的路径登记：新增路径必须先说明用途、重叠与维护者，获用户批准后再创建。
-- G1 前运行 `./scripts/check-docs.sh <文档根目录> --gate g1`，把退出码与关键行写进 G1 摘要；非 0 不得派发。
+- G1 前运行 `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录> --gate g1`，把退出码与关键行写进 G1 摘要；非 0 不得派发。
+- G3 通过且 Review 已记 A1 后，按 §2.1 执行本次 commit；提交信息先经用户确认。主会话只做提交，不改业务代码。
 - 核对执行角色的报告是否包含：变更清单、逐条 AC 证据、命令输出、回归、发布/回滚、偏差、交接块。
 - 更新 `STATUS.md` 的当前 CR、门禁、任务状态、阻塞、下一步、报告链接。
 - 如实转达结论；不替执行角色补充未验证的结论。
@@ -159,7 +202,7 @@ G4 是成本最高的门禁，按改动风险选择，不默认全量启动：
 - 交给谁、依据哪个门禁/结论、携带哪些材料；
 - 一段可直接复制发送给下一位 Agent 的 Prompt（真实路径、ID、版本；未知项写“待确认”）；
 - 「上下文增量」：触及模块、不变量/契约变化、测试变化、大脑需要更新的节、发现的过期信息。
-- 「工作日志」：`LOG-ID`（已用 `scripts/finish-report.sh` 追加；AUTH 条目同一脚本写入）。
+- 「工作日志」：`LOG-ID`（已用 `$LOSSKILL_HOME/scripts/finish-report.sh` 追加；AUTH 条目同一脚本写入）。
 
 报告落盘：`<文档根目录>/reports/<角色>-<YYYY-MM-DD>-<范围>.md`。
 

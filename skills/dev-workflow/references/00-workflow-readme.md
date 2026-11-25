@@ -36,18 +36,18 @@
 
 ## 二、共享约定（已写进每份 Prompt）
 
-四份 Prompt 都内嵌了同一套约定，改的时候要四处同步：
+四份 Prompt 都内嵌了同一套约定。正文只在 `_shared-conventions.md` 维护，由 `scripts/render-dev-workflow.sh` 渲染进 01–04 并同步 `prompts/`；**不要手工改 01–04 中标记内的共享块**：
 
 | 约定 | 内容 |
 |---|---|
 | 文档目录 | 默认 `LosAngelousDocs/`，不再使用 `docs/`（避免与项目自带 docs 重名）。用户明确指定的路径优先；项目已有自己的文档目录时先确认沿用还是新建；都没有则必须询问 |
-| 文档树契约 | `<文档根目录>/DOCS_CONTRACT.md` 是唯一契约：允许的路径、唯一职责、维护者、单一事实来源；未登记路径由 `scripts/check-docs.sh` 拦截 |
+| 文档树契约 | `<文档根目录>/DOCS_CONTRACT.md` 是唯一契约：允许的路径、唯一职责、维护者、单一事实来源；未登记路径由 `$LOSSKILL_HOME/scripts/check-docs.sh` 拦截 |
 | 标准文档集 | `DOCS_CONTRACT` / `STATUS` / `00-overview` / `00-requirements-intake` / `01-requirements` / `02-architecture` / `03-design` / `04-tasks` / `05-decisions` / `CHANGELOG` / `reports/`（含 `review-index.md`、`archive/`）/ `assets/` / `ci/`（MCP 只读） |
 | ID 规则 | 需求卡 `CR-xxx`、需求 `R-xxx`（变更升版 `v2`）、验收标准 `AC-xxx`、任务 `T-xxx`、决策 `D-xxx`、假设 `A-xxx`；分配后不复用 |
 | 门禁 | `G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成 → `G2.5` 上下文增量合并 → `G3` 评审通过 → `G3.5` 跨模块检查（可选）→ `G4` 总审通过；跳门需用户授权 |
 | 上下文 | 所有角色第 0 步读 `PROJECT_BRAIN.md`；每份报告带「上下文增量」；阅读预算 S ≤ 5 / M ≤ 15 / L 分阶段；同一 CR 内 Dev/Steward 复用会话 |
-| 授权 | 用户在 G1 批准一次「范围信封」；A1 由 Review 记账，A2 由 Steward（信封可委托 Review 批低风险），A3 只由用户；Review 不得自批 G3；台账 `AUTHORIZATIONS.md` 只追加 |
-| 工作日志 | 每个角色交付报告后填 `report-meta`，运行 `scripts/finish-report.sh`，自动写 `WORKLOG.md` 与（如填写）`AUTH-*`；Steward 在 G4 审计 |
+| 授权 | 用户在 G1 批准一次「范围信封」；A1 默认由 Review 记账（Dev 自行提交的例外由 Steward/Meta），A2 由 Steward（信封可委托 Review 批低风险），A3 只由用户；Review 不得自批 G3；台账 `AUTHORIZATIONS.md` 只追加 |
+| 工作日志 | 每个角色交付报告后填 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh`，自动写 `WORKLOG.md` 与（如填写）`AUTH-*`；Steward 在 G4 审计 |
 | 任务状态 | `TODO` / `DOING` / `DONE` / `BLOCKED` / `DROPPED` |
 | 证据格式 | `文件:行号`、命令 + 关键输出、commit hash；无证据必须标 `[推断]` |
 | 严重度 | `P0` 阻断 / `P1` 严重 / `P2` 一般 / `P3` 建议 |
@@ -79,8 +79,8 @@ CR 成功指标 → R/AC → Dev 逐条实现并验证 → Review 逐条判定 �
 ```bash
 # 1. 需求受理 + 文档
 新会话 → 发送 01-doc-agent.md → 先确认【文档生成路径】【项目现状】【本次需求】
-（首次建立：scripts/init-docs.sh <文档根目录>；先产出 CR 需求卡让你选"做 / 拆小 / 先 spike / 缓办 / 不做"= G0；确认后才写 R/AC/T）
-（G1 前：scripts/check-docs.sh <文档根目录> --gate g1 必须 0 ERROR，STATUS.md 写 G1 已确认：是）
+（首次建立：$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>；先产出 CR 需求卡让你选"做 / 拆小 / 先 spike / 缓办 / 不做"= G0；确认后才写 R/AC/T）
+（G1 前：$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录> --gate g1 必须 0 ERROR，STATUS.md 写 G1 已确认：是）
 
 # 2. 开发（G1 确认后）
 新会话 → 发送 02-dev-agent.md → 确认【项目路径】【本次任务（CR/T）】【上一轮反馈】
@@ -108,6 +108,10 @@ CR 成功指标 → R/AC → Dev 逐条实现并验证 → Review 逐条判定 �
 | **G4** 总审通过 | Steward/Meta + 用户 | 五层总审通过，UAT/结果层达成，发布准备就绪 |
 
 > 跳门不是绝对禁止，但必须由用户明确授权，并在报告里写明原因与影响。
+
+> 门禁有机器检查：`check-docs.sh <文档根目录> --gate g1|g2|g3|g4`。G1 验需求/AC/任务与确认标记；G2 验 dev 报告与 AC 映射；G3 验 review 报告、结论与 review-index；G4 验 meta 报告或「G4 豁免」。
+
+> 提交时序固定：Dev 不 commit → Review 在 G3 结论后记 A1 → 主会话执行 commit → push 属 A2，由 Steward 批准。用户明确要求 Dev 自行提交时，A1 改由 Steward 记账。
 
 ### 一个需求到来时的完整链路
 
@@ -171,9 +175,9 @@ CR 成功指标 → R/AC → Dev 逐条实现并验证 → Review 逐条判定 �
 ### 推荐的节奏
 
 - **大项目 / 首次接入**：完整跑 `G0 → G1 → Dev（按任务）→ Review（每个任务或每组）→ Meta + UAT（每轮）`。
-- **小改动 / 修 Bug**：至少 `G0（确认是改什么）→ Dev → Review`；合并前仍建议跑 Meta，它专门负责发现"两边都说没问题"的问题，以及"AC 对但需求没解决"的问题。
+- **小改动 / 修 Bug**：满足 S 条件时走「S 快车道」（一行 G0 → G1-lite → Dev → Review 快评 → 提交 → 用户验收），跳过 G2.5/G3.5/G4；超出 S 条件立即转完整流程。
 - **需求中途变化**：先建新 `CR-xxx` 或升版 `R-xxx v2`，重新确认 G1 与影响面，再让 Dev 动手；不要把变更直接塞给 Dev。
-- **返工**：把 Meta 的返工指令原样贴给对应 Agent 的下一轮，作为【上一轮反馈】。不要重写，保留证据链。
+- **返工**：把 Meta 的返工指令原样贴给对应 Agent 的下一轮，作为【上一轮反馈】。不要重写，保留证据链。同一门禁最多返工 2 轮，第 3 轮必须由用户裁决（继续 / 回 G1 / 拆小 / 放弃）。
 
 ### 每轮需要带上的材料
 
@@ -186,27 +190,15 @@ CR 成功指标 → R/AC → Dev 逐条实现并验证 → Review 逐条判定 �
 
 ---
 
-## 四、设计取舍（为什么不是 Skill）
+## 四、设计取舍（为什么角色提示词不各自做成 Skill）
 
-这四个 Prompt 没有做成仓库里那种"触发式 Skill"，原因：
+`dev-workflow` 本身是触发式 Skill（用户说「按开发工作流来」时加载）；四份角色 Prompt 是它的 `references/`，不单独注册为 Skill：
 
-- Skill 靠 `description` 自动触发，适合"用户说了某句话就该用某种方法"；
-- 这四个是**常驻角色身份**，需要用户主动选择，且要求 Agent 在整场会话里保持同一边界；
-- 做成 Skill 反而会在不该触发时触发，且无法携带"你不许做什么"这类强约束。
+- 角色是**常驻身份**，需要主会话主动派发，并要求 Agent 在整场会话里保持同一边界；
+- 单独做成 Skill 会在不该触发时触发，也难携带「你不许做什么」这类强约束；
+- 在 Claude Code 中，它们由 `scripts/install-claude-config.sh` 从 `references/` 生成 `~/.claude/agents/{doc,dev,review,meta-review}-agent.md`（frontmatter 写 `name` / `description` / `tools`），由主会话调度。
 
-如果要在 Claude Code 里进一步自动化，可以把每个文件的内容转成 `.claude/agents/<name>.md` 的自定义 subagent（frontmatter 里写 `name` / `description` / `tools`），正文直接复用本文件。例如：
-
-```markdown
----
-name: doc-agent
-description: 生成或维护项目开发文档。只读调研，不写代码。
-tools: Read, Grep, Glob, Bash, Write, Edit
----
-
-（把 01-doc-agent.md 的正文粘到这里）
-```
-
-注意：这会改变工作方式（subagent 由主会话调度，而不是你手动切换上下文），适合流程稳定后再做。
+注意：subagent 模式会改变工作方式（由主会话调度，而不是你手动切换上下文）；不装 subagent 时，仍可把对应文件全文发给一个全新会话。
 
 ---
 
@@ -218,7 +210,7 @@ tools: Read, Grep, Glob, Bash, Write, Edit
 
 ### Q：Agent 能自己在文档根目录下新建目录/文件吗？
 
-不能。`DOCS_CONTRACT.md` 是唯一路径清单；未登记路径会被 `scripts/check-docs.sh` 在 G1/G3/G4 拦截。确需新增时，由 Doc 说明用途、与现有路径的重叠、维护者，用户批准后更新契约再创建。报告命名也固定为 `reports/<角色>-<YYYY-MM-DD>-<范围>.md`。
+不能。`DOCS_CONTRACT.md` 是唯一路径清单；未登记路径会被 `$LOSSKILL_HOME/scripts/check-docs.sh` 在 G1/G3/G4 拦截。确需新增时，由 Doc 说明用途、与现有路径的重叠、维护者，用户批准后更新契约再创建。报告命名也固定为 `reports/<角色>-<YYYY-MM-DD>-<范围>.md`。
 
 ### Q：项目已经有一套文档怎么办？
 
@@ -286,7 +278,7 @@ Meta 的价值恰恰在于**不信任 Review**，并多一层结果验收。如�
 
 ### Q：怎么知道每个 Agent 做过什么？
 
-看项目根 `WORKLOG.md`：每行有 ID、时间、角色、门禁、CR/T、动作、报告链接、commit、AUTH、状态。填好报告头部的 `report-meta` 后运行 `scripts/finish-report.sh`，会自动追加并回填 `LOG-ID`；详细证据仍在 `reports/`。STATUS 只记当前状态，WORKLOG 记历史流水。
+看项目根 `WORKLOG.md`：每行有 ID、时间、角色、门禁、CR/T、动作、报告链接、commit、AUTH、状态。填好报告头部的 `report-meta` 后运行 `$LOSSKILL_HOME/scripts/finish-report.sh`，会自动追加并回填 `LOG-ID`；详细证据仍在 `reports/`。STATUS 只记当前状态，WORKLOG 记历史流水。
 
 ### Q：中文项目 / 英文项目都适用吗？
 
@@ -297,8 +289,9 @@ Meta 的价值恰恰在于**不信任 Review**，并多一层结果验收。如�
 ## 六、文件清单
 
 ```
-prompts/dev-workflow/
-├─ README.md                 ← 本文件
+skills/dev-workflow/references/
+├─ 00-workflow-readme.md     ← 本文件
+├─ _shared-conventions.md    ← 共享约定单一正文（渲染进 01–04）
 ├─ 01-doc-agent.md           ← 文档生成与维护
 ├─ 02-dev-agent.md           ← 开发实现
 ├─ 03-review-agent.md        ← 独立代码评审
@@ -306,3 +299,5 @@ prompts/dev-workflow/
 ├─ 05-context-protocol.md    ← 上下文协议（大脑 / 增量 / 预算 / 复用）
 └─ 06-authorization.md       ← 授权协议（信封 / A0–A3 / 台账）
 ```
+
+渲染与副本同步：`./scripts/render-dev-workflow.sh`；只检查不写入：`--check`（`validate.sh` 会调用它，落后即报错）。

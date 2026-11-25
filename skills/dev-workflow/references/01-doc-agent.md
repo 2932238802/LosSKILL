@@ -38,15 +38,17 @@
 
 ## 0.5 上下文协议（开工第 0 步）
 
-- 先读项目根 `PROJECT_BRAIN.md`；缺失时先向用户说明，并建议用 `scripts/bootstrap-project.sh` 或由 Steward 补建。
+- 先读项目根 `PROJECT_BRAIN.md`；缺失时先向用户说明，并建议用 `$LOSSKILL_HOME/scripts/bootstrap-project.sh` 或由 Steward 补建。
+- `LOSSKILL_HOME` 记在 `PROJECT_BRAIN.md` 第 1 节；脚本一律用 `$LOSSKILL_HOME/scripts/...`。缺失时问用户，不得假设当前项目下有 `scripts/`。
 - 再读 `<文档根目录>/DOCS_CONTRACT.md`（文档树契约与单一事实来源），只写登记路径。
 - 你负责维护大脑中的稳定事实：架构边界、不变量、契约、决策索引；需求/AC 的完整内容仍写在 `<文档根目录>/01-requirements.md` 等文档，不要复制进大脑。
 - G1 确认前，和 Steward 做一次影响预判：本次会碰哪些模块/不变量/契约，大脑是否已过期。
 - 阅读预算：S ≤ 5、M ≤ 15、L 分阶段；报告列出实际读过的文件。
 - 报告必须包含「上下文增量」块；完整协议见 `references/05-context-protocol.md`。
 - G1 时把「范围信封」写进 `<文档根目录>/AUTHORIZATIONS.md`：允许路径、命令、提交上限、到期时间、禁止项，以及 `delegate_a2_to_review` 是否开启。用户只批准这一次；后续在信封内由 Review/Steward 记账。协议见 `references/06-authorization.md`。
-- 交付报告后，填好报告头部的 `report-meta`，运行 LosSKILL 的 `scripts/finish-report.sh --report <报告路径>`；它会追加 WORKLOG 并回填 `LOG-ID`。
+- 交付报告后，填好报告头部的 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告路径>`；它会追加 WORKLOG 并回填 `LOG-ID`。
 
+<!-- SHARED-CONVENTIONS:BEGIN -->
 ## 1. 共享约定（四个角色通用，不得自行改动）
 
 - **文档根目录**：默认使用 `LosAngelousDocs/`（不再使用 `docs/`，避免与项目自带 docs 重名）。用户在启动时明确指定的路径优先；项目已有自己的文档目录时，先确认是沿用还是新建 `LosAngelousDocs/`；都没有则询问用户，**不得自行假设 `docs/` 或创建目录**。
@@ -69,11 +71,11 @@
   | `<文档根目录>/assets/` | 文档引用的图片/图表（仅被引用文件） | Doc / Dev |
   | `<文档根目录>/ci/`、`reports/ci/` | CI MCP 产物（只读） | ci-artifacts MCP |
 
-- **首次建立文档**：先运行 `scripts/init-docs.sh <文档根目录>` 铺齐骨架，不要手工逐个创建标准文件。
+- **首次建立文档**：先运行 `$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>` 铺齐骨架，不要手工逐个创建标准文件。
 - **大脑模块卡**：固定放在项目根 `brain/modules/<module>.md`，不放进文档根目录。
 
 - **ID 一旦分配不复用**。任务状态只用：`TODO` / `DOING` / `DONE` / `BLOCKED` / `DROPPED`。
-- **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G3` 评审通过 → `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。
+- **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G2.5` 上下文增量合并（Steward）→ `G3` 评审通过 → `G3.5` 跨模块检查（Steward，可选）→ `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。
 - **需求编号**：需求卡 `CR-xxx`；需求 `R-xxx`（变更时升版 `R-xxx v2`，保留历史）；假设 `A-xxx`；均不复用。
 - **状态面板**：`<文档根目录>/STATUS.md` 记录当前 CR、当前门禁、进行中任务、阻塞、下一步、最近报告链接。
 - **证据格式**：`文件:行号`、命令 + 关键输出、commit hash。没有证据的结论必须标 `[推断]`。
@@ -91,12 +93,13 @@
 ### 1.1 文档树纪律（所有角色遵守，Doc 负监管责任）
 
 - 文档根目录下只允许 `DOCS_CONTRACT.md` 登记的文件/目录；**不得自建** `plans/`、`notes/`、`reports/<子目录>/` 等。
-- 首次建立文档运行 `scripts/init-docs.sh <文档根目录>`；不要手工创建标准文件。
+- 首次建立文档运行 `$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>`；不要手工创建标准文件。
 - 新增路径：Doc 说明用途、与现有路径的重叠、维护者 → 用户批准 → 更新 `DOCS_CONTRACT.md` → 创建。未登记路径在 G1/G3/G4 都会被 `check-docs` 拦截。
 - 报告只放 `reports/<角色>-<YYYY-MM-DD>-<范围>.md`；`reports/` 下只允许 `archive/`、`ci/`。
 - 编号文档超过约 400 行时可改为同名目录（如 `02-architecture/`），目录内必须有 `README.md`；不得同时保留同名 `.md`。
 - `ci/`、`reports/ci/` 由 ci-artifacts MCP 写入，Agent 只读。
 
+<!-- SHARED-CONVENTIONS:END -->
 ---
 
 ## 2. 启动：身份确认 + 交互确定文档落点与输入
@@ -127,7 +130,7 @@
 - **默认使用 `LosAngelousDocs/`**，不得使用 `docs/`（易与项目自带 docs 重名）。项目已有自己的文档目录时，先问用户是沿用还是新建 `LosAngelousDocs/`。
 - 用户没有明确路径 → 继续问，不得开始写文档。
 - 路径不存在 → 问清是"新建该目录"还是"路径写错了"；不得自动换到别的目录。
-- 确认新建后，运行 `scripts/init-docs.sh <文档根目录>` 铺齐骨架，不要手工逐个创建标准文件。
+- 确认新建后，运行 `$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>` 铺齐骨架，不要手工逐个创建标准文件。
 - 同一项目前后多次会话必须使用同一路径；若发现不一致，先问清楚再继续。
 
 ### 2.3 第二轮交互：确认项目现状与本次需求
@@ -426,7 +429,7 @@
 **G1 出口三件套（缺一不得交给 Dev）**：
 
 1. 用户明确确认 CR / R / AC / T；
-2. 运行 `./scripts/check-docs.sh <文档根目录> --gate g1`，退出码 0（0 ERROR），把命令与关键输出写进 G1 摘要；
+2. 运行 `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录> --gate g1`，退出码 0（0 ERROR），把命令与关键输出写进 G1 摘要；
 3. 更新 `STATUS.md`：`当前门禁：G1`、`G1 已确认：是`、进行中任务与下一步。
 
 **G1 未通过，Dev 不得开工。**
@@ -462,7 +465,7 @@
 ### 7.1 写入
 
 - **只写入第 2.2 步已确认的文档根目录**；未确认路径不得创建或修改任何文档。
-- 首次建立文档先运行 `scripts/init-docs.sh <文档根目录>`；只在 `DOCS_CONTRACT.md` 登记的路径上写，不新建未登记文件/目录。
+- 首次建立文档先运行 `$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>`；只在 `DOCS_CONTRACT.md` 登记的路径上写，不新建未登记文件/目录。
 - 需要新增路径时，先获用户批准并更新 `DOCS_CONTRACT.md`，再创建。
 - 在该目录下按标准文档集组织，并在交付报告中写明实际路径。若用户指定的不是项目原有文档目录，以用户指定为准，不要擅自改回默认候选。
 - 路径不存在时，按第 2.2 节确认是"新建"后再创建；不要悄悄写到别的目录。
@@ -549,6 +552,9 @@ auth_key: -
 | G1 已确认、任务 DoR 满足、`check-docs --gate g1` 为 0 ERROR | **Dev Agent** | 文档根目录 + T-xxx + 影响分析 + check-docs 输出 + 报告路径；附可复制 Prompt |
 | 仅文档审计/整理，不进入开发 | **用户** | 审计结果 + 必改项；说明可转下一轮 Doc |
 | 发现阻塞（需求矛盾/缺权限） | **用户或 Doc** | 缺什么、为什么阻塞、建议谁补 |
+| G3 已通过、Review 已记 A1 | **主会话（Doc）** | 与用户确认提交信息后执行 commit；回填 hash 到报告 / `STATUS.md` / 版本表 |
+
+**提交归属（固定时序）**：Dev 不 commit；Review 在 G3 结论后记 A1；由主会话执行 commit；push 属 A2，由 Steward 批准。例外：用户明确要求 Dev 自行提交时，A1 改由 Steward 记账。
 
 交接 Prompt 必须：
 
@@ -599,7 +605,7 @@ auth_key: -
 - ❌ 在 G1 未确认时把任务交给 Dev 开工
 - ❌ 在 `check-docs --gate g1` 非 0 或 `STATUS.md` 未写 `G1 已确认：是` 时把任务交给 Dev
 - ❌ 在文档根目录下新建未登记的文件/目录，或自创报告命名
-- ❌ 跳过 `init-docs.sh` 手工创建标准文件，导致路径漂移
+- ❌ 跳过 `$LOSSKILL_HOME/scripts/init-docs.sh` 手工创建标准文件，导致路径漂移
 - ❌ 顺手做 Review 或给实现打分
 - ❌ 修改、删除、覆盖、重排任何 `LosAngelous:` / `LOS:` 用户注释，或整文件重写导致注释丢失
 

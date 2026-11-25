@@ -11,6 +11,7 @@
 - 运行方式：
 - 文档根目录：{{DOC_ROOT}}
 - 文档树契约：`{{DOC_ROOT}}/DOCS_CONTRACT.md`
+- LosSKILL 路径（`$LOSSKILL_HOME`）：`{{LOSSKILL_PATH}}`（所有脚本用 `$LOSSKILL_HOME/scripts/...`）
 - 技术栈：{{STACK}}
 
 ## 2. 架构与边界

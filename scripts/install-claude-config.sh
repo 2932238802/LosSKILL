@@ -105,12 +105,12 @@ gen_agent dev-agent \
 
 gen_agent review-agent \
   '独立评审 Dev 改动：按影响面跑回归、逐条判定 AC、找缺陷并给 G3 结论。只读代码与运行验证，不改代码、不采信 Dev 自述。用于 G2 完成后的评审。' \
-  'Read, Grep, Glob, Bash' \
+  'Read, Grep, Glob, Bash, Write, Edit' \
   '03-review-agent.md'
 
 gen_agent meta-review-agent \
   '全链路总审：独立复核文档、实现、评审、流程与结果层，做 UAT 与成功指标验收，给 G4 结论和分层返工指令。用于 G3 通过后的总审。' \
-  'Read, Grep, Glob, Bash' \
+  'Read, Grep, Glob, Bash, Write, Edit' \
   '04-meta-review-agent.md'
 
 echo

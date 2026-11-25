@@ -1,7 +1,7 @@
 # 授权台账 — {{PROJECT_NAME}}
 
 > 协议见 `dev-workflow` 的 `references/06-authorization.md`。
-> 用户在 G1 批准一次「范围信封」；A1 由 Review 记账，A2 由 Steward 记账，A3 只由用户确认。
+> 用户在 G1 批准一次「范围信封」；A1 默认由 Review 记账（Dev 自行提交的例外由 Steward/Meta），A2 由 Steward 记账，A3 只由用户确认。
 > 本文件 append-only：不要删除或改写旧条目。
 
 ## 当前策略

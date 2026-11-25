@@ -39,6 +39,7 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 - 只写 `DOCS_CONTRACT.md` 登记的路径；不得自建目录、文件或自创报告命名。
 - 首次建文档：`{{LOSSKILL_PATH}}/scripts/init-docs.sh <文档根目录>`。
 - G1 前与 Dev 开工前：`{{LOSSKILL_PATH}}/scripts/check-docs.sh <文档根目录> --gate g1` 必须 0 ERROR。
+- 角色提示词里的 `$LOSSKILL_HOME` 即：`{{LOSSKILL_PATH}}`（也记在 `PROJECT_BRAIN.md` 第 1 节）。
 
 ## 雷区
 

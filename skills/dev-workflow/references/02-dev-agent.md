@@ -41,10 +41,12 @@
 - 阅读预算：S ≤ 5、M ≤ 15、L 分阶段；超预算需在报告中说明。
 - 同一 CR 内复用本会话处理返工；跨 CR 新建会话，只带大脑 + 相关报告路径。
 - G2 报告的「上下文增量」必须写清：触及模块、不变量/契约变化、测试变化、大脑需要更新的节、发现的过期信息。
-- 动手前确认 `<文档根目录>/AUTHORIZATIONS.md` 的信封：只做 A0/A1。commit 前请求 Review 批准并记账；push/合并/依赖变更属 A2，找 Steward；A3（迁移、生产、密钥、不可逆删除）一律停下问用户。**不得自批**。
-- 交付 G2 报告后，填好报告头部的 `report-meta`，运行 LosSKILL 的 `scripts/finish-report.sh --report <报告路径>`；它会追加 WORKLOG 并回填 `LOG-ID`。
+- 动手前确认 `<文档根目录>/AUTHORIZATIONS.md` 的信封：只做 A0/A1。**你不在 G2 提交**：交付工作区改动，由 Review 在 G3 结论后记 A1，主会话执行 commit。push/合并/依赖变更属 A2，找 Steward；A3（迁移、生产、密钥、不可逆删除）一律停下问用户。**不得自批**。用户明确要求你自行提交时，A1 改由 Steward 记账（Review 尚未评审，不得自证）。
+- `LOSSKILL_HOME` 记在 `PROJECT_BRAIN.md` 第 1 节；脚本一律用 `$LOSSKILL_HOME/scripts/...`，不得假设当前项目下有 `scripts/`。
+- 交付 G2 报告后，填好报告头部的 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告路径>`；它会追加 WORKLOG 并回填 `LOG-ID`。
 - 完整协议见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
 
+<!-- SHARED-CONVENTIONS:BEGIN -->
 ## 1. 共享约定（四个角色通用，不得自行改动）
 
 - **文档根目录**：默认使用 `LosAngelousDocs/`（不再使用 `docs/`，避免与项目自带 docs 重名）。用户在启动时明确指定的路径优先；项目已有自己的文档目录时，先确认是沿用还是新建 `LosAngelousDocs/`；都没有则询问用户，**不得自行假设 `docs/` 或创建目录**。
@@ -67,10 +69,11 @@
   | `<文档根目录>/assets/` | 文档引用的图片/图表（仅被引用文件） | Doc / Dev |
   | `<文档根目录>/ci/`、`reports/ci/` | CI MCP 产物（只读） | ci-artifacts MCP |
 
+- **首次建立文档**：先运行 `$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>` 铺齐骨架，不要手工逐个创建标准文件。
 - **大脑模块卡**：固定放在项目根 `brain/modules/<module>.md`，不放进文档根目录。
 
 - **ID 一旦分配不复用**。任务状态只用：`TODO` / `DOING` / `DONE` / `BLOCKED` / `DROPPED`。
-- **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G3` 评审通过 → `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。
+- **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G2.5` 上下文增量合并（Steward）→ `G3` 评审通过 → `G3.5` 跨模块检查（Steward，可选）→ `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。
 - **需求编号**：需求卡 `CR-xxx`；需求 `R-xxx`（变更时升版 `R-xxx v2`，保留历史）；假设 `A-xxx`；均不复用。
 - **状态面板**：`<文档根目录>/STATUS.md` 记录当前 CR、当前门禁、进行中任务、阻塞、下一步、最近报告链接。
 - **证据格式**：`文件:行号`、命令 + 关键输出、commit hash。没有证据的结论必须标 `[推断]`。
@@ -85,6 +88,16 @@
 - **结论用词**：评审 `通过` / `有条件通过` / `不通过`；总审 `通过` / `返工`。
 - **报告落盘**：`<文档根目录>/reports/<角色>-<YYYY-MM-DD>-<范围>.md`（不可写时至少完整输出在对话里，并说明未落盘）。
 
+### 1.1 文档树纪律（所有角色遵守，Doc 负监管责任）
+
+- 文档根目录下只允许 `DOCS_CONTRACT.md` 登记的文件/目录；**不得自建** `plans/`、`notes/`、`reports/<子目录>/` 等。
+- 首次建立文档运行 `$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>`；不要手工创建标准文件。
+- 新增路径：Doc 说明用途、与现有路径的重叠、维护者 → 用户批准 → 更新 `DOCS_CONTRACT.md` → 创建。未登记路径在 G1/G3/G4 都会被 `check-docs` 拦截。
+- 报告只放 `reports/<角色>-<YYYY-MM-DD>-<范围>.md`；`reports/` 下只允许 `archive/`、`ci/`。
+- 编号文档超过约 400 行时可改为同名目录（如 `02-architecture/`），目录内必须有 `README.md`；不得同时保留同名 `.md`。
+- `ci/`、`reports/ci/` 由 ci-artifacts MCP 写入，Agent 只读。
+
+<!-- SHARED-CONVENTIONS:END -->
 ---
 
 ## 2. 开工前：必读与复述
@@ -127,7 +140,7 @@
 
 - [ ] 任务关联的 CR 已确认（G0），R/AC 已确认（G1）
 - [ ] `STATUS.md` 写有 `G1 已确认：是`
-- [ ] 自己复跑 `check-docs.sh <文档根目录> --gate g1` 退出码 0（不采信 Doc 口述）
+- [ ] 自己复跑 `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录> --gate g1` 退出码 0（不采信 Doc 口述）
 - [ ] AC 可测试，覆盖正常 / 边界 / 错误
 - [ ] 前置依赖已完成，或明确可并行
 - [ ] 关键决策已记录（`D-xxx`），或确认无需决策
@@ -270,7 +283,8 @@
 
 - [ ] 任务关联的每条 AC 都有验证方式与结果证据
 - [ ] 开工前的 DoR 核对已通过（或缺口已由 Doc/用户补齐并记录）
-- [ ] `check-docs --gate g1` 仍为 0 ERROR（没有新增未登记路径）
+- [ ] `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录> --gate g1` 仍为 0 ERROR（没有新增未登记路径）
+- [ ] `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录> --gate g2` 为 0 ERROR（dev 报告含 report-meta、AC 映射存在）
 - [ ] 构建 / 类型检查 / lint / 测试通过（或已明确记录不可执行原因与替代验证）
 - [ ] 新增/修改的代码有相应测试，Bug 修复有回归测试
 - [ ] 影响范围内的回归测试已执行，结果已记录
@@ -417,7 +431,7 @@ auth_key: -
 - ❌ 伪造测试/构建结果，或跳过失败项不报告
 - ❌ 删除或改写用户写的手动注释（`LosAngelous:` / `LOS:`），或整文件重写导致注释丢失
 - ❌ 需求/AC/范围不明确时用主观假设继续实现，而不是先交互确认
-- ❌ 提交/推送/开 PR，除非用户明确要求
+- ❌ 自行提交/推送/开 PR（提交由主会话在 G3 通过并取得 A1 后执行；用户明确要求你提交时，A1 由 Steward 记账）
 - ❌ 在报告中宣称"评审通过"或"可以上线"
 - ❌ 顺手修复任务外的 Bug 并混进同一改动（应记录并建议单独建任务）
 

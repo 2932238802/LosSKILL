@@ -4,6 +4,7 @@
 # 用法：
 #   ./scripts/check-docs.sh <文档根目录>
 #   ./scripts/check-docs.sh /path/to/project/LosAngelousDocs --gate g1
+#   ./scripts/check-docs.sh /path/to/project/LosAngelousDocs --gate g2|g3|g4
 #   ./scripts/check-docs.sh <文档根目录> --project-root /path/to/project
 #
 # 检查项：
@@ -13,6 +14,9 @@
 #   4. reports/ 下只有规范命名的报告、review-index.md、archive/、ci/
 #   5. 编号文档若拆成同名目录，必须有 README.md，且不能同时保留同名 .md
 #   6. --gate g1：有真实 CR / R / AC / T 编号，STATUS.md 标记「G1 已确认：是」
+#   7. --gate g2：有 dev-*.md 报告（含 report-meta），04-tasks.md 有 AC 映射
+#   8. --gate g3：有 review-*.md 报告且结论合法，reports/review-index.md 存在
+#   9. --gate g4：有 meta/steward 报告且结论合法，或 STATUS.md 记录「G4 豁免」
 #
 # 退出码：0 = 通过（允许 WARN）；1 = 有 ERROR；2 = 用法/路径错误
 
@@ -50,8 +54,8 @@ done
 doc_root="$(cd "$doc_root" && pwd)"
 
 case "$gate" in
-  ""|g1) ;;
-  *) echo "Error: --gate 目前只支持 g1" >&2; exit 2 ;;
+  ""|g1|g2|g3|g4) ;;
+  *) echo "Error: --gate 只支持 g1 / g2 / g3 / g4" >&2; exit 2 ;;
 esac
 
 errors=0
@@ -220,6 +224,69 @@ if [ "$gate" = "g1" ]; then
     || err "G1：STATUS.md 缺少「当前门禁」"
   grep -qE 'G1[[:space:]]*已确认[[:space:]]*(：|:)[[:space:]]*是' "$doc_root/STATUS.md" 2>/dev/null \
     || err "G1：STATUS.md 未写「G1 已确认：是」（用户确认后才可写）"
+fi
+
+find_latest_report() {
+  local role="$1" dirs=("$reports_dir")
+  [ -d "$reports_dir/archive" ] && dirs+=("$reports_dir/archive")
+  find "${dirs[@]}" -maxdepth 1 -type f -name "$role-[0-9][0-9][0-9][0-9]-*.md" -print 2>/dev/null | sort | tail -1
+}
+
+g1_confirmed() {
+  grep -qE 'G1[[:space:]]*已确认[[:space:]]*(：|:)[[:space:]]*是' "$doc_root/STATUS.md" 2>/dev/null
+}
+
+if [ "$gate" = "g2" ]; then
+  g1_confirmed || err "G2：STATUS.md 未写「G1 已确认：是」"
+  dev_report="$(find_latest_report dev)"
+  if [ -z "$dev_report" ]; then
+    err "G2：reports/（含 archive/）下没有 dev-*.md 开发报告"
+  else
+    grep -qF '<!-- report-meta' "$dev_report" \
+      || err "G2：$(basename "$dev_report") 缺少 report-meta（finish-report.sh 无法记账）"
+  fi
+  grep -qE 'AC-[0-9]+' "$doc_root/04-tasks.md" 2>/dev/null \
+    || err "G2：04-tasks.md 没有 AC 映射"
+fi
+
+if [ "$gate" = "g3" ]; then
+  review_report="$(find_latest_report review)"
+  if [ -z "$review_report" ]; then
+    err "G3：reports/（含 archive/）下没有 review-*.md 评审报告"
+  else
+    if ! grep -qE '(结论|判定)[[:space:]]*(：|:)[[:space:]]*(通过|有条件通过|不通过)[[:space:]]*$' "$review_report"; then
+      err "G3：$(basename "$review_report") 缺少合法结论（通过 / 有条件通过 / 不通过）"
+    fi
+    if grep -qE '\[P0\]|\[P1\]' "$review_report" \
+      && grep -qE '(结论|判定)[[:space:]]*(：|:)[[:space:]]*通过[[:space:]]*$' "$review_report"; then
+      warn "G3：结论为「通过」但报告中含 P0/P1，请复核严重度与结论"
+    fi
+  fi
+  [ -f "$reports_dir/review-index.md" ] \
+    || err "G3：缺少 reports/review-index.md（评审记忆）"
+fi
+
+if [ "$gate" = "g4" ]; then
+  meta_report="$(find_latest_report meta)"
+  [ -z "$meta_report" ] && meta_report="$(find_latest_report steward)"
+  exempt=0
+  if grep -qE 'G4[[:space:]]*豁免' "$doc_root/STATUS.md" 2>/dev/null; then
+    exempt=1
+  fi
+  if [ "$exempt" -eq 0 ]; then
+    if [ -z "$meta_report" ]; then
+      err "G4：没有 meta/steward 总审报告，且 STATUS.md 未记录「G4 豁免」"
+    elif ! grep -qE '(总审)?结论[[:space:]]*(：|:)[[:space:]]*(通过|返工)[[:space:]]*$' "$meta_report"; then
+      err "G4：$(basename "$meta_report") 缺少总审结论（通过 / 返工）"
+    fi
+  fi
+  grep -qE 'G4' "$doc_root/STATUS.md" 2>/dev/null \
+    || err "G4：STATUS.md 未记录 G4 结果或豁免"
+  if [ -n "$project_root" ] && [ -d "$project_root" ]; then
+    for f in WORKLOG.md AUTHORIZATIONS.md; do
+      [ -f "$project_root/$f" ] || err "G4：项目根缺少 $f"
+    done
+  fi
 fi
 
 if [ -n "$project_root" ]; then

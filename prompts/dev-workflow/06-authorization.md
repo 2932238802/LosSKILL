@@ -13,7 +13,7 @@
 | 级别 | 例子 | 谁可批准 | 要求 |
 |---|---|---|---|
 | **A0 只读/验证** | 读代码、跑测试、lint、build、写 `/tmp` 临时文件 | Agent 自主 | 报告里记命令与结果 |
-| **A1 低风险写入** | 改代码、写文档、feature 分支 commit、本地非破坏性操作 | Review Agent | 在信封内 + 台账记账 |
+| **A1 低风险写入** | 改代码、写文档、feature 分支 commit、本地非破坏性操作 | Review Agent（Dev 自行提交的例外由 Steward/Meta） | 在信封内 + 台账记账 |
 | **A2 变更共享状态** | push、建 PR、合并 main、改依赖/构建配置、非破坏性迁移 | Steward/Meta | Review 证据 + 台账 + 回滚方案 |
 | **A3 高风险/不可逆** | 生产部署、删库、force push、改鉴权/密钥、外部付费、批量删除 | 用户本人 | 永不自动；必须明确确认 |
 
@@ -52,7 +52,7 @@
 | Doc | 把信封写进 `AUTHORIZATIONS.md`；维护策略变更记录；不批准执行动作 |
 | Dev | 提出授权请求；**不得自批**；越界时停下等待 |
 | Review | 批准并记录 A1；核对 A2 证据；**不得批准自己的 G3 结论** |
-| Steward/Meta | 批准 A2；接受 G3 结论；G4 审计台账完整性；A3 一律上报用户 |
+| Steward/Meta | 批准 A2；接受 G3 结论；Dev 自行提交的例外场景记账 A1；G4 审计台账完整性；A3 一律上报用户 |
 
 ## 3. 范围信封（G1 批准一次）
 
@@ -111,7 +111,7 @@ escalate_when:
 - commit 生成后回填真实 hash。
 - 撤销时追加 `- 撤销：是（时间 / 原因 / 批准人）`，不要删除原条目。
 - AUTH ID 单调递增，不跳号、不复用；G4 抽查最近 10 条与 commit 是否对得上。
-- 推荐用 `scripts/finish-report.sh --report <报告>` 自动写入：它校验 A1=Review、A2=Steward，并用「幂等键」防止重复追加。
+- 推荐用 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告>` 自动写入：它校验 A1 默认=Review（例外场景允许 Steward/Meta）、A2=Steward，并用「幂等键」防止重复追加。
 
 ### 4.1 授权请求与决定（短模板）
 
@@ -155,12 +155,15 @@ escalate_when:
 ```
 G0  用户选做/不做
 G1  用户批准范围信封 → Doc 写入 AUTHORIZATIONS.md
-G2  Dev 在信封内开发；commit 前请求 A1 → Review 批准并记账
+G2  Dev 在信封内开发，**不 commit**，交付工作区改动与变更清单
 G2.5 Steward 合并上下文增量（A1）
-G3  Review 给结论；Review 不能接受自己的结论 → Steward/用户记 G3 接受
+G3  Review 审工作区并给结论；通过/有条件通过后由 Review 记 A1（commit 授权）；Review 不能接受自己的结论 → Steward/用户记 G3 接受
+    → 主会话按 A1 执行 commit，回填真实 hash
 G3.5 Steward 跨模块检查（A1）
-G4  Steward 审计台账；发布相关 A2 由 Steward 批准；A3 回到用户
+G4  Steward 审计台账；push 等 A2 由 Steward 批准；A3 回到用户
 ```
+
+例外：用户明确要求 Dev 自行提交时，A1 改由 Steward 记账（Review 尚未评审，不得自证）；G3 的评审对象即该 commit。
 
 ## 6. 执行与强制
 

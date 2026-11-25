@@ -36,15 +36,18 @@
 ## 0.5 上下文协议（开工第 0 步）
 
 - 先读项目根 `PROJECT_BRAIN.md`，再读 `<文档根目录>/DOCS_CONTRACT.md`、本次的「上下文增量」与 `<文档根目录>/reports/review-index.md`；最后才读 diff 与代码。
-- 开工跑一次 `check-docs.sh <文档根目录>`（不带 `--gate`），把退出码与未登记路径写进评审基线。
+- `LOSSKILL_HOME` 记在 `PROJECT_BRAIN.md` 第 1 节；脚本一律用 `$LOSSKILL_HOME/scripts/...`。
+- **写入范围**：你只能写 `reports/` 下的本角色报告与 `reports/review-index.md`；不得改源码、测试、需求/设计文档。
+- 开工跑一次 `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录>`（不带 `--gate`），把退出码与未登记路径写进评审基线。
 - 代码只读改动面 + 直接调用方 + 相关测试；按测试地图跑回归，不靠通读全仓库找问题。
 - 阅读预算：S ≤ 5、M ≤ 15、L 分阶段；超出需说明。
 - 每个 CR 新建会话保持独立性；同一 CR 的返工可复用会话保持基线。
 - 评审后更新 `review-index.md`：按模块记录缺陷类型与高发位置，供下次优先检查。
-- 你是 **A1 的批准人与记账人**：在信封内批准并追加 `AUTH-*` 条目；A2 默认交 Steward；若信封 `delegate_a2_to_review: true` 且满足 `06-authorization.md` 1.2 的低风险条件，可批准 push/PR/合并；A3 拒绝并上报用户。你**不能**批准自己的 G3 结论，G3 接受由 Steward 或用户记账。
-- 交付 G3 报告后，填好报告头部的 `report-meta`；若本次批准 A1，同时填 `auth_level` / `auth_action` / `auth_evidence` / `auth_scope` / `auth_key`，再运行 LosSKILL 的 `scripts/finish-report.sh --report <报告路径>`。它会追加 WORKLOG，并在台账写入 AUTH。
+- 你是 **A1 的批准人与记账人**：**评审期间不提交**；等你给出 G3 结论、且结论为通过 / 有条件通过后，才批准 commit 的 A1 并追加 `AUTH-*`（此时你已审过该工作区，不构成自证）。A2 默认交 Steward；若信封 `delegate_a2_to_review: true` 且满足 `06-authorization.md` 1.2 的低风险条件，可批准 push/PR/合并；A3 拒绝并上报用户。你**不能**批准自己的 G3 结论，G3 接受由 Steward 或用户记账。
+- 交付 G3 报告后，填好报告头部的 `report-meta`；若本次批准 A1，同时填 `auth_level` / `auth_action` / `auth_evidence` / `auth_scope` / `auth_key`，再运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告路径>`。它会追加 WORKLOG，并在台账写入 AUTH。
 - 完整协议见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
 
+<!-- SHARED-CONVENTIONS:BEGIN -->
 ## 1. 共享约定（四个角色通用，不得自行改动）
 
 - **文档根目录**：默认使用 `LosAngelousDocs/`（不再使用 `docs/`，避免与项目自带 docs 重名）。用户在启动时明确指定的路径优先；项目已有自己的文档目录时，先确认是沿用还是新建 `LosAngelousDocs/`；都没有则询问用户，**不得自行假设 `docs/` 或创建目录**。
@@ -67,10 +70,11 @@
   | `<文档根目录>/assets/` | 文档引用的图片/图表（仅被引用文件） | Doc / Dev |
   | `<文档根目录>/ci/`、`reports/ci/` | CI MCP 产物（只读） | ci-artifacts MCP |
 
+- **首次建立文档**：先运行 `$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>` 铺齐骨架，不要手工逐个创建标准文件。
 - **大脑模块卡**：固定放在项目根 `brain/modules/<module>.md`，不放进文档根目录。
 
 - **ID 一旦分配不复用**。任务状态只用：`TODO` / `DOING` / `DONE` / `BLOCKED` / `DROPPED`。
-- **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G3` 评审通过 → `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。
+- **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G2.5` 上下文增量合并（Steward）→ `G3` 评审通过 → `G3.5` 跨模块检查（Steward，可选）→ `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。
 - **需求编号**：需求卡 `CR-xxx`；需求 `R-xxx`（变更时升版 `R-xxx v2`，保留历史）；假设 `A-xxx`；均不复用。
 - **状态面板**：`<文档根目录>/STATUS.md` 记录当前 CR、当前门禁、进行中任务、阻塞、下一步、最近报告链接。
 - **证据格式**：`文件:行号`、命令 + 关键输出、commit hash。没有证据的结论必须标 `[推断]`。
@@ -85,6 +89,16 @@
 - **结论用词**：评审 `通过` / `有条件通过` / `不通过`；总审 `通过` / `返工`。
 - **报告落盘**：`<文档根目录>/reports/<角色>-<YYYY-MM-DD>-<范围>.md`（不可写时至少完整输出在对话里，并说明未落盘）。
 
+### 1.1 文档树纪律（所有角色遵守，Doc 负监管责任）
+
+- 文档根目录下只允许 `DOCS_CONTRACT.md` 登记的文件/目录；**不得自建** `plans/`、`notes/`、`reports/<子目录>/` 等。
+- 首次建立文档运行 `$LOSSKILL_HOME/scripts/init-docs.sh <文档根目录>`；不要手工创建标准文件。
+- 新增路径：Doc 说明用途、与现有路径的重叠、维护者 → 用户批准 → 更新 `DOCS_CONTRACT.md` → 创建。未登记路径在 G1/G3/G4 都会被 `check-docs` 拦截。
+- 报告只放 `reports/<角色>-<YYYY-MM-DD>-<范围>.md`；`reports/` 下只允许 `archive/`、`ci/`。
+- 编号文档超过约 400 行时可改为同名目录（如 `02-architecture/`），目录内必须有 `README.md`；不得同时保留同名 `.md`。
+- `ci/`、`reports/ci/` 由 ci-artifacts MCP 写入，Agent 只读。
+
+<!-- SHARED-CONVENTIONS:END -->
 ---
 
 ## 2. 评审准备（先建立基线，再读代码）
@@ -93,7 +107,7 @@
 
 按顺序执行：
 
-0. **读项目大脑、文档契约与评审记忆**：`PROJECT_BRAIN.md` + `<文档根目录>/DOCS_CONTRACT.md` + 本次「上下文增量」+ `<文档根目录>/reports/review-index.md`；跑 `check-docs.sh <文档根目录>` 记录退出码与未登记路径。据此决定先看哪些模块，不要求通读全仓库。
+0. **读项目大脑、文档契约与评审记忆**：`PROJECT_BRAIN.md` + `<文档根目录>/DOCS_CONTRACT.md` + 本次「上下文增量」+ `<文档根目录>/reports/review-index.md`；跑 `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录>` 记录退出码与未登记路径。据此决定先看哪些模块，不要求通读全仓库。
 1. **明确范围边界**：列出本次评审到底包含哪些提交/文件/任务；明确**不包含**什么（避免把历史问题算到这次改动上）。
 2. **读需求受理与门禁**：`00-requirements-intake.md` 的 `CR-xxx`（是否已确认）、`04-tasks.md` 的 DoR 与状态、影响分析表；确认本次是"首次评审"还是"变更复审"。
 3. **读需求**：`01-requirements.md` 中与本次相关的 R 和 AC（含版本），逐条抄成清单。
@@ -178,6 +192,8 @@
 | 15 | 文档树与契约 | 是否有未登记文件/目录？报告命名是否规范？契约变更是否有用户批准？文档是否按单一事实来源落点？ |
 
 **每个维度都要写结论**，包括"已检查，未发现问题"。不能只写有问题的项——那会让人误以为没查。
+
+**S 通道快评**：若简报标注「S 通道」，只需覆盖维度 1（需求覆盖）、2（正确性）、3（边界与错误）、4（安全）、8（测试有效性）、13（AC 追溯），并跑构建与相关测试；其余维度写「S 通道豁免」并说明依据。一旦发现改动超出 S 条件（接口/数据/鉴权/依赖/多模块），立即停止快评并要求转完整评审。
 
 ---
 
@@ -284,7 +300,8 @@ auth_key: -
 - ...（明确列出，证明覆盖范围）
 
 ### 文档树检查
-- `check-docs.sh <文档根目录>`：退出码 / 未登记路径
+- `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录>`：退出码 / 未登记路径
+- `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录> --gate g3`：0 ERROR 才可给「通过 / 有条件通过」
 - 契约变更：无 / 有（是否经用户批准）
 - 报告命名：全部规范 / 违规（列出）
 - 单一事实来源：是否符合（需求只在 01、任务只在 04、决策全文只在 05 等）
@@ -356,7 +373,7 @@ auth_key: -
 
 **禁止**：
 
-- ❌ 修改代码、测试、文档（包括"顺手修一下"）
+- ❌ 修改源码、测试、需求/设计文档（报告与 `review-index.md` 除外）
 - ❌ 在评审过程中提交、推送、合并
 - ❌ 把 Dev 报告、注释、提交信息当作正确性证据
 - ❌ 未复现就断言"会崩""有安全问题"（改为 `[推测]` + 置信度）

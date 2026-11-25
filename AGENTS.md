@@ -26,7 +26,7 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 - 不提交本地产物：`books/`、`dist/`、`scripts/vesta-e2e/`、`*.lnk`、`*.pyc`、`*.losskill.bak`（`.gitignore` 已覆盖）。
 - 不提交密钥、token、真实邮箱或私钥；身份信息用环境变量。
 - 保护所有 `LOS:` 手动注释：不修改、不删除、不移动；必须改动时先说明位置与原因。
-- 角色提示词只有一份正文：`skills/dev-workflow/references/01–04-*.md`；`prompts/` 与 `~/.claude/agents/` 都从它同步或生成。
+- 角色提示词只有一份正文：共享约定在 `skills/dev-workflow/references/_shared-conventions.md`，四份角色文件由 `scripts/render-dev-workflow.sh` 渲染；`prompts/` 由同一脚本同步，`~/.claude/agents/` 由 `install-claude-config.sh` 生成。不要手工改 01–04 标记内的共享块。
 
 ## 提交与分支
 
@@ -44,8 +44,9 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 ./scripts/bootstrap-project.sh <项目路径>      # 接入 AGENTS/CLAUDE + L2 项目卡
 ./scripts/bootstrap-project.sh <项目路径> --docs LosAngelousDocs --init-docs  # 接入并铺文档树骨架
 ./scripts/init-docs.sh <项目>/LosAngelousDocs # 只初始化文档树骨架（非破坏）
-./scripts/check-docs.sh <项目>/LosAngelousDocs --gate g1  # 文档树 + G1 门禁检查
+./scripts/check-docs.sh <项目>/LosAngelousDocs --gate g1  # 文档树 + G1 门禁检查（g1–g4）
 ./scripts/finish-report.sh --report <报告>     # 解析报告头，写 WORKLOG + AUTH
+./scripts/render-dev-workflow.sh --check       # 校验共享块渲染与 prompts 副本
 ./scripts/sync-skills.sh --dry-run            # 预览同步
 ./scripts/sync-skills.sh --link --force       # 软链接到 ~/.claude/skills
 ./scripts/sync-skills.sh --copy --force       # 覆盖复制
