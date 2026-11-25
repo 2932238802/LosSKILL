@@ -19,6 +19,7 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 - 路径：`{{PROJECT_PATH}}`
 - 技术栈：{{STACK}}
 - 文档根目录：{{DOC_ROOT}}
+- 文档树契约：`{{DOC_ROOT}}/DOCS_CONTRACT.md`（未登记路径禁止创建）
 - 项目 L2：`{{L2_PATH}}`
 - 项目大脑：`PROJECT_BRAIN.md`（开工第 0 步先读；不要通读全仓库）
 - 授权台账：`AUTHORIZATIONS.md`（G1 批准一次范围信封；A1/A2 记账，A3 问用户）
@@ -31,6 +32,13 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 ```
 
 命令未在本机执行过时，标「未验证」，不要声称通过。
+
+## 文档纪律
+
+- 文档根目录默认 `LosAngelousDocs/`，不使用 `docs/`（避免与项目自带 docs 重名）。
+- 只写 `DOCS_CONTRACT.md` 登记的路径；不得自建目录、文件或自创报告命名。
+- 首次建文档：`{{LOSSKILL_PATH}}/scripts/init-docs.sh <文档根目录>`。
+- G1 前与 Dev 开工前：`{{LOSSKILL_PATH}}/scripts/check-docs.sh <文档根目录> --gate g1` 必须 0 ERROR。
 
 ## 雷区
 

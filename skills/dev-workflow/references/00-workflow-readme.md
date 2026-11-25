@@ -40,8 +40,9 @@
 
 | 约定 | 内容 |
 |---|---|
-| 文档目录 | **不固定**；以用户启动时确认的路径为准。未指定时沿用项目已有 `doc/`、`documentation/`、`wiki/` 等；都没有则必须询问，不默认 `docs/` |
-| 标准文档集 | `00-overview` / `00-requirements-intake` / `01-requirements` / `02-architecture` / `03-design` / `04-tasks` / `05-decisions` / `CHANGELOG` / `reports/` |
+| 文档目录 | 默认 `LosAngelousDocs/`，不再使用 `docs/`（避免与项目自带 docs 重名）。用户明确指定的路径优先；项目已有自己的文档目录时先确认沿用还是新建；都没有则必须询问 |
+| 文档树契约 | `<文档根目录>/DOCS_CONTRACT.md` 是唯一契约：允许的路径、唯一职责、维护者、单一事实来源；未登记路径由 `scripts/check-docs.sh` 拦截 |
+| 标准文档集 | `DOCS_CONTRACT` / `STATUS` / `00-overview` / `00-requirements-intake` / `01-requirements` / `02-architecture` / `03-design` / `04-tasks` / `05-decisions` / `CHANGELOG` / `reports/`（含 `review-index.md`、`archive/`）/ `assets/` / `ci/`（MCP 只读） |
 | ID 规则 | 需求卡 `CR-xxx`、需求 `R-xxx`（变更升版 `v2`）、验收标准 `AC-xxx`、任务 `T-xxx`、决策 `D-xxx`、假设 `A-xxx`；分配后不复用 |
 | 门禁 | `G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成 → `G2.5` 上下文增量合并 → `G3` 评审通过 → `G3.5` 跨模块检查（可选）→ `G4` 总审通过；跳门需用户授权 |
 | 上下文 | 所有角色第 0 步读 `PROJECT_BRAIN.md`；每份报告带「上下文增量」；阅读预算 S ≤ 5 / M ≤ 15 / L 分阶段；同一 CR 内 Dev/Steward 复用会话 |
@@ -78,7 +79,8 @@ CR 成功指标 → R/AC → Dev 逐条实现并验证 → Review 逐条判定 �
 ```bash
 # 1. 需求受理 + 文档
 新会话 → 发送 01-doc-agent.md → 先确认【文档生成路径】【项目现状】【本次需求】
-（先产出 CR 需求卡让你选"做 / 拆小 / 先 spike / 缓办 / 不做"= G0；确认后才写 R/AC/T）
+（首次建立：scripts/init-docs.sh <文档根目录>；先产出 CR 需求卡让你选"做 / 拆小 / 先 spike / 缓办 / 不做"= G0；确认后才写 R/AC/T）
+（G1 前：scripts/check-docs.sh <文档根目录> --gate g1 必须 0 ERROR，STATUS.md 写 G1 已确认：是）
 
 # 2. 开发（G1 确认后）
 新会话 → 发送 02-dev-agent.md → 确认【项目路径】【本次任务（CR/T）】【上一轮反馈】
@@ -98,7 +100,7 @@ CR 成功指标 → R/AC → Dev 逐条实现并验证 → Review 逐条判定 �
 | 门 | 谁负责 | 出口条件 |
 |---|---|---|
 | **G0** 需求受理 | Doc + 用户 | `CR-xxx` 需求卡确认；选项（做/拆小/spike/缓/不做）已选定 |
-| **G1** 需求冻结 | Doc + Steward + 用户 | R/AC/T/影响分析/DoR/NFR 已确认；Steward 完成影响预判；用户同时批准「范围信封」 |
+| **G1** 需求冻结 | Doc + Steward + 用户 | R/AC/T/影响分析/DoR/NFR 已确认；Steward 完成影响预判；用户同时批准「范围信封」；`check-docs --gate g1` 为 0 ERROR 且 `STATUS.md` 写 `G1 已确认：是` |
 | **G2** 开发完成 | Dev | DoD 全部满足，自检报告与「上下文增量」已出（不等于评审通过） |
 | **G2.5** 上下文合并 | Steward | 增量合并进 `PROJECT_BRAIN.md`，标记过期内容；不改代码、不替代评审 |
 | **G3** 评审通过 | Review | 结论为 `通过` / `有条件通过`，回归与影响面已覆盖；Review 不得自批 G3，接受由 Steward/用户记账 |
@@ -145,13 +147,14 @@ CR 成功指标 → R/AC → Dev 逐条实现并验证 → Review 逐条判定 �
 ## 下一步交接
 - 交给：Dev Agent
 - 依据：CR-001 已确认；G1 已通过；T-001 满足 DoR
-- 携带材料：docs/、T-001、docs/reports/dev-...、影响分析
+- 携带材料：LosAngelousDocs/、T-001、LosAngelousDocs/reports/dev-...、影响分析
 
 请把下面这段发给 Dev Agent：
 【项目路径】/path/to/project
 【本次任务】T-001（CR-001）
 【上一轮反馈】无
-【文档根目录】/path/to/project/docs
+【文档根目录】/path/to/project/LosAngelousDocs
+【文档就绪】check-docs --gate g1：退出码 0
 ```
 
 各角色的交接去向：
@@ -209,9 +212,13 @@ tools: Read, Grep, Glob, Bash, Write, Edit
 
 ## 五、使用建议与常见问题
 
-### Q：文档必须叫 `docs/`、文件名必须叫 `00-overview.md` 吗？
+### Q：文档必须叫 `LosAngelousDocs/`、文件名必须叫 `00-overview.md` 吗？
 
-不必。Doc Agent 的第一轮交互就是和你确认**文档根目录**，不会默认 `docs/`；目录不存在、有多套文档、或路径写错，都会先问清楚。文件名也优先沿用项目已有命名体系，只要求在总索引里能映射到标准职责（如 `architecture.md` 对应 `02-architecture`），不会为了套模板而重命名或复制文档。
+不需要叫 `docs/`——本工作流默认用 **`LosAngelousDocs/`**，避免与项目自带的 `docs/` 重名。Doc Agent 的第一轮交互会和你确认文档根目录；项目已有自己的文档目录时，先问清是沿用还是新建 `LosAngelousDocs/`。文件名优先沿用项目已有命名体系，只要求在 `DOCS_CONTRACT.md` 里能映射到标准职责（如 `architecture.md` 对应 `02-architecture`），不会为了套模板而重命名或复制文档。
+
+### Q：Agent 能自己在文档根目录下新建目录/文件吗？
+
+不能。`DOCS_CONTRACT.md` 是唯一路径清单；未登记路径会被 `scripts/check-docs.sh` 在 G1/G3/G4 拦截。确需新增时，由 Doc 说明用途、与现有路径的重叠、维护者，用户批准后更新契约再创建。报告命名也固定为 `reports/<角色>-<YYYY-MM-DD>-<范围>.md`。
 
 ### Q：项目已经有一套文档怎么办？
 

@@ -7,7 +7,7 @@
 
 目标很简单：**用这个仓库，在新电脑上最快 5 分钟就能恢复自己的全部开发环境，包含 AI 技能和工作流，不用重新设置，不用整理配置。**
 
-> 工作流可视化：[`docs/workflow-map.html`](docs/workflow-map.html)（单文件，直接用浏览器打开）
+> 工作流可视化：[`LosAngelousDocs/workflow-map.html`](LosAngelousDocs/workflow-map.html)（单文件，直接用浏览器打开）
 
 - 「AI Skill」部分：保持原有 Skill 目录结构，可被任意 AI 工具直接加载
 - 「环境配置」部分：新增 `configs/`（个人配置文件）和 `scripts/install.sh` / `scripts/install.ps1`（环境安装脚本）
@@ -266,17 +266,18 @@ cd LosSKILL
 ```bash
 ./scripts/bootstrap-project.sh /path/to/Project \
   --name Forus --stack "Rust + Vue" \
-  --verify "cargo test && npm run build" --docs docs
+  --verify "cargo test && npm run build" --docs LosAngelousDocs --init-docs
 ```
 
 会写入：
 
-- 项目根 `AGENTS.md`（L0 + 验证命令 + 雷区）
+- 项目根 `AGENTS.md`（L0 + 验证命令 + 雷区 + 文档纪律）
 - 项目根 `CLAUDE.md`（`@AGENTS.md`）
 - 项目根 `PROJECT_BRAIN.md`（共享大脑：架构、不变量、契约、热点、测试地图）
 - 项目根 `AUTHORIZATIONS.md`（G1 范围信封 + 授权台账，只追加）
 - 项目根 `WORKLOG.md`（跨角色工作日志，只追加，最新在上）
 - `skills/leverage-protocol/references/projects/<slug>.md`（L2：验证命令、专属信号、雷区）
+- `LosAngelousDocs/`（`--init-docs`：文档树骨架 + `DOCS_CONTRACT.md` + `STATUS.md` + 00–05 + reports/assets）
 
 已存在的文件默认跳过；`--force` 覆盖并备份为 `*.losskill.bak`，但**授权台账与工作日志永不覆盖**。
 
@@ -302,8 +303,14 @@ LosSKILL/
 ├─ .gitattributes         # 统一 LF，保证 install.sh 在跨平台可用
 ├─ .githooks/pre-commit   # 提交前自动跑 validate.sh
 ├─ .github/workflows/     # CI：shell/PowerShell 语法 + validate.sh
-├─ docs/workflow-map.html # 工作流思维导图（单文件，无外部依赖）
-├─ templates/project/     # 新项目模板：AGENTS / CLAUDE / BRAIN / AUTHORIZATIONS / WORKLOG / L2
+├─ LosAngelousDocs/       # 项目文档根目录（不使用 docs/，避免与项目自带 docs 重名）
+│  ├─ DOCS_CONTRACT.md    # 文档树契约 + 单一事实来源
+│  ├─ STATUS.md / 00–05 / CHANGELOG.md
+│  ├─ reports/            # 角色报告、review-index、archive
+│  ├─ assets/             # 文档引用的图片/图表
+│  ├─ ci/                 # ci-artifacts MCP 下载物（只读）
+│  └─ workflow-map.html   # 工作流思维导图（单文件，无外部依赖）
+├─ templates/project/     # 新项目模板：AGENTS / CLAUDE / BRAIN / AUTHORIZATIONS / WORKLOG / L2 / LosAngelousDocs
 ├─ skills/                # 所有 Skill，一个文件夹一个 Skill
 │  ├─ sandra-sales/       # 书籍蒸馏：路由包 + references/capabilities/
 │  ├─ sandra-sales-*/     # 7 个可单点触发的独立能力 Skill

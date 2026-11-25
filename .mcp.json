@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ci-artifacts": {
+      "command": "bash",
+      "args": ["mcp/ci-artifacts/run.sh"],
+      "env": {}
+    }
+  }
+}

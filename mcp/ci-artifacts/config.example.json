@@ -1,0 +1,22 @@
+{
+  "docs_root": "LosAngelousDocs/ci",
+  "sync_root": "LosAngelousDocs/reports/ci",
+  "state_root": "LosAngelousDocs/ci/_state",
+  "default_ref": "main",
+  "poll_interval": 15,
+  "wait_timeout": 1800,
+  "max_extract_bytes": 2147483648,
+  "default_sync": [
+    { "include": "**/*.md" },
+    { "include": "**/*.json" },
+    { "include": "**/*.html" }
+  ],
+  "tokens": {
+    "github": ["GITHUB_TOKEN", "GH_TOKEN"],
+    "gitlab": ["GITLAB_TOKEN", "CI_JOB_TOKEN"]
+  },
+  "api_base": {
+    "github": "",
+    "gitlab": ""
+  }
+}

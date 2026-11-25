@@ -4,14 +4,16 @@
 # 用法：
 #   ./scripts/bootstrap-project.sh /path/to/Project
 #   ./scripts/bootstrap-project.sh /path/to/Project --name Forus --stack "Rust + Vue" \
-#       --verify "cargo test && npm run build" --docs docs
+#       --verify "cargo test && npm run build" --docs LosAngelousDocs
+#   ./scripts/bootstrap-project.sh /path/to/Project --docs LosAngelousDocs --init-docs
 #
 # 选项：
 #   --name NAME       项目名（默认取目录名）
 #   --slug SLUG       L2 文件名（默认由 name 转小写 kebab-case）
 #   --stack TEXT      技术栈（默认待补充）
 #   --verify CMD      默认验证命令（默认待补充）
-#   --docs DIR        文档根目录（默认「待确认」）
+#   --docs DIR        文档根目录（默认「待确认」，建议 LosAngelousDocs/）
+#   --init-docs       按 --docs 初始化 docs 树骨架（非破坏；已存在文件跳过）
 #   --force           覆盖已存在的文件（先备份为 *.losskill.bak）
 #   --dry-run         只打印动作
 #   -h, --help        帮助
@@ -40,7 +42,8 @@ name=""
 slug=""
 stack="待补充"
 verify_cmd="待补充"
-docs="待确认（用 dev-workflow 的 G0 确认）"
+docs="待确认（默认建议 LosAngelousDocs/，用 dev-workflow 的 G0 确认）"
+init_docs=0
 force=0
 dry_run=0
 
@@ -51,6 +54,7 @@ while [ "$#" -gt 0 ]; do
     --stack)  [ "$#" -ge 2 ] || { echo "Error: --stack 需要内容" >&2; exit 2; }; stack="$2"; shift ;;
     --verify) [ "$#" -ge 2 ] || { echo "Error: --verify 需要内容" >&2; exit 2; }; verify_cmd="$2"; shift ;;
     --docs)   [ "$#" -ge 2 ] || { echo "Error: --docs 需要内容" >&2; exit 2; }; docs="$2"; shift ;;
+    --init-docs) init_docs=1 ;;
     --force|-f) force=1 ;;
     --dry-run) dry_run=1 ;;
     -h|--help) usage; exit 0 ;;
@@ -76,6 +80,22 @@ printf '%s' "$slug" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$' || {
 }
 
 [ -d "$template_dir" ] || { echo "Error: $template_dir not found" >&2; exit 1; }
+
+docs_abs=""
+if [ "$init_docs" -eq 1 ]; then
+  case "$docs" in
+    待确认*|"") echo "Error: --init-docs 需要有效的 --docs 路径" >&2; exit 2 ;;
+  esac
+  case "$docs" in
+    /*|[A-Za-z]:[\\/]*) docs_abs="$docs" ;;
+    *) docs_abs="$project_abs/$docs" ;;
+  esac
+  docs_abs="${docs_abs//\\//}"
+  docs="$docs_abs"
+  if [ "$dry_run" -ne 1 ]; then
+    mkdir -p "$(dirname "$docs_abs")"
+  fi
+fi
 
 l2_path="$l2_dir/$slug.md"
 today="$(date +%F)"
@@ -133,6 +153,16 @@ else
 fi
 write_file "$template_dir/L2.md" "$l2_dir/$slug.md"
 
+if [ "$init_docs" -eq 1 ]; then
+  echo
+  echo "Docs   : $docs_abs（init-docs）"
+  if [ "$dry_run" -eq 1 ]; then
+    "$repo_root/scripts/init-docs.sh" "$docs_abs" --name "$name" --dry-run
+  else
+    "$repo_root/scripts/init-docs.sh" "$docs_abs" --name "$name"
+  fi
+fi
+
 echo
 echo "完成。下一步："
 echo "  1. 补全 $project_abs/PROJECT_BRAIN.md 的架构、不变量、验证命令"
@@ -141,3 +171,8 @@ echo "  3. 在 $project_abs/AUTHORIZATIONS.md 确认本轮范围信封（G1 时�
 echo "  4. 各角色填好 report-meta 后运行 $repo_root/scripts/finish-report.sh --report <报告>"
 echo "  5. 补全 $l2_dir/$slug.md 的项目专属信号"
 echo "  6. 新开 Claude Code 会话让 @AGENTS.md 生效"
+if [ "$init_docs" -eq 1 ]; then
+  echo "  7. G1 前运行 $repo_root/scripts/check-docs.sh \"$docs_abs\" --gate g1（要求 0 ERROR）"
+else
+  echo "  7. 首次建文档：$repo_root/scripts/init-docs.sh <文档根目录>（或 bootstrap 时加 --init-docs）"
+fi

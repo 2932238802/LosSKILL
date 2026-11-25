@@ -22,6 +22,7 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 
 - 交付前跑 `./scripts/validate.sh`，要求 0 ERROR；WARN 需要说明原因。
 - 新增或改名 Skill：复制 `_template/`，目录名与 frontmatter `name` 一致（kebab-case），description 必须含「不用于 / 不适用 / 不涉及」边界，并在 `SKILLS.md` 登记。
+- 目标项目的文档根目录默认 `LosAngelousDocs/`，不使用 `docs/`；先 `init-docs.sh` 铺骨架，G1 前用 `check-docs.sh --gate g1` 校验，未登记路径不得创建。
 - 不提交本地产物：`books/`、`dist/`、`scripts/vesta-e2e/`、`*.lnk`、`*.pyc`、`*.losskill.bak`（`.gitignore` 已覆盖）。
 - 不提交密钥、token、真实邮箱或私钥；身份信息用环境变量。
 - 保护所有 `LOS:` 手动注释：不修改、不删除、不移动；必须改动时先说明位置与原因。
@@ -41,12 +42,16 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 ./scripts/new-skill.sh my-skill --desc "……"   # 新建 Skill + 索引登记
 ./scripts/install-git-hooks.sh                # 启用 pre-commit 自检
 ./scripts/bootstrap-project.sh <项目路径>      # 接入 AGENTS/CLAUDE + L2 项目卡
+./scripts/bootstrap-project.sh <项目路径> --docs LosAngelousDocs --init-docs  # 接入并铺文档树骨架
+./scripts/init-docs.sh <项目>/LosAngelousDocs # 只初始化文档树骨架（非破坏）
+./scripts/check-docs.sh <项目>/LosAngelousDocs --gate g1  # 文档树 + G1 门禁检查
 ./scripts/finish-report.sh --report <报告>     # 解析报告头，写 WORKLOG + AUTH
 ./scripts/sync-skills.sh --dry-run            # 预览同步
 ./scripts/sync-skills.sh --link --force       # 软链接到 ~/.claude/skills
 ./scripts/sync-skills.sh --copy --force       # 覆盖复制
 ./scripts/install-claude-config.sh --dry-run  # 预览 Claude 配置部署
 ./scripts/install-vscode-config.sh --dry-run  # 预览 VS Code 配置部署
+bash ./mcp/ci-artifacts/selftest.sh           # CI artifacts MCP 自检（离线）
 ```
 
 ## 指针
@@ -55,3 +60,4 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 - Skill 写作规范：`_template/GUIDE.md`
 - 四角色开发流程：`skills/dev-workflow/SKILL.md`
 - 满力协议与项目适配：`skills/leverage-protocol/SKILL.md`
+- CI 产物 MCP（非阻塞下载/同步）：`mcp/ci-artifacts/README.md`、`LosAngelousDocs/ci/README.md`

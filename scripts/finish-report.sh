@@ -2,9 +2,9 @@
 # 解析标准报告头部，自动追加 WORKLOG 与 AUTHORIZATIONS，并回填 LOG-ID。
 #
 # 用法：
-#   ./scripts/finish-report.sh --report docs/reports/dev-2026-11-20-T-012.md
-#   ./scripts/finish-report.sh --report docs/reports/review-2026-11-20-T-012.md --dry-run
-#   ./scripts/finish-report.sh --report ... --worklog docs/WORKLOG.md --ledger docs/AUTHORIZATIONS.md
+#   ./scripts/finish-report.sh --report LosAngelousDocs/reports/dev-2026-11-20-T-012.md
+#   ./scripts/finish-report.sh --report LosAngelousDocs/reports/review-2026-11-20-T-012.md --dry-run
+#   ./scripts/finish-report.sh --report ... --worklog LosAngelousDocs/WORKLOG.md --ledger LosAngelousDocs/AUTHORIZATIONS.md
 #
 # 报告头部格式（放在报告标题下方）：
 #   <!-- report-meta

@@ -23,7 +23,7 @@
 
 | 改动 | 默认级别 |
 |---|---|
-| `docs/**`、`*.md`、注释、文案 | A1 |
+| `LosAngelousDocs/**`、`*.md`、注释、文案 | A1 |
 | `src/**`（在 `allowed_paths` 内） | A1 |
 | `tests/**` | A1 |
 | 依赖清单 / lockfile（`package.json`、`Cargo.toml`、`requirements.txt`） | A2 |

@@ -15,7 +15,7 @@ jobs:
       - name: Check shell syntax
         run: |
           bash -n setup.sh
-          for f in scripts/*.sh .githooks/pre-commit; do
+          for f in scripts/*.sh .githooks/pre-commit mcp/ci-artifacts/*.sh; do
             [ -f "$f" ] && bash -n "$f"
           done
 
@@ -36,3 +36,6 @@ jobs:
 
       - name: Run script selftest
         run: ./scripts/selftest.sh
+
+      - name: MCP ci-artifacts selftest
+        run: bash ./mcp/ci-artifacts/selftest.sh

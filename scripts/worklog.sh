@@ -2,10 +2,10 @@
 # 追加一条 Agent 工作日志到 WORKLOG.md（只追加，最新在上）。
 #
 # 用法：
-#   ./scripts/worklog.sh --file docs/WORKLOG.md \
+#   ./scripts/worklog.sh --file LosAngelousDocs/WORKLOG.md \
 #     --role dev --gate G2 --cr CR-004 --task T-012 \
 #     --action "实现登录限流与 3 个回归测试" \
-#     --report docs/reports/dev-2026-11-20-T-012.md \
+#     --report LosAngelousDocs/reports/dev-2026-11-20-T-012.md \
 #     --commit a1b2c3d --auth AUTH-20261120-001 --status 完成
 #
 # 选项：

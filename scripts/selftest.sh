@@ -5,8 +5,10 @@
 #   - worklog 追加 / 全键去重 / --time 格式 / 同秒 -2 后缀
 #   - finish-report 回填（带后缀标题）/ 幂等 / 无锚点 WARN / 不同报告不去重
 #   - 无 python3 时的相对链接（realpath 回退）/ python3 与 realpath 都无时 exit 2
-#   - usage 完整性（9 个脚本 -h，含头部插行后仍完整）
+#   - usage 完整性（11 个脚本 -h，含头部插行后仍完整）
 #   - capability_index query 空结果（T-001 回归）
+#   - init-docs 骨架生成与幂等（不覆盖已有文件）
+#   - check-docs 树契约 / G1 门禁 / 未登记路径 / 报告命名 / 拆分目录
 #
 # 用法：
 #   ./scripts/selftest.sh
@@ -266,7 +268,9 @@ fi
 # ---- 11. usage 完整性（9 个脚本 -h） ----
 usage_scripts=(
   "$repo_root/scripts/bootstrap-project.sh"
+  "$repo_root/scripts/check-docs.sh"
   "$repo_root/scripts/finish-report.sh"
+  "$repo_root/scripts/init-docs.sh"
   "$repo_root/scripts/install-claude-config.sh"
   "$repo_root/scripts/install-git-hooks.sh"
   "$repo_root/scripts/install-vscode-config.sh"
@@ -287,7 +291,7 @@ wlog_h="$("$repo_root/scripts/worklog.sh" -h 2>/dev/null)"
 if [ -z "$usage_bad" ] \
   && printf '%s' "$fin_h" | grep -q -- '--force' \
   && printf '%s' "$wlog_h" | grep -q -- '--time'; then
-  pass "usage 完整性（9 个脚本 -h 且关键选项齐全）"
+  pass "usage 完整性（11 个脚本 -h 且关键选项齐全）"
 else
   fail "usage 完整性（问题：${usage_bad:-关键选项缺失}）"
 fi
@@ -324,6 +328,114 @@ if command -v python3 >/dev/null 2>&1 && [ -f "$cap_py" ]; then
 else
   skip "query 空结果（缺少 python3 或 capability_index.py）"
 fi
+
+# ---- 14. init-docs 生成完整骨架 ----
+docs_sb="$sandbox/docs-init"
+mkdir -p "$docs_sb"
+"$repo_root/scripts/init-docs.sh" "$docs_sb" --name Demo >"$work/init1.out" 2>"$work/init1.err"
+rc_init=$?
+if [ "$rc_init" -eq 0 ] && [ -f "$docs_sb/DOCS_CONTRACT.md" ] && [ -f "$docs_sb/04-tasks.md" ] \
+  && [ -f "$docs_sb/reports/review-index.md" ] && [ -d "$docs_sb/reports/archive" ] \
+  && [ -d "$docs_sb/assets" ]; then
+  pass "init-docs 生成完整骨架"
+else
+  fail "init-docs 生成完整骨架（rc=$rc_init）"
+fi
+
+# ---- 15. init-docs 幂等（不覆盖已有文件） ----
+printf 'SENTINEL\n' >> "$docs_sb/STATUS.md"
+"$repo_root/scripts/init-docs.sh" "$docs_sb" --name Demo >/dev/null 2>&1
+if grep -q SENTINEL "$docs_sb/STATUS.md"; then
+  pass "init-docs 幂等（不覆盖已有文件）"
+else
+  fail "init-docs 幂等（已存在文件被覆盖）"
+fi
+
+# ---- 16. check-docs 骨架树检查通过 ----
+"$repo_root/scripts/check-docs.sh" "$docs_sb" >"$work/check1.out" 2>&1
+rc_tree=$?
+if [ "$rc_tree" -eq 0 ] && grep -q 'OK' "$work/check1.out"; then
+  pass "check-docs 骨架树检查通过"
+else
+  fail "check-docs 骨架树检查（rc=$rc_tree）"
+fi
+
+# ---- 17. check-docs G1 拦截空骨架 ----
+"$repo_root/scripts/check-docs.sh" "$docs_sb" --gate g1 >"$work/check2.out" 2>&1
+rc_g1empty=$?
+if [ "$rc_g1empty" -ne 0 ] && grep -q 'G1' "$work/check2.out"; then
+  pass "check-docs G1 拦截空骨架"
+else
+  fail "check-docs G1 空骨架（rc=$rc_g1empty）"
+fi
+
+# ---- 18. 补齐 CR/R/AC/T 与 STATUS 后 G1 通过 ----
+printf '\n### CR-001 Demo\n- 状态：已确认\n' >> "$docs_sb/00-requirements-intake.md"
+printf '\n### R-001 Demo\n- AC-001-1 demo\n' >> "$docs_sb/01-requirements.md"
+printf '\n### T-001 Demo\n- DoR: ok\n' >> "$docs_sb/04-tasks.md"
+sed -i 's/G1 已确认：否/G1 已确认：是/' "$docs_sb/STATUS.md"
+"$repo_root/scripts/check-docs.sh" "$docs_sb" --gate g1 >"$work/check3.out" 2>&1
+rc_g1ok=$?
+if [ "$rc_g1ok" -eq 0 ]; then
+  pass "check-docs G1 补齐后通过"
+else
+  fail "check-docs G1 补齐后（rc=$rc_g1ok）：$(tr '\n' ' ' < "$work/check3.out")"
+fi
+
+# ---- 19. 未登记目录报错 ----
+mkdir -p "$docs_sb/plans"; : > "$docs_sb/plans/x.md"
+"$repo_root/scripts/check-docs.sh" "$docs_sb" >"$work/check4.out" 2>&1
+rc_unknown=$?
+if [ "$rc_unknown" -ne 0 ] && grep -q '未登记目录' "$work/check4.out"; then
+  pass "check-docs 拦截未登记目录"
+else
+  fail "check-docs 未登记目录（rc=$rc_unknown）"
+fi
+rm -rf "$docs_sb/plans"
+
+# ---- 20. 报告命名不规范报错 ----
+: > "$docs_sb/reports/progress.md"
+"$repo_root/scripts/check-docs.sh" "$docs_sb" >"$work/check5.out" 2>&1
+rc_badname=$?
+if [ "$rc_badname" -ne 0 ] && grep -q '命名不规范' "$work/check5.out"; then
+  pass "check-docs 拦截不规范报告名"
+else
+  fail "check-docs 报告命名（rc=$rc_badname）"
+fi
+rm -f "$docs_sb/reports/progress.md"
+
+# ---- 21. 允许 assets/ 与规范报告名 ----
+mkdir -p "$docs_sb/assets"; : > "$docs_sb/assets/diagram.png"
+: > "$docs_sb/reports/dev-2026-11-25-T-001.md"
+"$repo_root/scripts/check-docs.sh" "$docs_sb" >"$work/check6.out" 2>&1
+rc_allow=$?
+if [ "$rc_allow" -eq 0 ]; then
+  pass "check-docs 允许 assets/ 与规范报告名"
+else
+  fail "check-docs 允许路径（rc=$rc_allow）：$(tr '\n' ' ' < "$work/check6.out")"
+fi
+
+# ---- 22. 编号文档不能同时是文件与目录 ----
+mkdir -p "$docs_sb/04-tasks"; : > "$docs_sb/04-tasks/README.md"
+"$repo_root/scripts/check-docs.sh" "$docs_sb" >"$work/check7.out" 2>&1
+rc_dup=$?
+if [ "$rc_dup" -ne 0 ] && grep -q '同时存在' "$work/check7.out"; then
+  pass "check-docs 拦截同编号文件+目录"
+else
+  fail "check-docs 同编号文件+目录（rc=$rc_dup）"
+fi
+rm -rf "$docs_sb/04-tasks"
+
+# ---- 23. 核心文件缺失报错 ----
+mv "$docs_sb/00-overview.md" "$docs_sb/00-overview.bak"
+"$repo_root/scripts/check-docs.sh" "$docs_sb" >"$work/check8.out" 2>&1
+rc_missing=$?
+if [ "$rc_missing" -ne 0 ] && grep -q '不存在' "$work/check8.out"; then
+  pass "check-docs 拦截缺失核心文件"
+else
+  fail "check-docs 缺失核心文件（rc=$rc_missing）"
+fi
+mv "$docs_sb/00-overview.bak" "$docs_sb/00-overview.md"
 
 # ---- 汇总 ----
 echo

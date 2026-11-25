@@ -31,3 +31,10 @@ __pycache__/
 # Claude Code 本地设置（含项目级授权）及其写入临时文件
 .claude/settings.local.json
 .claude/settings.local.json.tmp.*
+
+# CI artifacts MCP：下载物与运行状态不入库（目录契约见 LosAngelousDocs/ci/README.md）
+/LosAngelousDocs/ci/_state/
+/LosAngelousDocs/ci/**/zips/
+/LosAngelousDocs/ci/**/artifacts/
+/LosAngelousDocs/ci/**/*.zip
+/mcp/ci-artifacts/config.json

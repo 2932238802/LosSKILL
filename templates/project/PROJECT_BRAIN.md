@@ -10,6 +10,7 @@
 - 入口：
 - 运行方式：
 - 文档根目录：{{DOC_ROOT}}
+- 文档树契约：`{{DOC_ROOT}}/DOCS_CONTRACT.md`
 - 技术栈：{{STACK}}
 
 ## 2. 架构与边界
@@ -67,7 +68,7 @@
 
 ## 10. 模块卡（大项目按需）
 
-- `brain/modules/<module>.md` — 任务涉及该模块时读；没有就先用第 2 节。
+- `brain/modules/<module>.md`（项目根，与 `PROJECT_BRAIN.md` 同级）— 任务涉及该模块时读；没有就先用第 2 节。
 
 ## 维护规则
 
