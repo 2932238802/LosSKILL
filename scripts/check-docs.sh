@@ -5,6 +5,7 @@
 #   ./scripts/check-docs.sh <文档根目录>
 #   ./scripts/check-docs.sh /path/to/project/LosAngelousDocs --gate g1
 #   ./scripts/check-docs.sh /path/to/project/LosAngelousDocs --gate g2|g3|g4
+#   ./scripts/check-docs.sh /path/to/project/LosAngelousDocs --gate g2.5|g3.5
 #   ./scripts/check-docs.sh <文档根目录> --project-root /path/to/project
 #
 # 检查项：
@@ -15,8 +16,9 @@
 #   5. 编号文档若拆成同名目录，必须有 README.md，且不能同时保留同名 .md
 #   6. --gate g1：有真实 CR / R / AC / T 编号，STATUS.md 标记「G1 已确认：是」
 #   7. --gate g2：有 dev-*.md 报告（含 report-meta），04-tasks.md 有 AC 映射
-#   8. --gate g3：有 review-*.md 报告且结论合法，reports/review-index.md 存在
+#   8. --gate g3：有 review-*.md 报告且结论合法，reports/review-index.md 存在，G3 接受已记录
 #   9. --gate g4：有 meta/steward 报告且结论合法，或 STATUS.md 记录「G4 豁免」
+#  10. --gate g2.5 / g3.5：WORKLOG 有对应门禁行；g3.5 可用「G3.5 豁免」代替
 #
 # 退出码：0 = 通过（允许 WARN）；1 = 有 ERROR；2 = 用法/路径错误
 
@@ -53,9 +55,14 @@ done
 [ -d "$doc_root" ] || { echo "Error: 文档根目录不存在：$doc_root" >&2; exit 2; }
 doc_root="$(cd "$doc_root" && pwd)"
 
+project_root_abs=""
+if [ -n "$project_root" ] && [ -d "$project_root" ]; then
+  project_root_abs="$(cd "$project_root" && pwd)"
+fi
+
 case "$gate" in
-  ""|g1|g2|g3|g4) ;;
-  *) echo "Error: --gate 只支持 g1 / g2 / g3 / g4" >&2; exit 2 ;;
+  ""|g1|g2|g2.5|g3|g3.5|g4) ;;
+  *) echo "Error: --gate 只支持 g1 / g2 / g2.5 / g3 / g3.5 / g4" >&2; exit 2 ;;
 esac
 
 errors=0
@@ -167,7 +174,15 @@ while IFS= read -r -d '' entry; do
       err "未登记目录：$name/（新增路径需在 DOCS_CONTRACT.md 登记并经用户批准）"
     fi
   elif [ -f "$entry" ]; then
-    contains "$name" "${declared_files[@]}" || err "未登记文件：$name（新增路径需在 DOCS_CONTRACT.md 登记并经用户批准）"
+    case "$name" in
+      WORKLOG.md|AUTHORIZATIONS.md|PROJECT_BRAIN.md)
+        # 记录根默认项目根；文档根属存量兼容（legacy），不按未登记文件拦截
+        warn "记录文件在文档根：$name（legacy；建议移到项目根）"
+        ;;
+      *)
+        contains "$name" "${declared_files[@]}" || err "未登记文件：$name（新增路径需在 DOCS_CONTRACT.md 登记并经用户批准）"
+        ;;
+    esac
   fi
 done < <(find "$doc_root" -mindepth 1 -maxdepth 1 -print0)
 
@@ -236,6 +251,61 @@ g1_confirmed() {
   grep -qE 'G1[[:space:]]*已确认[[:space:]]*(：|:)[[:space:]]*是' "$doc_root/STATUS.md" 2>/dev/null
 }
 
+# 记录根：默认项目根；存量项目允许文档根（legacy）
+record_file() {
+  local n="$1"
+  if [ -n "$project_root_abs" ] && [ -f "$project_root_abs/$n" ]; then
+    printf '%s' "$project_root_abs/$n"; return 0
+  fi
+  if [ -f "$doc_root/$n" ]; then
+    printf '%s' "$doc_root/$n"; return 0
+  fi
+  return 1
+}
+
+current_cr() {
+  local cr
+  cr="$(sed -nE 's/^[[:space:]]*-?[[:space:]]*\**[[:space:]]*当前 CR[[:space:]]*\**[[:space:]]*(：|:)[[:space:]]*([A-Za-z0-9-]+).*/\3/p' "$doc_root/STATUS.md" 2>/dev/null | head -1)"
+  case "$cr" in
+    CR-*) printf '%s' "$cr"; return 0 ;;
+  esac
+  grep -oE 'CR-[0-9]+' "$doc_root/00-requirements-intake.md" 2>/dev/null | sort -t- -k2 -n | tail -1
+}
+
+worklog_has_gate() {
+  local wl cr="$2" gate="$1"
+  wl="$(record_file WORKLOG.md)" || return 1
+  if [ -n "$cr" ]; then
+    grep -qE "\|[[:space:]]*${gate}[[:space:]]*\|.*${cr}" "$wl"
+  else
+    grep -qE "\|[[:space:]]*${gate}[[:space:]]*\|" "$wl"
+  fi
+}
+
+g3_accepted() {
+  grep -qE 'G3[[:space:]]*已接受[[:space:]]*(：|:)' "$doc_root/STATUS.md" 2>/dev/null && return 0
+  local wl
+  wl="$(record_file WORKLOG.md)" || return 1
+  grep -qE '\|[[:space:]]*G3[[:space:]]*\|.*接受' "$wl"
+}
+
+if [ "$gate" = "g2.5" ]; then
+  cr="$(current_cr)"
+  worklog_has_gate "G2.5" "$cr" \
+    || err "G2.5：WORKLOG 没有 G2.5 行${cr:+（$cr）}（Steward 合并增量后必须记一行）"
+  if [ -n "$project_root_abs" ] && [ -f "$project_root_abs/PROJECT_BRAIN.md" ]; then :;
+  elif [ -f "$doc_root/PROJECT_BRAIN.md" ]; then :;
+  else warn "G2.5：找不到 PROJECT_BRAIN.md（项目根或文档根）"; fi
+fi
+
+if [ "$gate" = "g3.5" ]; then
+  if grep -qE 'G3\.5[[:space:]]*豁免' "$doc_root/STATUS.md" 2>/dev/null; then
+    :
+  elif ! worklog_has_gate "G3.5" "$(current_cr)"; then
+    err "G3.5：WORKLOG 没有 G3.5 行，且 STATUS.md 未写「G3.5 豁免」"
+  fi
+fi
+
 if [ "$gate" = "g2" ]; then
   g1_confirmed || err "G2：STATUS.md 未写「G1 已确认：是」"
   dev_report="$(find_latest_report dev)"
@@ -264,6 +334,8 @@ if [ "$gate" = "g3" ]; then
   fi
   [ -f "$reports_dir/review-index.md" ] \
     || err "G3：缺少 reports/review-index.md（评审记忆）"
+  g3_accepted \
+    || warn "G3：未见 G3 接受记录（STATUS.md 写「G3 已接受：」或 WORKLOG 记 gate=G3 status=接受）"
 fi
 
 if [ "$gate" = "g4" ]; then
@@ -282,18 +354,19 @@ if [ "$gate" = "g4" ]; then
   fi
   grep -qE 'G4' "$doc_root/STATUS.md" 2>/dev/null \
     || err "G4：STATUS.md 未记录 G4 结果或豁免"
-  if [ -n "$project_root" ] && [ -d "$project_root" ]; then
+  if [ -n "$project_root_abs" ]; then
     for f in WORKLOG.md AUTHORIZATIONS.md; do
-      [ -f "$project_root/$f" ] || err "G4：项目根缺少 $f"
+      [ -f "$project_root_abs/$f" ] || [ -f "$doc_root/$f" ] \
+        || err "G4：项目根与文档根都缺少 $f（记录根至少一处）"
     done
   fi
 fi
 
 if [ -n "$project_root" ]; then
   if [ -d "$project_root" ]; then
-    project_root="$(cd "$project_root" && pwd)"
     for f in PROJECT_BRAIN.md AUTHORIZATIONS.md WORKLOG.md; do
-      [ -f "$project_root/$f" ] || warn "项目根缺少 $f（建议用 bootstrap-project.sh 生成）"
+      [ -f "$project_root_abs/$f" ] || [ -f "$doc_root/$f" ] \
+        || warn "缺少 $f（项目根或文档根；建议用 bootstrap-project.sh 生成）"
     done
   else
     warn "project-root 不存在，跳过项目根检查：$project_root"

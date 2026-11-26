@@ -18,7 +18,7 @@ ref_dir="$repo_root/skills/dev-workflow/references"
 src="$ref_dir/_shared-conventions.md"
 prompts_dir="$repo_root/prompts/dev-workflow"
 roles=(01-doc-agent.md 02-dev-agent.md 03-review-agent.md 04-meta-review-agent.md)
-plain=(05-context-protocol.md 06-authorization.md)
+plain=(05-context-protocol.md 06-authorization.md 07-speed.md)
 
 check=0
 case "${1:-}" in

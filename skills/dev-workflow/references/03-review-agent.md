@@ -43,8 +43,8 @@
 - 阅读预算：S ≤ 5、M ≤ 15、L 分阶段；超出需说明。
 - 每个 CR 新建会话保持独立性；同一 CR 的返工可复用会话保持基线。
 - 评审后更新 `review-index.md`：按模块记录缺陷类型与高发位置，供下次优先检查。
-- 你是 **A1 的批准人与记账人**：**评审期间不提交**；等你给出 G3 结论、且结论为通过 / 有条件通过后，才批准 commit 的 A1 并追加 `AUTH-*`（此时你已审过该工作区，不构成自证）。A2 默认交 Steward；若信封 `delegate_a2_to_review: true` 且满足 `06-authorization.md` 1.2 的低风险条件，可批准 push/PR/合并；A3 拒绝并上报用户。你**不能**批准自己的 G3 结论，G3 接受由 Steward 或用户记账。
-- 交付 G3 报告后，填好报告头部的 `report-meta`；若本次批准 A1，同时填 `auth_level` / `auth_action` / `auth_evidence` / `auth_scope` / `auth_key`，再运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告路径>`。它会追加 WORKLOG，并在台账写入 AUTH。
+- 你是 **A1c 的批准人与记账人**：**评审期间不提交**；等你给出 G3 结论、且结论为通过 / 有条件通过后，才批准 commit 的 **A1c** 并追加 `AUTH-*`（此时你已审过该工作区，不构成自证）。**A1w 不需要你补批**：它由 G1 信封授权，你只需在 G3 检查是否越界。A2 默认交 Steward；若信封 `delegate_a2_to_review: true` 且满足 `06-authorization.md` 1.2 的低风险条件，可批准 push/PR/合并；A3 拒绝并上报用户。你**不能**批准自己的 G3 结论，G3 接受由 Steward 或用户记 WORKLOG（不写台账）。
+- 交付 G3 报告后，填好报告头部的 `report-meta`；若本次批准 A1c，同时填 `auth_level: A1c` / `auth_action` / `auth_evidence` / `auth_scope` / `auth_key`，再运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告路径> --project-root <项目根>`。它会追加 WORKLOG，并在台账写入 AUTH。
 - 完整协议见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
 
 <!-- SHARED-CONVENTIONS:BEGIN -->
@@ -74,7 +74,8 @@
 - **大脑模块卡**：固定放在项目根 `brain/modules/<module>.md`，不放进文档根目录。
 
 - **ID 一旦分配不复用**。任务状态只用：`TODO` / `DOING` / `DONE` / `BLOCKED` / `DROPPED`。
-- **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G2.5` 上下文增量合并（Steward）→ `G3` 评审通过 → `G3.5` 跨模块检查（Steward，可选）→ `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。
+- **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G2.5` 上下文增量合并（Steward）→ `G3` 评审通过 → `G3.5` 跨模块检查（Steward，可选）→ `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。G2.5 / G3.5 必须各留一行 WORKLOG（G3.5 可写 `G3.5 豁免：<理由>`），否则 G4 记流程缺陷。
+- **授权（唯一口径）**：`A1w` 写入（改代码/测试/文档/大脑增量，不 commit）由 G1 信封预授权，执行者记 WORKLOG；`A1c` 分支 commit 由 Review 在 G3 后批准并写 `AUTH-*`；`A2`（push/PR/合并/依赖/构建/CI）由 Steward；`A3` 只由用户。G2.5 / G3.5 属 A1w，不需要 Review 补批；G3 接受记 WORKLOG，不占 AUTH。台账与日志默认在项目根，存量项目允许文档根（legacy），见 `06-authorization.md` §3.1。
 - **需求编号**：需求卡 `CR-xxx`；需求 `R-xxx`（变更时升版 `R-xxx v2`，保留历史）；假设 `A-xxx`；均不复用。
 - **状态面板**：`<文档根目录>/STATUS.md` 记录当前 CR、当前门禁、进行中任务、阻塞、下一步、最近报告链接。
 - **证据格式**：`文件:行号`、命令 + 关键输出、commit hash。没有证据的结论必须标 `[推断]`。
@@ -87,6 +88,7 @@
   - `P2` 一般：可维护性 / 非关键性能 / 错误信息质量 / 局部设计问题
   - `P3` 建议：风格 / 命名 / 可读性
 - **结论用词**：评审 `通过` / `有条件通过` / `不通过`；总审 `通过` / `返工`。
+- **工作日志**：每个角色交付报告后运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告> --project-root <项目根>`；它写 `WORKLOG.md`，A1c/A2 同时写 `AUTHORIZATIONS.md`。A1w、G2.5、G3.5、G3 接受只记 WORKLOG（`worklog.sh`），不进台账。记录根默认项目根，存量项目可沿用文档根（legacy）。
 - **报告落盘**：`<文档根目录>/reports/<角色>-<YYYY-MM-DD>-<范围>.md`（不可写时至少完整输出在对话里，并说明未落盘）。
 
 ### 1.1 文档树纪律（所有角色遵守，Doc 负监管责任）
@@ -324,7 +326,7 @@ auth_key: -
 ## 授权记录
 - 批准的 AUTH：AUTH-xxx（动作 / 范围 / 证据）
 - 拒绝或升级的请求：AUTH-xxx（原因 / 交给谁）
-- 本轮 G3 结论接受：未接受（Review 不得自批；由 Steward 或用户记账）
+- 本轮 G3 结论接受：未接受（Review 不得自批；由 Steward 或用户记 WORKLOG `gate=G3`，不写台账）
 
 ## 上下文增量
 - 评审范围：

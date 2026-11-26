@@ -19,7 +19,8 @@
 | 3 | [`03-review-agent.md`](03-review-agent.md) | **Review Agent** | 独立、对抗性地审查实现与影响面 | 评审报告 + 回归结果 + G3 结论 |
 | 4 | [`04-meta-review-agent.md`](04-meta-review-agent.md) | **Meta Review Agent / Steward** | 复核文档、实现、评审、流程与结果；Steward 模式维护项目大脑 | 总审报告 + UAT/结果层 + 评分卡 + 上下文增量合并 |
 | 5 | [`05-context-protocol.md`](05-context-protocol.md) | **上下文协议** | 四角色共用的记忆与阅读规则 | 大脑读取顺序、阅读预算、增量块、会话复用 |
-| 6 | [`06-authorization.md`](06-authorization.md) | **授权协议** | 范围信封、A0–A3 分级、台账 | 一次批准、自动记账、越界升级 |
+| 6 | [`06-authorization.md`](06-authorization.md) | **授权协议** | 范围信封、A0/A1w/A1c/A2/A3 分级、台账 | 一次批准、分级记账、越界升级、G3 接受记录 |
+| 7 | [`07-speed.md`](07-speed.md) | **提速协议** | 并行派发、门禁合流、预热、模型分层与状态脚本 | 并行组规则、`workflow-status.sh`、反模式 |
 
 ### 角色边界（这是整套设计的关键）
 
@@ -44,10 +45,10 @@
 | 文档树契约 | `<文档根目录>/DOCS_CONTRACT.md` 是唯一契约：允许的路径、唯一职责、维护者、单一事实来源；未登记路径由 `$LOSSKILL_HOME/scripts/check-docs.sh` 拦截 |
 | 标准文档集 | `DOCS_CONTRACT` / `STATUS` / `00-overview` / `00-requirements-intake` / `01-requirements` / `02-architecture` / `03-design` / `04-tasks` / `05-decisions` / `CHANGELOG` / `reports/`（含 `review-index.md`、`archive/`）/ `assets/` / `ci/`（MCP 只读） |
 | ID 规则 | 需求卡 `CR-xxx`、需求 `R-xxx`（变更升版 `v2`）、验收标准 `AC-xxx`、任务 `T-xxx`、决策 `D-xxx`、假设 `A-xxx`；分配后不复用 |
-| 门禁 | `G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成 → `G2.5` 上下文增量合并 → `G3` 评审通过 → `G3.5` 跨模块检查（可选）→ `G4` 总审通过；跳门需用户授权 |
-| 上下文 | 所有角色第 0 步读 `PROJECT_BRAIN.md`；每份报告带「上下文增量」；阅读预算 S ≤ 5 / M ≤ 15 / L 分阶段；同一 CR 内 Dev/Steward 复用会话 |
-| 授权 | 用户在 G1 批准一次「范围信封」；A1 默认由 Review 记账（Dev 自行提交的例外由 Steward/Meta），A2 由 Steward（信封可委托 Review 批低风险），A3 只由用户；Review 不得自批 G3；台账 `AUTHORIZATIONS.md` 只追加 |
-| 工作日志 | 每个角色交付报告后填 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh`，自动写 `WORKLOG.md` 与（如填写）`AUTH-*`；Steward 在 G4 审计 |
+| 门禁 | `G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成 → `G2.5` 上下文增量合并 → `G3` 评审通过 → `G3.5` 跨模块检查（可选）→ `G4` 总审通过；跳门需用户授权。G2.5/G3.5 必须留 WORKLOG 行（G3.5 可豁免） |
+| 上下文 | 所有角色第 0 步读 `PROJECT_BRAIN.md`；每份报告带「上下文增量」；阅读预算 S ≤ 5 / M ≤ 15 / L 分阶段；同一 CR 内 Dev/Steward 复用会话；并行规则见 `07-speed.md` |
+| 授权 | 用户在 G1 批准一次「范围信封」；**A1w**（改代码/文档/大脑，不 commit）由信封授权、记 WORKLOG；**A1c**（分支 commit）由 Review 在 G3 后记账；A2 由 Steward（可委托 Review 批低风险）；A3 只由用户；Review 不得自批 G3，G3 接受记 WORKLOG；台账只追加 A1c/A2/A3 |
+| 工作日志 | 每个角色交付报告后填 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh --project-root <项目根>`，自动写 `WORKLOG.md` 与（A1c/A2 时）`AUTH-*`；记录根默认项目根，存量项目可用文档根；Steward 在 G4 审计 |
 | 任务状态 | `TODO` / `DOING` / `DONE` / `BLOCKED` / `DROPPED` |
 | 证据格式 | `文件:行号`、命令 + 关键输出、commit hash；无证据必须标 `[推断]` |
 | 严重度 | `P0` 阻断 / `P1` 严重 / `P2` 一般 / `P3` 建议 |
@@ -102,16 +103,16 @@ CR 成功指标 → R/AC → Dev 逐条实现并验证 → Review 逐条判定 �
 | **G0** 需求受理 | Doc + 用户 | `CR-xxx` 需求卡确认；选项（做/拆小/spike/缓/不做）已选定 |
 | **G1** 需求冻结 | Doc + Steward + 用户 | R/AC/T/影响分析/DoR/NFR 已确认；Steward 完成影响预判；用户同时批准「范围信封」；`check-docs --gate g1` 为 0 ERROR 且 `STATUS.md` 写 `G1 已确认：是` |
 | **G2** 开发完成 | Dev | DoD 全部满足，自检报告与「上下文增量」已出（不等于评审通过） |
-| **G2.5** 上下文合并 | Steward | 增量合并进 `PROJECT_BRAIN.md`，标记过期内容；不改代码、不替代评审 |
-| **G3** 评审通过 | Review | 结论为 `通过` / `有条件通过`，回归与影响面已覆盖；Review 不得自批 G3，接受由 Steward/用户记账 |
-| **G3.5** 跨模块检查 | Steward（可选） | 检查跨 CR/跨模块耦合与大脑一致性；高风险改动必做 |
+| **G2.5** 上下文合并 | Steward | 增量合并进 `PROJECT_BRAIN.md`，标记过期内容；不改代码、不替代评审；WORKLOG 留 `gate=G2.5` 行 |
+| **G3** 评审通过 | Review | 结论为 `通过` / `有条件通过`，回归与影响面已覆盖；Review 不得自批 G3，接受由 Steward/用户记 WORKLOG |
+| **G3.5** 跨模块检查 | Steward（可选） | 检查跨 CR/跨模块耦合与大脑一致性；高风险改动必做；WORKLOG 留 `gate=G3.5` 行或 STATUS 写豁免 |
 | **G4** 总审通过 | Steward/Meta + 用户 | 五层总审通过，UAT/结果层达成，发布准备就绪 |
 
 > 跳门不是绝对禁止，但必须由用户明确授权，并在报告里写明原因与影响。
 
-> 门禁有机器检查：`check-docs.sh <文档根目录> --gate g1|g2|g3|g4`。G1 验需求/AC/任务与确认标记；G2 验 dev 报告与 AC 映射；G3 验 review 报告、结论与 review-index；G4 验 meta 报告或「G4 豁免」。
+> 门禁有机器检查：`check-docs.sh <文档根目录> --gate g1|g2|g3|g4`，以及 `--gate g2.5|g3.5`。G1 验需求/AC/任务与确认标记；G2 验 dev 报告与 AC 映射；G2.5/G3.5 验 WORKLOG 行（G3.5 可豁免）；G3 验 review 报告、结论、review-index 与 G3 接受记录；G4 验 meta 报告或「G4 豁免」。
 
-> 提交时序固定：Dev 不 commit → Review 在 G3 结论后记 A1 → 主会话执行 commit → push 属 A2，由 Steward 批准。用户明确要求 Dev 自行提交时，A1 改由 Steward 记账。
+> 提交时序固定：Dev 不 commit（A1w 记 WORKLOG）→ Review 在 G3 结论后批准 A1c → 主会话执行 commit 并用 `finish-report.sh --backfill` 回填 hash → push 属 A2，由 Steward 批准。用户明确要求 Dev 自行提交时，A1c 改由 Steward 记账。
 
 ### 一个需求到来时的完整链路
 
@@ -178,6 +179,18 @@ CR 成功指标 → R/AC → Dev 逐条实现并验证 → Review 逐条判定 �
 - **小改动 / 修 Bug**：满足 S 条件时走「S 快车道」（一行 G0 → G1-lite → Dev → Review 快评 → 提交 → 用户验收），跳过 G2.5/G3.5/G4；超出 S 条件立即转完整流程。
 - **需求中途变化**：先建新 `CR-xxx` 或升版 `R-xxx v2`，重新确认 G1 与影响面，再让 Dev 动手；不要把变更直接塞给 Dev。
 - **返工**：把 Meta 的返工指令原样贴给对应 Agent 的下一轮，作为【上一轮反馈】。不要重写，保留证据链。同一门禁最多返工 2 轮，第 3 轮必须由用户裁决（继续 / 回 G1 / 拆小 / 放弃）。
+
+### 提速（并行与合流）
+
+完整规则见 [`07-speed.md`](07-speed.md)，要点：
+
+- **并行任务**：同一 CR 内文件不相交、无依赖的 T 可同时派多个 Dev；默认最多 3 个写代理；主会话负责合流并检查没有同一文件被两个 T 改过。
+- **并行评审**：每个 T 独立 Review，主会话汇总；Review 的独立性不变。
+- **G2.5 与 G3 并行**：Steward 合大脑不阻塞 Review，但必须在 commit 前完成。
+- **门禁合流**：需求清楚时 G0+G1 一次确认；小 diff 把 G2.5 并入 G3；单模块可豁免 G3.5；纯文案/样式/文档可豁免 G4。合流必须写进 `STATUS.md`。
+- **预热**：G1 确认前允许 Dev 只读调研（A0），写操作仍等确认。
+- **状态脚本**：每次接手先跑 `$LOSSKILL_HOME/scripts/workflow-status.sh <文档根目录> --project-root <项目根>`，不要凭记忆推断当前阶段。
+- **模型分层**：机械/记账用快模型，实现用主模型，评审/总审用强模型。
 
 ### 每轮需要带上的材料
 
@@ -271,10 +284,10 @@ Meta 的价值恰恰在于**不信任 Review**，并多一层结果验收。如�
 可以委托「信封内的程序性授权」，不能委托 A3：
 
 - 用户在 G1 批准一次范围信封（路径、命令、提交上限、到期、禁止项）。
-- A1（改代码、分支 commit）由 Review 批准并记账；A2（push、PR、合并、依赖）由 Steward；A3（生产、删库、密钥、force push）永远由用户确认。
-- Review 不能批准自己的 G3 结论，否则是自证；G3 接受由 Steward 或用户记账。
+- **A1w**（改代码/测试/文档/大脑，不 commit）由信封授权，执行者记 WORKLOG；**A1c**（分支 commit）由 Review 在 G3 后批准并记账；A2（push、PR、合并、依赖、构建/CI）由 Steward；A3（生产、删库、密钥、force push）永远由用户确认。
+- Review 不能批准自己的 G3 结论，否则是自证；G3 接受由 Steward 或用户记 WORKLOG（不占 AUTH）。
 - Agent 不能替用户点 Claude Code 的权限弹窗；宿主权限仍由 harness 控制。
-- 台账 `AUTHORIZATIONS.md` 只追加，不删改；G4 审计缺失/越界。详见 `06-authorization.md`。
+- 台账 `AUTHORIZATIONS.md` 只追加 A1c/A2/A3，不删改；A1w/G2.5/G3.5/G3 接受记 WORKLOG。默认项目根，存量项目可用文档根；G4 审计缺失/越界。详见 `06-authorization.md`。
 
 ### Q：怎么知道每个 Agent 做过什么？
 
@@ -297,7 +310,8 @@ skills/dev-workflow/references/
 ├─ 03-review-agent.md        ← 独立代码评审
 ├─ 04-meta-review-agent.md   ← 全链路总审 / Steward
 ├─ 05-context-protocol.md    ← 上下文协议（大脑 / 增量 / 预算 / 复用）
-└─ 06-authorization.md       ← 授权协议（信封 / A0–A3 / 台账）
+├─ 06-authorization.md       ← 授权协议（信封 / A1w / A1c / A2 / A3 / 台账）
+└─ 07-speed.md               ← 提速协议（并行 / 门禁合流 / 预热 / 模型分层）
 ```
 
 渲染与副本同步：`./scripts/render-dev-workflow.sh`；只检查不写入：`--check`（`validate.sh` 会调用它，落后即报错）。

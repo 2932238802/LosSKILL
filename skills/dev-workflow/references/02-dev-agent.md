@@ -41,9 +41,9 @@
 - 阅读预算：S ≤ 5、M ≤ 15、L 分阶段；超预算需在报告中说明。
 - 同一 CR 内复用本会话处理返工；跨 CR 新建会话，只带大脑 + 相关报告路径。
 - G2 报告的「上下文增量」必须写清：触及模块、不变量/契约变化、测试变化、大脑需要更新的节、发现的过期信息。
-- 动手前确认 `<文档根目录>/AUTHORIZATIONS.md` 的信封：只做 A0/A1。**你不在 G2 提交**：交付工作区改动，由 Review 在 G3 结论后记 A1，主会话执行 commit。push/合并/依赖变更属 A2，找 Steward；A3（迁移、生产、密钥、不可逆删除）一律停下问用户。**不得自批**。用户明确要求你自行提交时，A1 改由 Steward 记账（Review 尚未评审，不得自证）。
+- 动手前确认 `<记录根>/AUTHORIZATIONS.md` 的信封（默认项目根，存量项目可用文档根）：只做 A0/**A1w**（在信封路径内改代码/测试/文档，不 commit），并在 WORKLOG 记一行。**你不在 G2 提交**：交付工作区改动，由 Review 在 G3 结论后批准 **A1c**，主会话执行 commit。push/合并/依赖/构建/CI 属 A2，找 Steward；A3（迁移、生产、密钥、不可逆删除）一律停下问用户。**不得自批**。用户明确要求你自行提交时，A1c 改由 Steward 记账（Review 尚未评审，不得自证）。若被编进并行组，只改自己 T 的文件，不碰其他 T 的路径。
 - `LOSSKILL_HOME` 记在 `PROJECT_BRAIN.md` 第 1 节；脚本一律用 `$LOSSKILL_HOME/scripts/...`，不得假设当前项目下有 `scripts/`。
-- 交付 G2 报告后，填好报告头部的 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告路径>`；它会追加 WORKLOG 并回填 `LOG-ID`。
+- 交付 G2 报告后，填好报告头部的 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告路径> --project-root <项目根>`；它会追加 WORKLOG 并回填 `LOG-ID`。
 - 完整协议见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
 
 <!-- SHARED-CONVENTIONS:BEGIN -->
@@ -73,7 +73,8 @@
 - **大脑模块卡**：固定放在项目根 `brain/modules/<module>.md`，不放进文档根目录。
 
 - **ID 一旦分配不复用**。任务状态只用：`TODO` / `DOING` / `DONE` / `BLOCKED` / `DROPPED`。
-- **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G2.5` 上下文增量合并（Steward）→ `G3` 评审通过 → `G3.5` 跨模块检查（Steward，可选）→ `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。
+- **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G2.5` 上下文增量合并（Steward）→ `G3` 评审通过 → `G3.5` 跨模块检查（Steward，可选）→ `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。G2.5 / G3.5 必须各留一行 WORKLOG（G3.5 可写 `G3.5 豁免：<理由>`），否则 G4 记流程缺陷。
+- **授权（唯一口径）**：`A1w` 写入（改代码/测试/文档/大脑增量，不 commit）由 G1 信封预授权，执行者记 WORKLOG；`A1c` 分支 commit 由 Review 在 G3 后批准并写 `AUTH-*`；`A2`（push/PR/合并/依赖/构建/CI）由 Steward；`A3` 只由用户。G2.5 / G3.5 属 A1w，不需要 Review 补批；G3 接受记 WORKLOG，不占 AUTH。台账与日志默认在项目根，存量项目允许文档根（legacy），见 `06-authorization.md` §3.1。
 - **需求编号**：需求卡 `CR-xxx`；需求 `R-xxx`（变更时升版 `R-xxx v2`，保留历史）；假设 `A-xxx`；均不复用。
 - **状态面板**：`<文档根目录>/STATUS.md` 记录当前 CR、当前门禁、进行中任务、阻塞、下一步、最近报告链接。
 - **证据格式**：`文件:行号`、命令 + 关键输出、commit hash。没有证据的结论必须标 `[推断]`。
@@ -86,6 +87,7 @@
   - `P2` 一般：可维护性 / 非关键性能 / 错误信息质量 / 局部设计问题
   - `P3` 建议：风格 / 命名 / 可读性
 - **结论用词**：评审 `通过` / `有条件通过` / `不通过`；总审 `通过` / `返工`。
+- **工作日志**：每个角色交付报告后运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告> --project-root <项目根>`；它写 `WORKLOG.md`，A1c/A2 同时写 `AUTHORIZATIONS.md`。A1w、G2.5、G3.5、G3 接受只记 WORKLOG（`worklog.sh`），不进台账。记录根默认项目根，存量项目可沿用文档根（legacy）。
 - **报告落盘**：`<文档根目录>/reports/<角色>-<YYYY-MM-DD>-<范围>.md`（不可写时至少完整输出在对话里，并说明未落盘）。
 
 ### 1.1 文档树纪律（所有角色遵守，Doc 负监管责任）
@@ -372,7 +374,7 @@ auth_key: -
 - 最值得 Review Agent 盯的 3 个地方及原因
 
 ## 授权记录
-- 请求的 AUTH：AUTH-xxx（A1 commit / A2 push / 其他）
+- 请求的 AUTH：AUTH-xxx（A1c commit / A2 push / 其他）；A1w 记 WORKLOG，不写台账
 - 已批准：AUTH-xxx
 - 未授权但尝试的动作：无 / 说明
 
@@ -431,7 +433,7 @@ auth_key: -
 - ❌ 伪造测试/构建结果，或跳过失败项不报告
 - ❌ 删除或改写用户写的手动注释（`LosAngelous:` / `LOS:`），或整文件重写导致注释丢失
 - ❌ 需求/AC/范围不明确时用主观假设继续实现，而不是先交互确认
-- ❌ 自行提交/推送/开 PR（提交由主会话在 G3 通过并取得 A1 后执行；用户明确要求你提交时，A1 由 Steward 记账）
+- ❌ 自行提交/推送/开 PR（提交由主会话在 G3 通过并取得 A1c 后执行；用户明确要求你提交时，A1c 由 Steward 记账）
 - ❌ 在报告中宣称"评审通过"或"可以上线"
 - ❌ 顺手修复任务外的 Bug 并混进同一改动（应记录并建议单独建任务）
 

@@ -265,7 +265,7 @@ else
   fail "python3 与 realpath 都无（rc=$rcQ）"
 fi
 
-# ---- 11. usage 完整性（9 个脚本 -h） ----
+# ---- 11. usage 完整性（12 个脚本 -h） ----
 usage_scripts=(
   "$repo_root/scripts/bootstrap-project.sh"
   "$repo_root/scripts/check-docs.sh"
@@ -277,6 +277,7 @@ usage_scripts=(
   "$repo_root/scripts/new-skill.sh"
   "$repo_root/scripts/sync-skills.sh"
   "$repo_root/scripts/worklog.sh"
+  "$repo_root/scripts/workflow-status.sh"
   "$repo_root/setup.sh"
 )
 usage_bad=""
@@ -288,10 +289,13 @@ for s in "${usage_scripts[@]}"; do
 done
 fin_h="$("$repo_root/scripts/finish-report.sh" -h 2>/dev/null)"
 wlog_h="$("$repo_root/scripts/worklog.sh" -h 2>/dev/null)"
+ws_h="$("$repo_root/scripts/workflow-status.sh" -h 2>/dev/null)"
 if [ -z "$usage_bad" ] \
-  && printf '%s' "$fin_h" | grep -q -- '--force' \
-  && printf '%s' "$wlog_h" | grep -q -- '--time'; then
-  pass "usage 完整性（11 个脚本 -h 且关键选项齐全）"
+  && printf '%s' "$fin_h" | grep -q -- '--backfill' \
+  && printf '%s' "$fin_h" | grep -q -- '--project-root' \
+  && printf '%s' "$wlog_h" | grep -q -- '--time' \
+  && printf '%s' "$ws_h" | grep -q -- '--check'; then
+  pass "usage 完整性（12 个脚本 -h 且关键选项齐全）"
 else
   fail "usage 完整性（问题：${usage_bad:-关键选项缺失}）"
 fi
@@ -436,6 +440,121 @@ else
   fail "check-docs 缺失核心文件（rc=$rc_missing）"
 fi
 mv "$docs_sb/00-overview.bak" "$docs_sb/00-overview.md"
+
+# ---- 24. finish-report A1w 只记 WORKLOG，不写台账 ----
+auth_root="$work/authroot"
+mkdir -p "$auth_root"
+auth_ledger="$auth_root/AUTHORIZATIONS.md"
+auth_wl="$auth_root/WORKLOG.md"
+printf '# 授权台账\n<!-- auth:rows -->\n' > "$auth_ledger"
+repW="$work/rep-A1w.md"
+cat > "$repW" <<'EOF'
+## Dev Agent 开发报告
+<!-- report-meta
+role: dev
+gate: G2
+cr: CR-002
+task: T-100
+status: 完成
+action: A1w 写入改动
+commit: -
+auth_level: A1w
+auth_action: 改代码
+auth_policy: POLICY-CR-002
+auth_evidence: validate 通过
+auth_scope: src/
+auth_expires: 随 CR 结束
+auth_key: CR-002:T-100:改代码:A1w
+-->
+- 结论：完成
+EOF
+"$freport" --report "$repW" --project-root "$auth_root" >/dev/null 2>"$work/errA1w"
+if [ "$(grep -cE '^## AUTH-' "$auth_ledger")" -eq 0 ] \
+  && [ "$(count_rows "$auth_wl")" -eq 1 ] \
+  && grep -q 'A1w' "$work/errA1w"; then
+  pass "finish-report A1w 只记 WORKLOG、不写台账"
+else
+  fail "finish-report A1w（auth=$(grep -cE '^## AUTH-' "$auth_ledger") rows=$(count_rows "$auth_wl")）"
+fi
+
+# ---- 25. finish-report A1c 由 Review 写台账 ----
+repR="$work/rep-A1c.md"
+cat > "$repR" <<'EOF'
+## Review Agent 评审报告
+<!-- report-meta
+role: review
+gate: G3
+cr: CR-002
+task: T-100
+status: 通过
+action: 评审通过并批准提交
+commit: -
+auth_level: A1c
+auth_action: 提交 T-100 的 2 个文件
+auth_policy: POLICY-CR-002
+auth_evidence: git diff --stat 2 files
+auth_scope: branch=feat/x, commit=待生成
+auth_expires: 随 CR 结束
+auth_key: CR-002:T-100:提交:A1c
+-->
+- 结论：通过
+EOF
+"$freport" --report "$repR" --project-root "$auth_root" >/dev/null 2>&1
+authid="$(grep -oE '^## AUTH-[0-9-]+' "$auth_ledger" | head -1 | sed 's/^## //')"
+if [ -n "$authid" ] && grep -q '级别：A1c' "$auth_ledger"; then
+  pass "finish-report A1c 写台账（$authid）"
+else
+  fail "finish-report A1c 写台账"
+fi
+
+# ---- 26. finish-report --backfill 回填 commit 且幂等 ----
+"$freport" --backfill --auth "$authid" --commit deadbee --project-root "$auth_root" >/dev/null 2>&1
+"$freport" --backfill --auth "$authid" --commit deadbee --project-root "$auth_root" >/dev/null 2>&1
+if [ "$(grep -c -- '- Commit：deadbee' "$auth_ledger")" -eq 1 ]; then
+  pass "finish-report --backfill 回填 commit（幂等）"
+else
+  fail "finish-report --backfill（count=$(grep -c -- '- Commit：deadbee' "$auth_ledger")）"
+fi
+
+# ---- 27. 旧值 A1 按 A1c 处理并提示 ----
+repLegacy="$work/rep-A1.md"
+sed 's/auth_level: A1c/auth_level: A1/; s/提交 T-100 的 2 个文件/提交旧值/; s/auth_key: .*/auth_key: CR-002:T-100:旧值:A1/' "$repR" > "$repLegacy"
+"$freport" --report "$repLegacy" --project-root "$auth_root" >/dev/null 2>"$work/errLegacy"
+if grep -q '已废弃' "$work/errLegacy" && grep -q '级别：A1c' "$auth_ledger"; then
+  pass "finish-report 旧值 A1 → A1c 并提示"
+else
+  fail "finish-report 旧值 A1 兼容"
+fi
+
+# ---- 28. check-docs g2.5 / g3.5 ----
+wsproj="$work/wsproj"
+mkdir -p "$wsproj"
+printf '# 工作日志\n| ID | 时间 | 角色 | 门禁 | CR / T | 做了什么 | 报告 | Commit | AUTH | 状态 |\n|---|---|---|---|---|---|---|---|---|---|\n<!-- worklog:rows -->\n' > "$wsproj/WORKLOG.md"
+"$repo_root/scripts/check-docs.sh" "$docs_sb" --gate g2.5 --project-root "$wsproj" >"$work/check-g25-miss.out" 2>&1
+rc_g25_miss=$?
+printf '| LOG-9 | 2026-11-26 | steward | G2.5 | CR-001 / T-001 | 合并增量 | - | - | - | 完成 |\n' >> "$wsproj/WORKLOG.md"
+"$repo_root/scripts/check-docs.sh" "$docs_sb" --gate g2.5 --project-root "$wsproj" >"$work/check-g25-ok.out" 2>&1
+rc_g25_ok=$?
+"$repo_root/scripts/check-docs.sh" "$docs_sb" --gate g3.5 --project-root "$wsproj" >"$work/check-g35-miss.out" 2>&1
+rc_g35_miss=$?
+printf '\n- G3.5 豁免：单模块\n' >> "$docs_sb/STATUS.md"
+"$repo_root/scripts/check-docs.sh" "$docs_sb" --gate g3.5 --project-root "$wsproj" >"$work/check-g35-ok.out" 2>&1
+rc_g35_ok=$?
+if [ "$rc_g25_miss" -ne 0 ] && [ "$rc_g25_ok" -eq 0 ] \
+  && [ "$rc_g35_miss" -ne 0 ] && [ "$rc_g35_ok" -eq 0 ]; then
+  pass "check-docs g2.5/g3.5 门禁检查与豁免"
+else
+  fail "check-docs g2.5/g3.5（g25=$rc_g25_miss/$rc_g25_ok g35=$rc_g35_miss/$rc_g35_ok）"
+fi
+
+# ---- 29. workflow-status 只读诊断 ----
+"$repo_root/scripts/workflow-status.sh" "$docs_sb" --project-root "$sandbox" >"$work/ws.out" 2>&1
+rc_ws=$?
+if [ "$rc_ws" -eq 0 ] && grep -q '当前门禁' "$work/ws.out" && grep -q '下一步' "$work/ws.out"; then
+  pass "workflow-status 输出门禁与下一步"
+else
+  fail "workflow-status（rc=$rc_ws）"
+fi
 
 # ---- 汇总 ----
 echo

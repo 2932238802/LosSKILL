@@ -54,5 +54,5 @@
 - 收尾项 F-1～F-4 已处理：台账更正、状态串、架构表、CHANGELOG。
 - 收尾提交：`docs(workflow): 收尾 CR-002 G4 总审记录`（hash 见 git log）。
 - 后续 P3（F-5～F-10）：worklog mv 临时文件、`--no-worklog` relpath、`--force` AUTH、`--time` 帮助、selftest 补 `head`/插行/SKIP 计失败；建议下一轮或 CR-007。
-- CR-003 协议矛盾（A1/commit/A2/台账）仍未修；正式开工前建议先做。
+- CR-003 协议矛盾（A1/commit/A2/台账）**已修**：拆分为 A1w/A1c，G3 接受改记 WORKLOG，`finish-report --backfill` 回填 commit，记录根统一项目根（legacy 文档根兼容）；新增 `07-speed.md` 与 `workflow-status.sh`。
 - T-005 P3 AUTH-005 scope 已在台账更正记录与 G4 报告交叉覆盖。

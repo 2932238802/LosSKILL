@@ -127,6 +127,10 @@ report_cell="$report"
 if [ "$report" != "-" ] && [ -n "$report" ]; then
   case "$report" in
     http*|*']('*) report_cell="$report" ;;
+    /*|[A-Za-z]:[\\/]*)
+      # 绝对路径：直接做链接目标，不拼接到 WORKLOG 目录
+      report_cell="[$(basename "$report")]($report)"
+      ;;
     *)
       wd="$(dirname "$file")"
       [ -e "$wd/$report" ] || echo "  [warn] 报告不存在：$wd/$report" >&2

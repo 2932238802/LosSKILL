@@ -22,7 +22,7 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 - 文档树契约：`{{DOC_ROOT}}/DOCS_CONTRACT.md`（未登记路径禁止创建）
 - 项目 L2：`{{L2_PATH}}`
 - 项目大脑：`PROJECT_BRAIN.md`（开工第 0 步先读；不要通读全仓库）
-- 授权台账：`AUTHORIZATIONS.md`（G1 批准一次范围信封；A1/A2 记账，A3 问用户）
+- 授权台账：`AUTHORIZATIONS.md`（G1 批准一次范围信封；A1w 记 WORKLOG、A1c/A2 记台账，A3 问用户）
 - 工作日志：`WORKLOG.md`（每次交付后追加 `LOG-*`，链接报告）
 
 ## 验证命令
@@ -39,6 +39,7 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 - 只写 `DOCS_CONTRACT.md` 登记的路径；不得自建目录、文件或自创报告命名。
 - 首次建文档：`{{LOSSKILL_PATH}}/scripts/init-docs.sh <文档根目录>`。
 - G1 前与 Dev 开工前：`{{LOSSKILL_PATH}}/scripts/check-docs.sh <文档根目录> --gate g1` 必须 0 ERROR。
+- 接手先看状态：`{{LOSSKILL_PATH}}/scripts/workflow-status.sh {{DOC_ROOT}} --project-root . --check`。
 - 角色提示词里的 `$LOSSKILL_HOME` 即：`{{LOSSKILL_PATH}}`（也记在 `PROJECT_BRAIN.md` 第 1 节）。
 
 ## 雷区

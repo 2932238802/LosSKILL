@@ -283,11 +283,12 @@ cd LosSKILL
 
 ### 上下文与授权协议
 
-`dev-workflow` 现在带两份跨角色协议：
+`dev-workflow` 现在带三份跨角色协议：
 
 - `references/05-context-protocol.md`：所有角色第 0 步读 `PROJECT_BRAIN.md`，按阅读预算只看改动面；每份报告写「上下文增量」，Steward 在 G2.5 合并；同一 CR 内复用会话。
-- `references/06-authorization.md`：用户在 G1 批准一次范围信封；A1（改代码/分支 commit）由 Review 记账，A2（push/合并/依赖）由 Steward，A3（生产/删库/密钥）只由用户确认；Review 不得自批 G3。
-- 工作日志：每个角色填好报告头部的 `report-meta` 后运行 `scripts/finish-report.sh`，自动写 `WORKLOG.md` 与（如填写）`AUTHORIZATIONS.md`；Steward 在 G4 审计。
+- `references/06-authorization.md`：用户在 G1 批准一次范围信封；**A1w**（改代码/文档/大脑，不 commit）由信封授权、记 WORKLOG；**A1c**（分支 commit）由 Review 在 G3 后记账；A2（push/合并/依赖/构建/CI）由 Steward；A3（生产/删库/密钥）只由用户确认；G3 接受记 WORKLOG，不占 AUTH。
+- `references/07-speed.md`：并行派发（同 CR 内文件不相交的 T 可同时派 Dev，默认 ≤3 个写代理）、门禁合流（G0+G1、S 通道、G2.5 并入 G3、G3.5/G4 豁免）、预热（G1 前只读调研）、模型分层与 `scripts/workflow-status.sh` 状态诊断。
+- 工作日志：每个角色填好报告头部的 `report-meta` 后运行 `scripts/finish-report.sh --report <报告> --project-root <项目根>`，自动写项目根 `WORKLOG.md` 与（A1c/A2 时）`AUTHORIZATIONS.md`；A1w/G2.5/G3.5/G3 接受只记 WORKLOG；Steward 在 G4 审计。
 
 ---
 
@@ -347,7 +348,8 @@ LosSKILL/
    ├─ install-vscode-config.sh  # 部署 configs/vscode/（settings/keybindings；扩展可选）
    ├─ bootstrap-project.sh  # 给项目生成 AGENTS/CLAUDE + 大脑 + 台账 + 工作日志 + L2
    ├─ worklog.sh          # 追加单条工作日志（底层命令）
-   ├─ finish-report.sh    # 解析报告头，自动写 WORKLOG + AUTH 并回填 LOG-ID
+   ├─ finish-report.sh    # 解析报告头，自动写 WORKLOG + AUTH(A1c/A2)，支持 --backfill 回填 commit
+   ├─ workflow-status.sh  # 只读诊断：当前门禁、下一步、必跑检查（--check 直接跑门禁）
    ├─ sync-skills.sh      # 同步 Skill：copy / link / force / dry-run，自动探测目标
    ├─ new-skill.sh        # 新建 Skill：目录 + frontmatter + SKILLS.md 登记 + 自检
    ├─ install-git-hooks.sh  # 启用 .githooks/pre-commit（validate.sh）

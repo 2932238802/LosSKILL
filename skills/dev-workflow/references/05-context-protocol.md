@@ -68,6 +68,7 @@
 - **Review**：每个 CR 新建会话以保持独立性；同一 CR 的返工可复用会话以保持基线。
 - **跨 CR**：一律新建会话，只带大脑 + 相关报告路径，不带上一轮全文。
 - 上下文接近上限时：先写增量与交接块，再新开会话；不要带着半截上下文硬撑。
+- **并行派发**：同一 CR 内文件不相交的 T 可并行派多个 Dev，每个子代理只带自己的 T + 大脑 + 相关文档；主会话负责合流。条件、上限与反模式见 `references/07-speed.md`。
 
 ## 7. 大脑维护规则
 
@@ -125,7 +126,7 @@ Review 开工时读它，但**不把它当证据**：先独立看 diff 与影响
 
 ### 8.1 工作日志（WORKLOG.md）
 
-`WORKLOG.md`（项目根）是跨角色、跨 CR 的**活动索引**，只追加、最新在最上面：
+`WORKLOG.md`（**记录根：默认项目根**；存量项目可沿用文档根，并在 `STATUS.md` 写 `记录根：文档根（legacy）`）是跨角色、跨 CR 的**活动索引**，只追加、最新在最上面：
 
 | 字段 | 内容 |
 |---|---|
@@ -136,8 +137,10 @@ Review 开工时读它，但**不把它当证据**：先独立看 diff 与影响
 | 报告 / Commit / AUTH | 详细证据的指针 |
 | 状态 | 完成 / 返工 / 阻塞 / 有条件通过… |
 
-- 优先用 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告路径>`：它解析报告头部的 `report-meta`，同时写 WORKLOG 与 AUTH，并回填 `LOG-ID`。
-- 手工补录时才直接用 `$LOSSKILL_HOME/scripts/worklog.sh`（在项目根执行，`--file WORKLOG.md`），避免格式漂移；报告写完后立即记一行，并在报告里写 `LOG-ID`。
+- 优先用 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告路径> --project-root <项目根>`：它解析报告头部的 `report-meta`，同时写 WORKLOG 与 AUTH，并回填 `LOG-ID`。
+- 手工补录时才直接用 `$LOSSKILL_HOME/scripts/worklog.sh`（在记录根执行，`--file WORKLOG.md`），避免格式漂移；报告写完后立即记一行，并在报告里写 `LOG-ID`。
+- **必须留行的门禁**：A1w 每个任务一行（`gate=G2`）、`gate=G2.5`、`gate=G3.5`（或 STATUS 写豁免）、G3 接受（`role=steward|user`，`status=接受`）。A1c/A2/A3 另写台账，并在 WORKLOG 的 `AUTH` 列引用。
+- 机器检查：`check-docs --gate g2.5` / `--gate g3.5` 会检查当前 CR 是否有对应 WORKLOG 行；`--gate g3` 检查 G3 接受记录或 `STATUS.md` 的 `G3 已接受：`。
 - **不要**把它当 STATUS（当前状态）或大脑（架构事实）：它是历史索引。
 - Steward 在 G4 审计：每个门禁/报告是否都有对应行；缺失记 P1 流程缺陷。
 - 更正不删旧行：追加一条“更正”，在「做了什么」里引用原 `LOG-ID`。
@@ -156,7 +159,7 @@ Review 开工时读它，但**不把它当证据**：先独立看 diff 与影响
 请只做三件事：
 1. 本次会触及哪些模块、不变量、契约（引用大脑节号与文件:行）；
 2. 大脑中哪些信息缺失或可能过期；
-3. 给出 A1/A2/A3 的初步分级与范围信封草案（路径、命令、提交上限、到期）。
+3. 给出 A1w/A1c/A2/A3 的初步分级与范围信封草案（路径、命令、提交上限、到期、并行度）。
 不要改代码，不要写实现方案。
 ```
 

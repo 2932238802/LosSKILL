@@ -1,7 +1,7 @@
 ---
 name: dev-workflow
 description: |
-  四角色开发工作流：G0 需求受理 → G1 需求/AC/任务确认 → G2 开发 → G3 评审 → G4 总审。主会话担任 Doc Agent/协调者，只写文档与状态、不写业务代码；开发、评审、总审分别交给独立 Dev / Review / Meta Agent（优先用子代理，避免占用主会话上下文）。用户说“按开发工作流来”“走流程开发”“用四个 Agent”“先出需求卡再开发”时使用。不用于纯问答、一次性脚本、没有文档根目录的临时改动。
+  四角色开发工作流：G0 需求受理 → G1 需求/AC/任务确认 → G2 开发 → G3 评审 → G4 总审。主会话担任 Doc Agent/协调者，只写文档与状态、不写业务代码；开发、评审、总审分别交给独立 Dev / Review / Meta Agent（优先用子代理，避免占用主会话上下文）。用户说“按开发工作流来”“走流程开发”“用四个 Agent”“先出需求卡再开发”，或想并行派任务、压缩门禁往返、让 Agent 跑得更快时使用。不用于纯问答、一次性脚本、没有文档根目录的临时改动。
 ---
 
 # 四角色开发工作流
@@ -17,7 +17,8 @@ description: |
 | `references/03-review-agent.md` | Review Agent | G2 自检完成后独立评审（G3） |
 | `references/04-meta-review-agent.md` | Meta Review Agent | G3 通过后全链路总审 + UAT（G4）；兼 Steward 模式维护大脑 |
 | `references/05-context-protocol.md` | 上下文协议 | 所有角色开工第 0 步；大脑 / 增量 / 阅读预算 / 会话复用 |
-| `references/06-authorization.md` | 授权协议 | 范围信封 / A0–A3 分级 / 台账 / 角色分工 |
+| `references/06-authorization.md` | 授权协议 | 范围信封 / A1w / A1c / A2 / A3 / 台账 / G3 接受 |
+| `references/07-speed.md` | 提速协议 | 并行派发 / 门禁合流 / 预热 / 模型分层 / 状态脚本 |
 
 `references/00-workflow-readme.md` 是四个角色的总说明与使用建议。
 
@@ -34,25 +35,28 @@ description: |
 
 ## 0.6 授权（委托信封）
 
-用户只在 G1 批准一次「范围信封」（允许路径、命令、提交上限、到期、禁止项），写进 `<文档根目录>/AUTHORIZATIONS.md`。日常动作按级别执行并记账：
+用户只在 G1 批准一次「范围信封」（允许路径、命令、提交上限、到期、禁止项），写进 `<记录根>/AUTHORIZATIONS.md`（默认项目根；存量项目可用文档根）。日常动作按级别执行并记账：
 
-| 级别 | 例子 | 批准人 |
-|---|---|---|
-| A0 | 读代码、跑测试、lint、build | Agent 自主 |
-| A1 | 改代码、写文档、feature 分支 commit | Review（记账） |
-| A2 | push、PR、合并 main、依赖/构建配置 | Steward/Meta（信封可委托 Review 批低风险） |
-| A3 | 生产部署、删库、force push、密钥/权限 | 用户本人，永不委托 |
+| 级别 | 例子 | 批准人 | 记账 |
+|---|---|---|---|
+| A0 | 读代码、跑测试、lint、build | Agent 自主 | WORKLOG（可选） |
+| **A1w 写入** | 改代码、测试、文档、大脑增量（不 commit） | 用户（G1 信封预授权） | WORKLOG |
+| **A1c 提交** | feature 分支 commit | **Review**（G3 通过后） | AUTHORIZATIONS |
+| A2 | push、PR、合并 main、依赖、构建/CI 配置 | Steward/Meta（信封可委托 Review 批低风险） | AUTHORIZATIONS |
+| A3 | 生产部署、删库、force push、密钥/权限 | 用户本人，永不委托 | AUTHORIZATIONS |
 
-- Review **不能**批准自己的 G3 结论；G3 接受由 Steward 或用户记账。
+- **A1w 不需要 Review 补批**：它由 G1 信封授权，Review 只在 G3 检查越界。**A1c 才是 Review 批准的**。
+- **G2.5 / G3.5 属 A1w**：Steward 写大脑/文档增量，各留一行 WORKLOG，不需要 Review 批。
+- Review **不能**批准自己的 G3 结论；G3 接受由 Steward 或用户记 WORKLOG，不占 AUTH。
 - 越出信封一律停下问用户；过期/超提交上限自动失效。
 - Agent 不能替代 Claude Code 的权限弹窗；宿主权限仍由 harness 控制。
 - 细节见 `references/06-authorization.md`。
 
 ## 0.7 工作日志
 
-每个角色交付报告后，填好报告头部的 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告>`：它同时写 `WORKLOG.md` 与（如填写了 auth 字段）`AUTHORIZATIONS.md`，并回填 `LOG-ID`。Steward 在 G4 审计两本账。
+每个角色交付报告后，填好报告头部的 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh --report <报告> --project-root <项目根>`：它写 `WORKLOG.md`，A1c/A2 时同时写 `AUTHORIZATIONS.md`，并回填 `LOG-ID`。A1w、G2.5、G3.5、G3 接受只记 WORKLOG。Steward 在 G4 审计两本账。
 
-它是跨角色、跨 CR 的历史索引，不是 STATUS 或大脑的替代品。细节见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
+记录根默认项目根（`bootstrap-project.sh` 与 `templates/project/` 都按此生成）；存量项目若把 `WORKLOG.md` / `AUTHORIZATIONS.md` 放在文档根，也可接受，只要在 `STATUS.md` 写 `记录根：文档根（legacy）`。它是跨角色、跨 CR 的历史索引，不是 STATUS 或大脑的替代品。细节见 `references/05-context-protocol.md` 与 `references/06-authorization.md`。
 
 ## 0.8 文档树契约（G1 的硬前提）
 
@@ -99,12 +103,13 @@ G0 需求受理（Doc + 用户）
 
 **谁在什么时候提交只有这一条链，其他写法一律视为流程违规：**
 
-1. **Dev 不 commit**：G2 交付工作区改动 + 变更清单 + 报告（commit 列写「工作区未提交」）。
-2. **Review 审工作区**：用 `git diff` 评审；G3 结论给出后，**仅在通过 / 有条件通过时**记 A1（commit 授权）并回填 `AUTH-*`。
-3. **主会话执行 commit**：核对 A1 条目、与用户确认提交信息后，由主会话执行 `git add` / `git commit`；主会话不改业务代码。提交后把真实 hash 回填报告、`STATUS.md` 与版本表。
-4. **push 属 A2**：由 Steward 批准并记账；用户明确要求才推送，默认 `origin/main`。
+1. **Dev 不 commit**：G2 交付工作区改动 + 变更清单 + 报告（commit 列写「工作区未提交」）；写入本身是 **A1w**，由 G1 信封授权并记 WORKLOG。
+2. **Review 审工作区**：用 `git diff` 评审；G3 结论给出后，**仅在通过 / 有条件通过时**批准 **A1c**（commit 授权）并写 `AUTH-*`。A1w 不需要 Review 补批。
+3. **主会话执行 commit**：核对 A1c 条目、与用户确认提交信息后，由主会话执行 `git add` / `git commit`；主会话不改业务代码。提交后用 `finish-report.sh --backfill --auth <AUTH-ID> --commit <hash>` 回填台账，并把 hash 写进报告、`STATUS.md` 与版本表。
+4. **G3 接受**：由 Steward 或用户记 WORKLOG（`gate=G3`，`status=接受`），不是 AUTH 条目。
+5. **push 属 A2**：由 Steward 批准并记账；用户明确要求才推送，默认 `origin/main`。
 
-- **例外（用户明确要求 Dev 自行提交）**：Dev 可在 G2 提交，但 A1 必须由 Steward 记账（Review 此时尚未评审，不得自证）；G3 的评审对象即该 commit。
+- **例外（用户明确要求 Dev 自行提交）**：Dev 可在 G2 提交，但 A1c 必须由 Steward 记账（Review 此时尚未评审，不得自证）；G3 的评审对象即该 commit。
 - **一个需求一个 commit**：不同 CR 的代码、文档、报告不混在同一个提交里；跨 CR 的同一文件用 hunk 级暂存。
 - **新任务开工前先检查工作区**：`git status` 有未提交改动时，先结束上一个需求的提交，再开始新需求；不得把上一个需求的改动带进新任务。
 - **提交信息与用户交互式确认**：先给出一条建议信息（`[feat]` / `[fix]` / `[docs]` + 一句话），请用户补充或修改，确认后再执行 `git commit`。
@@ -143,11 +148,11 @@ G4 是成本最高的门禁，按改动风险选择，不默认全量启动：
 
 ```
 G0 一行记录（问题 + 范围）→ G1-lite（1 个 CR / R / AC / T，用户确认）
-→ Dev 实现并自证 → Review 快评（跑构建与相关测试 + 看 diff + 判 AC）
-→ 主会话 commit（Review 记 A1）→ 用户验收
+→ Dev 实现并自证（A1w 记 WORKLOG）→ Review 快评（跑构建与相关测试 + 看 diff + 判 AC）
+→ Review 记 A1c → 主会话 commit → 用户验收
 ```
 
-- **保留**：编号、AC、证据格式、`check-docs --gate g1`、A1 记账、主会话 commit。
+- **保留**：编号、AC、证据格式、`check-docs --gate g1`、A1w/A1c 记账、主会话 commit、G3 接受（可简化为用户验收）。
 - **跳过**：G0 的选项讨论（拆小/spike 等）、G2.5、G3.5、G4、Review 的 15 维全量清单。
 - **Review 快评**：只跑构建 + 相关测试 + 看 diff + 逐条判 AC；结论仍用「通过 / 有条件通过 / 不通过」。
 - **升级触发**：一旦碰到接口、数据、鉴权、依赖、多模块或新增路径，立即停止 S 通道，转完整流程并说明原因。
@@ -168,19 +173,22 @@ G0 一行记录（问题 + 范围）→ G1-lite（1 个 CR / R / AC / T，用户
 【文档就绪】check-docs --gate g1 的退出码 + 关键输出（Doc 贴；Dev 必须自己复跑）
 【验证环境】<启动命令、端口、临时数据目录、浏览器路径等>
 【阅读预算】S ≤ 5 / M ≤ 15 / L 分阶段（超出需说明）
+【并行组】PG-x（哪些 T 一起派；文件不相交；单独报告）/ 单任务
+【模型】实现=主模型 / 评审=强模型 / 记账=快模型
 【报告】<落盘路径>
 ```
 
-一次只派发一个阶段；等该角色返回并核对报告后，再进入下一阶段。返工时把报告路径与编号原样传回，不要重写证据链。同一 CR 内 Dev/Steward 复用同一会话；Review 跨 CR 新建会话。
+一次派发一个**阶段**；同一阶段内可以把并行组一次派给多个子代理（见 `references/07-speed.md`）。等该组返回并核对报告后，再做合流检查，然后进入下一阶段。返工时把报告路径与编号原样传回，不要重写证据链。同一 CR 内 Dev/Steward 复用同一会话；Review 跨 CR 新建会话。
 
 ## 4. 主会话（Doc）只做这些
 
 - 维护文档：需求卡、R/AC/T、设计、影响分析、追溯矩阵、决策、STATUS。
 - 维护 `DOCS_CONTRACT.md` 的路径登记：新增路径必须先说明用途、重叠与维护者，获用户批准后再创建。
 - G1 前运行 `$LOSSKILL_HOME/scripts/check-docs.sh <文档根目录> --gate g1`，把退出码与关键行写进 G1 摘要；非 0 不得派发。
-- G3 通过且 Review 已记 A1 后，按 §2.1 执行本次 commit；提交信息先经用户确认。主会话只做提交，不改业务代码。
+- G3 通过且 Review 已记 A1c 后，按 §2.1 执行本次 commit；提交信息先经用户确认。主会话只做提交，不改业务代码。
+- 每次接手先跑 `$LOSSKILL_HOME/scripts/workflow-status.sh <文档根目录> --project-root <项目根>`，按输出的门禁与下一步行动，不凭记忆推断阶段。
 - 核对执行角色的报告是否包含：变更清单、逐条 AC 证据、命令输出、回归、发布/回滚、偏差、交接块。
-- 更新 `STATUS.md` 的当前 CR、门禁、任务状态、阻塞、下一步、报告链接。
+- 更新 `STATUS.md` 的当前 CR、门禁、通道/并行组、任务状态、阻塞、下一步、报告链接、记录根、G3 接受。
 - 如实转达结论；不替执行角色补充未验证的结论。
 - `LosAngelous:` / `LOS:` 用户注释原样保留。
 
@@ -202,7 +210,7 @@ G0 一行记录（问题 + 范围）→ G1-lite（1 个 CR / R / AC / T，用户
 - 交给谁、依据哪个门禁/结论、携带哪些材料；
 - 一段可直接复制发送给下一位 Agent 的 Prompt（真实路径、ID、版本；未知项写“待确认”）；
 - 「上下文增量」：触及模块、不变量/契约变化、测试变化、大脑需要更新的节、发现的过期信息。
-- 「工作日志」：`LOG-ID`（已用 `$LOSSKILL_HOME/scripts/finish-report.sh` 追加；AUTH 条目同一脚本写入）。
+- 「工作日志」：`LOG-ID`（已用 `$LOSSKILL_HOME/scripts/finish-report.sh` 追加；A1c/A2 的 AUTH 条目同一脚本写入；A1w/G2.5/G3.5/G3 接受只记 WORKLOG）。
 
 报告落盘：`<文档根目录>/reports/<角色>-<YYYY-MM-DD>-<范围>.md`。
 
@@ -216,4 +224,13 @@ G0 一行记录（问题 + 范围）→ G1-lite（1 个 CR / R / AC / T，用户
 - 同一 CR 内 Dev/Steward 复用会话；Review 跨 CR 新建，返工可复用。
 - 执行角色只返回摘要与报告路径；大段细节落盘，不塞回主会话。
 - 主会话只保留：当前门禁、任务状态、阻塞、下一步、报告路径。
-- 授权按 `references/06-authorization.md`：A0/A1 在信封内自动执行并记账；A2 由 Steward；A3 回用户。
+- 授权按 `references/06-authorization.md`：A1w 在信封内自动执行并记 WORKLOG；A1c 由 Review；A2 由 Steward；A3 回用户。
+
+## 8. 提速模式
+
+完整协议见 `references/07-speed.md`，主会话记住四条就够：
+
+1. **能并行的条件是文件不相交 + 无依赖**：同一 CR 内可一次派多个 Dev；默认最多 3 个写代理；只有 Steward 写大脑。
+2. **能合流的门禁要合流**：需求清楚时 G0+G1 一次确认；小 diff 把 G2.5 并入 G3；单模块可豁免 G3.5；纯文案/样式/文档可豁免 G4。合流必须写进 `STATUS.md`。
+3. **接手先跑状态脚本**：`workflow-status.sh` 告诉你当前门禁、下一步和必跑检查。
+4. **模型分层**：机械/记账用快模型，实现用主模型，评审/总审用强模型；判断类任务不降级。

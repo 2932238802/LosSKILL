@@ -167,9 +167,9 @@
 
 | Skill | 何时用（触发信号） | 产出 | 不用于 | 路径 |
 | --- | --- | --- | --- | --- |
-| [`dev-workflow`](skills/dev-workflow/SKILL.md) | 「按开发工作流来」「走流程开发」「用四个 Agent」「先出需求卡再开发」；需求进入实现前需要 G0/G1 确认；需要把开发、评审、总审分开 | `CR-xxx` 需求卡、R/AC/T、G0-G4 门禁、上下文/授权/工作日志协议、可直接复制的交接 Prompt | 纯问答、一次性脚本、没有文档根目录的临时改动 | `skills/dev-workflow/` |
+| [`dev-workflow`](skills/dev-workflow/SKILL.md) | 「按开发工作流来」「走流程开发」「用四个 Agent」「先出需求卡再开发」；需求进入实现前需要 G0/G1 确认；需要把开发、评审、总审分开；想并行派任务、压缩门禁往返 | `CR-xxx` 需求卡、R/AC/T、G0-G4 门禁、上下文/授权/提速协议、`workflow-status.sh`、可直接复制的交接 Prompt | 纯问答、一次性脚本、没有文档根目录的临时改动 | `skills/dev-workflow/` |
 
-自带 `references/` 下的四份完整角色提示词：
+自带 `references/` 下的角色提示词与跨角色协议：
 
 | 文件 | 角色 |
 | --- | --- |
@@ -178,9 +178,12 @@
 | `references/03-review-agent.md` | Review Agent：独立评审、影响面回归、G3 结论 |
 | `references/04-meta-review-agent.md` | Meta Review Agent：五层总审 + UAT、G4 结论；兼 Steward 维护大脑 |
 | `references/05-context-protocol.md` | 上下文协议：大脑、增量、阅读预算、会话复用 |
-| `references/06-authorization.md` | 授权协议：范围信封、A0–A3、台账与角色分工 |
+| `references/06-authorization.md` | 授权协议：范围信封、A1w/A1c/A2/A3、台账、G3 接受 |
+| `references/07-speed.md` | 提速协议：并行派发、门禁合流、预热、模型分层、状态脚本 |
 
-工作日志：角色填好报告头部 `report-meta` 后运行 `scripts/finish-report.sh`，自动追加项目根 `WORKLOG.md` 与（如填写）`AUTHORIZATIONS.md`；模板见 `templates/project/WORKLOG.md`。
+工作日志：角色填好报告头部 `report-meta` 后运行 `scripts/finish-report.sh --report <报告> --project-root <项目根>`，自动追加项目根 `WORKLOG.md` 与（A1c/A2 时）`AUTHORIZATIONS.md`；A1w、G2.5、G3.5、G3 接受只记 WORKLOG。模板见 `templates/project/WORKLOG.md`。
+
+状态诊断：`./scripts/workflow-status.sh <文档根目录> --project-root <项目根> [--check]` 打印当前门禁、下一步与必跑检查。
 
 推荐安装方式：把四份角色文件分别注册为 AI 工具的自定义子代理（如 `~/.claude/agents/dev-agent.md`），主会话只担任 Doc/协调者；不支持子代理的环境，就把对应文件全文发给一个全新会话。
 

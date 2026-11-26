@@ -44,8 +44,9 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 ./scripts/bootstrap-project.sh <项目路径>      # 接入 AGENTS/CLAUDE + L2 项目卡
 ./scripts/bootstrap-project.sh <项目路径> --docs LosAngelousDocs --init-docs  # 接入并铺文档树骨架
 ./scripts/init-docs.sh <项目>/LosAngelousDocs # 只初始化文档树骨架（非破坏）
-./scripts/check-docs.sh <项目>/LosAngelousDocs --gate g1  # 文档树 + G1 门禁检查（g1–g4）
-./scripts/finish-report.sh --report <报告>     # 解析报告头，写 WORKLOG + AUTH
+./scripts/check-docs.sh <项目>/LosAngelousDocs --gate g1  # 文档树 + G1 门禁检查（g1–g4、g2.5/g3.5）
+./scripts/workflow-status.sh <项目>/LosAngelousDocs --project-root <项目> --check  # 当前门禁与下一步
+./scripts/finish-report.sh --report <报告> --project-root <项目>  # 解析报告头，写 WORKLOG + AUTH(A1c/A2)；--backfill 回填 commit
 ./scripts/render-dev-workflow.sh --check       # 校验共享块渲染与 prompts 副本
 ./scripts/sync-skills.sh --dry-run            # 预览同步
 ./scripts/sync-skills.sh --link --force       # 软链接到 ~/.claude/skills

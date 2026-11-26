@@ -27,15 +27,21 @@
 # 没有 meta 块时，会尝试从「任务 / 范围 / 来源 CR / 结论 / 门禁」等行兜底解析。
 #
 # 选项：
-#   --report PATH      必填
-#   --worklog PATH     默认 WORKLOG.md
-#   --ledger PATH      默认 AUTHORIZATIONS.md
+#   --report PATH      必填（--backfill 模式下不需要）
+#   --worklog PATH     默认 <项目根>/WORKLOG.md（未给 --project-root 时为 ./WORKLOG.md）
+#   --ledger PATH      默认 <项目根>/AUTHORIZATIONS.md
+#   --project-root DIR 项目根；用于解析 WORKLOG / AUTHORIZATIONS 默认路径
 #   --role / --gate / --cr / --task / --status / --action / --commit   覆盖解析结果
+#   --backfill         只回填台账：要求同时给 --auth 与 --commit
+#   --auth ID          配合 --backfill，指定 AUTH-YYYYMMDD-NNN
 #   --no-worklog       不写工作日志
 #   --no-auth          不写授权台账
 #   --force            忽略已存在记录，重跑回填与 AUTH；WORKLOG 仍按全键去重
 #   --dry-run          只打印，不写入
 #   -h, --help
+
+# auth_level 取值：A1c（分支 commit，Review 批）、A2（push/依赖/CI，Steward 批）。
+# A1w 由 G1 信封授权，只记 WORKLOG，不写台账；旧值 A1 视为 A1c 并给出提示。
 
 set -euo pipefail
 
@@ -45,10 +51,15 @@ worklog_script="$repo_root/scripts/worklog.sh"
 report=""
 worklog="WORKLOG.md"
 ledger="AUTHORIZATIONS.md"
+worklog_set=0
+ledger_set=0
+project_root=""
 do_worklog=1
 do_auth=1
 dry_run=0
 force=0
+backfill=0
+backfill_auth=""
 
 role_override=""; gate_override=""; cr_override=""; task_override=""
 status_override=""; action_override=""; commit_override=""
@@ -67,8 +78,11 @@ usage() {
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --report)        [ "$#" -ge 2 ] || { echo "Error: --report 需要路径" >&2; exit 2; }; report="$2"; shift 2 ;;
-    --worklog)       [ "$#" -ge 2 ] || { echo "Error: --worklog 需要路径" >&2; exit 2; }; worklog="$2"; shift 2 ;;
-    --ledger)        [ "$#" -ge 2 ] || { echo "Error: --ledger 需要路径" >&2; exit 2; }; ledger="$2"; shift 2 ;;
+    --worklog)       [ "$#" -ge 2 ] || { echo "Error: --worklog 需要路径" >&2; exit 2; }; worklog="$2"; worklog_set=1; shift 2 ;;
+    --ledger)        [ "$#" -ge 2 ] || { echo "Error: --ledger 需要路径" >&2; exit 2; }; ledger="$2"; ledger_set=1; shift 2 ;;
+    --project-root)  [ "$#" -ge 2 ] || { echo "Error: --project-root 需要路径" >&2; exit 2; }; project_root="$2"; shift 2 ;;
+    --backfill)      backfill=1; shift ;;
+    --auth)          [ "$#" -ge 2 ] || { echo "Error: --auth 需要 ID" >&2; exit 2; }; backfill_auth="$2"; shift 2 ;;
     --role)          [ "$#" -ge 2 ] || { echo "Error: --role 需要值" >&2; exit 2; }; role_override="$2"; shift 2 ;;
     --gate)          [ "$#" -ge 2 ] || { echo "Error: --gate 需要值" >&2; exit 2; }; gate_override="$2"; shift 2 ;;
     --cr)            [ "$#" -ge 2 ] || { echo "Error: --cr 需要值" >&2; exit 2; }; cr_override="$2"; shift 2 ;;
@@ -84,6 +98,59 @@ while [ "$#" -gt 0 ]; do
     *)               echo "Error: 未知选项 $1" >&2; exit 2 ;;
   esac
 done
+
+# --project-root 只解析默认路径；显式 --worklog / --ledger 优先
+if [ -n "$project_root" ]; then
+  [ -d "$project_root" ] || { echo "Error: 项目根不存在：$project_root" >&2; exit 2; }
+  project_root="$(cd "$project_root" && pwd)"
+  [ "$worklog_set" -eq 1 ] || worklog="$project_root/WORKLOG.md"
+  [ "$ledger_set" -eq 1 ] || ledger="$project_root/AUTHORIZATIONS.md"
+fi
+
+# --backfill：只回填台账里某条 AUTH 的 commit hash，不解析报告
+if [ "$backfill" -eq 1 ]; then
+  [ "$do_worklog" -eq 1 ] || { echo "Error: --backfill 不能与 --no-worklog 同用" >&2; exit 2; }
+  [ -n "$backfill_auth" ] || { echo "Error: --backfill 需要 --auth AUTH-YYYYMMDD-NNN" >&2; exit 2; }
+  commit="$commit_override"
+  [ -n "$commit" ] && [ "$commit" != "-" ] || { echo "Error: --backfill 需要 --commit <hash>" >&2; exit 2; }
+  printf '%s' "$commit" | grep -qE '^[0-9a-fA-F]{7,40}$' || {
+    echo "Error: commit 应为 7–40 位十六进制：$commit" >&2; exit 2; }
+  [ -f "$ledger" ] || { echo "Error: 授权台账不存在：$ledger" >&2; exit 1; }
+  rc=0
+  awk -v id="$backfill_auth" -v commit="$commit" '
+    BEGIN { found=0; inblock=0; done=0 }
+    $0 ~ "^## " id "$" { found=1; inblock=1; print; next }
+    inblock && /^## / {
+      if (!done) { print "- Commit：" commit; done=1 }
+      inblock=0; print; next
+    }
+    inblock && /^- Commit：/ {
+      if (!done) { print "- Commit：" commit; done=1 }
+      next
+    }
+    inblock && /^- 幂等键：/ {
+      print
+      if (!done) { print "- Commit：" commit; done=1 }
+      next
+    }
+    { print }
+    END {
+      if (!found) exit 3
+      if (inblock && !done) print "- Commit：" commit
+    }
+  ' "$ledger" > "$ledger.backfill.tmp" || rc=$?
+  rc=${rc:-0}
+  if [ "$rc" -eq 3 ]; then rm -f "$ledger.backfill.tmp"; echo "Error: 台账中找不到 $backfill_auth" >&2; exit 1; fi
+  if [ "$rc" -ne 0 ]; then rm -f "$ledger.backfill.tmp"; echo "Error: 回填失败（awk exit $rc）" >&2; exit 1; fi
+  if [ "$dry_run" -eq 1 ]; then
+    echo "AUTH (dry-run) backfill: $backfill_auth <- $commit"
+    rm -f "$ledger.backfill.tmp"
+  else
+    mv "$ledger.backfill.tmp" "$ledger"
+    echo "[backfill] $backfill_auth <- $commit"
+  fi
+  exit 0
+fi
 
 [ -n "$report" ] || { echo "Error: 缺少 --report" >&2; exit 2; }
 [ -f "$report" ] || { echo "Error: 报告不存在：$report" >&2; exit 1; }
@@ -214,20 +281,24 @@ fi
 
 # 授权台账
 auth_id=""
+case "$auth_level" in
+  A1) echo "[warn] auth_level=A1 已废弃，按 A1c（commit）处理" >&2; auth_level="A1c" ;;
+  A1w) echo "[skip] A1w（写入）只记 WORKLOG，不写台账" >&2; auth_level="-" ;;
+esac
 if [ "$do_auth" -eq 1 ] && [ -n "$auth_level" ] && [ "$auth_level" != "-" ]; then
   [ -f "$ledger" ] || { echo "Error: 授权台账不存在：$ledger" >&2; exit 1; }
   grep -qF '<!-- auth:rows -->' "$ledger" || {
     echo "Error: $ledger 缺少 <!-- auth:rows --> 标记" >&2; exit 1
   }
   case "$auth_level" in
-    A1) case "$role" in
+    A1c) case "$role" in
           review) ;;
           steward|meta) ;;   # 例外：用户要求 Dev 自行提交时，由 Steward/Meta 记账
-          *) echo "Error: A1 只能由 review（或例外场景下的 steward/meta）记录" >&2; exit 2 ;;
+          *) echo "Error: A1c 只能由 review（或例外场景下的 steward/meta）记录" >&2; exit 2 ;;
         esac ;;
     A2) case "$role" in steward|meta) ;; *) echo "Error: A2 只能由 steward/meta 记录" >&2; exit 2 ;; esac ;;
     A3) echo "Error: A3 只能由用户确认，脚本不代记" >&2; exit 2 ;;
-    *) echo "Error: 未知 auth_level：$auth_level" >&2; exit 2 ;;
+    *) echo "Error: 未知 auth_level：$auth_level（只接受 A1c / A2）" >&2; exit 2 ;;
   esac
   if [ -z "$auth_action" ] || [ "$auth_action" = "-" ]; then
     echo "Error: 缺少 auth_action" >&2; exit 2
