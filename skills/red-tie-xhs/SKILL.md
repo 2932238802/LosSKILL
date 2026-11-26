@@ -184,7 +184,7 @@ description: 为知识科普账号生成小红书图文 包含选题纠偏 6张�
 
 - 尺寸 1080 × 1440
 - 格式 PNG
-- 输出目录固定在当前工作目录 不写用户主目录 不写 E:\\ 盘
+- 输出目录固定在当前工作目录 不写用户主目录 不写当前工作目录以外的盘符
   - 统一输出到 当前工作目录/xhs/主题英文名
   - 生成脚本放在 当前工作目录/xhs/gen_主题.py
   - 脚本内用 __file__ 定位输出目录 避免换目录运行时写错位置
@@ -201,18 +201,19 @@ description: 为知识科普账号生成小红书图文 包含选题纠偏 6张�
 
 - Python 3.10 以上 依赖 Pillow
 - 建议使用独立虚拟环境 避免污染系统 Python
-- Windows 字体路径 C:\\Windows\\Fonts
-- WSL 字体路径 /mnt/c/Windows/Fonts 模板会自动探测
+- Windows 字体目录由模板自动探测（系统 Fonts）
+- WSL 字体目录由模板自动探测（Windows 盘挂载点）
+- 可用环境变量 `RED_TIE_FONT_DIR` 指向自定义字体目录
 - 没有中文字体时 先安装 Noto Sans CJK 再把 MSYH / MSYHBD 指向对应字体
 - 生成后必须实际打开图片检查 不能只看脚本是否返回成功
 
 ### 4.2 字体
 
-Windows 字体
+按系统自动探测字体目录 文件名如下
 
-- 中文粗体 C:\\Windows\\Fonts\\msyhbd.ttc
-- 中文正文 C:\\Windows\\Fonts\\msyh.ttc
-- 纯英文代码 C:\\Windows\\Fonts\\consola.ttf
+- 中文粗体 msyhbd.ttc
+- 中文正文 msyh.ttc
+- 纯英文代码 consola.ttf
 
 规则
 
@@ -545,7 +546,7 @@ references/template.py
 
 - 图片写到 当前工作目录/xhs/主题英文名/
 - 生成脚本写到 当前工作目录/xhs/gen_主题.py
-- 不写到用户主目录 不写到 E:\\ 盘 不写到临时目录
+- 不写到用户主目录 不写到当前工作目录以外的盘符 不写到临时目录
 - 脚本用 __file__ 推导输出目录 保证从任何位置运行都写回项目内
 
 ## 7 质量检查清单

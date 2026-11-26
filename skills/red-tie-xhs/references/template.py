@@ -16,7 +16,7 @@ RED_TIE 小红书知识卡片模板 · 黑底直出
 
 输出规则
 - 图片写到 当前工作目录/xhs/主题英文名/
-- 不写用户主目录 不写 E:\ 盘
+- 不写用户主目录 不写当前工作目录以外的盘符
 - OUT_DIR 默认由 __file__ 推导 从任何位置运行都会写回项目内
 """
 import os
@@ -48,19 +48,32 @@ def _first_existing(paths, fallback):
     return fallback
 
 
-_FONT_DIRS = [r"C:\Windows\Fonts", "/mnt/c/Windows/Fonts",
-              "/usr/share/fonts/truetype/noto", os.path.expanduser("~/.local/share/fonts")]
+def _font_dirs():
+    dirs = []
+    env = os.environ.get("RED_TIE_FONT_DIR")
+    if env:
+        dirs.append(env)
+    windir = os.environ.get("WINDIR") or os.environ.get("SystemRoot")
+    if windir:
+        dirs.append(os.path.join(windir, "Fonts"))
+    dirs.extend(["/mnt/c/Windows/Fonts",
+                 "/usr/share/fonts/truetype/noto",
+                 os.path.expanduser("~/.local/share/fonts")])
+    return dirs
+
+
+_FONT_DIRS = _font_dirs()
 MSYHBD = _first_existing([os.path.join(d, n) for d in _FONT_DIRS
                           for n in ("msyhbd.ttc", "NotoSansCJK-Bold.ttc",
                                     "NotoSansCJKsc-Bold.otf")],
-                         r"C:\Windows\Fonts\msyhbd.ttc")
+                         None)
 MSYH = _first_existing([os.path.join(d, n) for d in _FONT_DIRS
                         for n in ("msyh.ttc", "NotoSansCJK-Regular.ttc",
                                   "NotoSansCJKsc-Regular.otf")],
-                       r"C:\Windows\Fonts\msyh.ttc")
+                       None)
 CONSOLA = _first_existing([os.path.join(d, n) for d in _FONT_DIRS
                            for n in ("consola.ttf", "DejaVuSansMono.ttf")],
-                          r"C:\Windows\Fonts\consola.ttf")
+                          None)
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 _DEFAULT_OUT = os.path.join(_BASE_DIR, "topic")
@@ -69,6 +82,9 @@ os.makedirs(OUT_DIR, exist_ok=True)
 
 
 def font(path, size):
+    if not MSYH:
+        raise SystemExit(
+            "未找到中文字体：安装 Noto Sans CJK，或设置 RED_TIE_FONT_DIR 指向字体目录")
     try:
         return ImageFont.truetype(path, size)
     except Exception:
