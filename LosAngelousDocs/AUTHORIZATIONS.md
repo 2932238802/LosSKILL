@@ -119,9 +119,64 @@ escalate_when:
 - 2026-11-26：CR-007 信封扩展 `allowed_paths` 增加 `scripts/selftest.sh`（G4 返工要求补 `current_cr` 回归用例，用户批准）。
 - 2026-11-26：CR-007 收尾 docs 提交（STATUS 关闭 + AUTH 回填），不计入 `max_commits`（与 CR-002 收尾同例）。
 
+## 范围信封（CR-008）
+
+```yaml
+policy: POLICY-CR-008
+granted_by: user
+granted_at: 2026-11-26
+expires: 2026-12-03
+branch: main
+allowed_paths:
+  - LosAngelousDocs/
+  - scripts/workflow-status.sh
+  - scripts/check-docs.sh
+  - scripts/selftest.sh
+allowed_commands:
+  - ./scripts/validate.sh
+  - ./scripts/check-docs.sh
+  - ./scripts/workflow-status.sh
+  - ./scripts/selftest.sh
+  - ./scripts/finish-report.sh
+  - git status
+  - git diff
+  - git add
+  - git commit
+max_commits: 1
+max_parallel: 1
+delegate_a2_to_review: false
+forbidden:
+  - skills/
+  - .github/
+  - push
+  - deploy/
+  - .env
+escalate_when:
+  - 修改 allowed_paths 以外的脚本
+  - 修改 skills/
+  - 跨模块
+```
+
+- 2026-11-26：用户「继续实现」批准 CR-008 范围信封（G1）。
+
 ## AUTH 记录
 
 <!-- auth:rows -->
+
+## AUTH-20261126-002
+
+- 时间：2026-11-26 19:57:29 +0800
+- CR/T：CR-008 / T-009
+- 动作：提交 CR-008 脚本修复与文档
+- 级别：A1c
+- 策略条款：POLICY-CR-008
+- 证据：validate 0 ERROR/0 WARN exit0；render --check exit0；bash -n exit0；check-docs no-gate/g1/g2/g2.5/g3/g3.5 均 0 ERROR/3 legacy WARN exit0；selftest 35 PASS/3 既有环境 FAIL；新旧脚本对照 fixture：AC-012-1 NEW=POLICY-CR-008 OLD=CR-001，AC-013-2 NEW rc=1「未给出当前 CR」OLD rc=0，AC-014-1 NEW rc=0 OLD rc=1「缺少合法结论」；diff 限于 POLICY-CR-008 allowed_paths（3 脚本 + LosAngelousDocs/），skills/ 无改动
+- 批准：review-agent
+- 范围：branch=main, commit=待生成
+- 有效期：随 CR 结束
+- 撤销：否
+- 幂等键：CR-008:T-009:提交 dev:A1c
+
 
 ## AUTH-20261126-001
 

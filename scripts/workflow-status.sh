@@ -71,12 +71,49 @@ field() { # STATUS 的单行字段
 }
 
 current_cr() {
-  local cr
-  cr="$(field '当前 CR')"
-  case "$cr" in
-    CR-*) printf '%s' "$cr"; return 0 ;;
-  esac
+  local raw val
+  raw="$(grep -E '^[[:space:]]*-?[[:space:]]*\**[[:space:]]*当前 CR[[:space:]]*\**[[:space:]]*(：|:)' "$doc_root/STATUS.md" 2>/dev/null | head -1)"
+  if [ -n "$raw" ]; then
+    val="$(printf '%s' "$raw" | sed -E 's/^[[:space:]]*-?[[:space:]]*\**[[:space:]]*当前 CR[[:space:]]*\**[[:space:]]*(：|:)[[:space:]]*//')"
+    val="$(printf '%s' "$val" | tr -d '*')"
+    val="$(printf '%s' "$val" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    case "$val" in
+      # 只取编号，忽略状态字段后面的描述文字
+      CR-*) printf '%s' "$(printf '%s' "$val" | grep -oE 'CR-[0-9]+' | head -1)"; return 0 ;;
+      # 「无 / none / - / 空白」是明确的无活动 CR，不回退候选
+      *) printf ''; return 0 ;;
+    esac
+  fi
+  # 仅当 STATUS 缺「当前 CR」字段时才回退 intake 最大编号（保持旧行为）
   grep -oE 'CR-[0-9]+' "$doc_root/00-requirements-intake.md" 2>/dev/null | sort -t- -k2 -n | tail -1
+}
+
+# 按当前 CR 选 AUTHORIZATIONS.md 的范围信封。多个 ## 块时精确匹配块标题里的 CR；
+# 无匹配则回退最后一条并标注；输出 TSV：MATCH/FALLBACK <policy> <expires> <max_commits> [<tag>]
+envelope_for_cr() {
+  local auth="$1" cr="$2"
+  awk -v want="$cr" '
+    function flush() {
+      if (policy != "") {
+        if (cr_tag == want && !matched) { m_policy = policy; m_exp = expy; m_max = maxc; matched = 1 }
+        l_policy = policy; l_exp = expy; l_max = maxc; l_tag = cr_tag
+      }
+    }
+    /^## / {
+      flush()
+      policy = ""; expy = ""; maxc = ""; cr_tag = ""
+      if (match($0, /CR-[0-9]+/)) cr_tag = substr($0, RSTART, RLENGTH)
+      next
+    }
+    policy == "" && /^policy:[[:space:]]*/ { line = $0; sub(/^policy:[[:space:]]*/, "", line); sub(/[[:space:]]+$/, "", line); policy = line; next }
+    expy == "" && /^expires:[[:space:]]*/ { line = $0; sub(/^expires:[[:space:]]*/, "", line); sub(/[[:space:]]+$/, "", line); expy = line; next }
+    maxc == "" && /^max_commits:[[:space:]]*/ { line = $0; sub(/^max_commits:[[:space:]]*/, "", line); sub(/[[:space:]]+$/, "", line); maxc = line; next }
+    END {
+      flush()
+      if (matched) printf "MATCH\t%s\t%s\t%s\n", m_policy, m_exp, m_max
+      else if (l_policy != "") printf "FALLBACK\t%s\t%s\t%s\t%s\n", l_policy, l_exp, l_max, l_tag
+    }
+  ' "$auth"
 }
 
 echo "== 工作流状态 =="
@@ -95,7 +132,7 @@ next="$(field '下一步')"
 accepted="$(field 'G3 已接受')"
 exempt="$(field 'G4 豁免')"
 
-echo "当前 CR：${cr:-未登记}"
+if [ -n "$cr" ]; then echo "当前 CR：$cr"; else echo "当前 CR：无"; fi
 echo "当前门禁：${gate:-未知}"
 echo "G1 已确认：${g1:-未写}"
 [ -n "$channel" ] && echo "通道：$channel"
@@ -115,10 +152,21 @@ fi
 
 # 当前信封
 if auth="$(record_file AUTHORIZATIONS.md)"; then
-  policy="$(sed -nE 's/^policy:[[:space:]]*(.*)$/\1/p' "$auth" 2>/dev/null | head -1)"
-  expires="$(sed -nE 's/^expires:[[:space:]]*(.*)$/\1/p' "$auth" 2>/dev/null | head -1)"
-  maxc="$(sed -nE 's/^max_commits:[[:space:]]*(.*)$/\1/p' "$auth" 2>/dev/null | head -1)"
-  echo "信封：${policy:-未填写}（到期 ${expires:-未填写}，提交上限 ${maxc:-未填写}）"
+  if [ -z "$cr" ]; then
+    echo "信封：无活动 CR（STATUS.md 当前 CR 为空，不显示历史 policy）"
+  else
+    envelope="$(envelope_for_cr "$auth" "$cr")"
+    if [ -z "$envelope" ]; then
+      echo "信封：未填写（AUTHORIZATIONS.md 没有 policy）"
+    else
+      IFS=$'\t' read -r env_kind env_policy env_expires env_max env_tag <<< "$envelope"
+      if [ "$env_kind" = "FALLBACK" ]; then
+        echo "信封：${env_policy}（回退：无 ${cr} 匹配信封，取最后一条${env_tag:+ $env_tag}；到期 ${env_expires:-未填写}，提交上限 ${env_max:-未填写}）"
+      else
+        echo "信封：${env_policy}（到期 ${env_expires:-未填写}，提交上限 ${env_max:-未填写}）"
+      fi
+    fi
+  fi
 else
   echo "信封：缺失 AUTHORIZATIONS.md"
 fi

@@ -102,6 +102,28 @@
 - **关联需求 / 任务**：R-009 / R-010 / R-011；T-007 / T-008
 - **状态**：G1 已确认（2026-11-26）
 
+## CR-008 workflow-status 与 current_cr 显示正确性
+
+- **来源**：CR-007 G3 P2（F-2）+ G4 复审观察；2026-11-26 用户「继续实现」。
+- **问题**：
+  - `workflow-status.sh` 的信封取 `AUTHORIZATIONS.md` 第一条 `policy`（`POLICY-CR-001`），不随当前 CR 变化。
+  - `current_cr` 在 `STATUS.md` 写「当前 CR：无」时回退取 `00-requirements-intake.md` 的最大编号，导致收尾后显示候选 CR（如 CR-008）。
+  - `find_latest_report` 用字典序取最新，`-r2.md` 排在 `.md` 之前，G3/G4 可能读到旧报告。
+- **价值**：门禁与状态脚本显示真实状态，避免按错误 CR 或旧报告做判断。
+- **成功指标**：
+  - `workflow-status.sh` 显示当前 CR 对应的 policy；STATUS 为「无」时显示无活动 CR。
+  - `check-docs --gate g2.5|g3.5` 在当前 CR 为空时明确报错，不再拿候选 CR 检查。
+  - G3/G4 读取最新的 `-rN` 报告。
+- **范围**：`scripts/workflow-status.sh`、`scripts/check-docs.sh`、`scripts/selftest.sh`、`LosAngelousDocs/**`。
+- **非目标**：不改授权级别、不改报告命名规则、不做触发回归集。
+- **NFR**：无新增依赖；Git Bash 与 Ubuntu CI 均可跑。
+- **约束与依赖**：`AUTHORIZATIONS.md` 允许存在多个信封块；解析需兼容无匹配与单条 policy。
+- **风险**：解析多个信封块时误取旧 policy；用「当前 CR 精确匹配，缺失回退最后一条」并补 selftest。
+- **选项**：A. 做（信封 + current_cr + 最新报告，约 0.5 天）；B. 只修信封；C. 缓办。
+- **推荐**：A。三项都是同一类「脚本读错状态」问题，一次修完并补回归。
+- **关联需求 / 任务**：R-012 / R-013 / R-014；T-009 / T-010
+- **状态**：G1 已确认（2026-11-26）
+
 ## 后续候选（未受理）
 
 | 编号 | 主题 | 主要项 |
@@ -110,7 +132,6 @@
 | CR-004 | 内容去重与编号 | F-11/12/13/14/17（需先拍板卡片保留方式） |
 | CR-005（候选） | 能力索引缓存版本化 | 脚本升级后旧缓存不失效；T-002 报告登记的残留风险（默认缓存已重建缓解，根治待办） |
 | CR-006（候选） | 否定从句分号枚举覆盖 | `ai-comment-protection` 用 `；` 枚举否定项，首条分号后的负向词仍命中（T-002 G3 P2） |
-| CR-008（候选） | `workflow-status.sh` 信封取当前 CR | 当前固定显示 `POLICY-CR-001`，应按 STATUS 当前 CR 取 policy（CR-007 G3 P2，F-2） |
 
 ## 假设与待确认
 

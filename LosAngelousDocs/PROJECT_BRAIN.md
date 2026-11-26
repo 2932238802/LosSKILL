@@ -1,6 +1,6 @@
 # PROJECT_BRAIN — LosSKILL
 
-> 维护者：Doc Agent（G2.5 增量合并：Steward） ｜ 最近更新：2026-11-26 ｜ 状态：已确认（CR-001 G4 通过；CR-002 G4 通过 2026-11-20；CR-007 G1 已确认 2026-11-26，G3 有条件通过（F-1 已修，F-2→CR-008），G4 返工（P1: check-docs current_cr））
+> 维护者：Doc Agent（G2.5 增量合并：Steward） ｜ 最近更新：2026-11-26 ｜ 状态：已确认（CR-001 G4 通过；CR-002 G4 通过 2026-11-20；CR-007 G4 通过 2026-11-26（F-2→CR-008）；CR-008 G1 已确认 2026-11-26，T-009/T-010 G2 完成，G3 有条件通过 2026-11-26（G3 已接受），G4 通过 2026-11-26（可提交 1 次，AUTH-20261126-002））
 
 ## 1. 项目定位
 
@@ -26,6 +26,8 @@
 - 不提交本地产物与密钥；身份信息用环境变量。
 - 交付前 `./scripts/validate.sh` 必须 0 ERROR；现状 0 ERROR / 0 WARN（36 个 Skill，2026-11-26 复核）。
 - 文档根目录 = `LosAngelousDocs/`（不用 `docs/`）；`DOCS_CONTRACT.md` 是唯一契约，未登记路径不得创建；`check-docs --gate g1` 现状 0 ERROR / 3 legacy WARN（`AUTHORIZATIONS.md` / `PROJECT_BRAIN.md` / `WORKLOG.md` 在文档根）。
+- `workflow-status.sh` 现状（CR-008）：按 STATUS「当前 CR」精确匹配 `## 范围信封（CR-xxx）` 块，无匹配回退最后一条并标注「回退」；当前 CR 为空显示「无活动 CR」，不回退候选 policy。真实仓库复核 `当前 CR：CR-008` / `信封：POLICY-CR-008（到期 2026-12-03，提交上限 1）`。
+- `scripts/selftest.sh` 现状：`PASS=35 FAIL=3`（2026-11-26 复核）；3 个 FAIL 均为环境项（无 python3 / 无 realpath / `query qqqzzz` rc=49），脚本逻辑用例全 PASS。
 - 不主动 push，用户明确要求才推送。
 
 ## 4. 验证命令
@@ -49,13 +51,15 @@ git status --short
 - 修复输入：`LosAngelousDocs/fix-report-2026-11-20.md`（commit `69f1830`）。
 - pre-commit 已生效：`core.hooksPath=.githooks`；`scripts/selftest.sh` 与 CI 自测已补齐（CR-002）。
 - 残留风险：索引缓存不感知脚本版本（`stale()` 只比 Skill 文件 mtime）；升级后需 `build` 重建缓存。候选 CR-005。
-- CR-007（工作流基线 + 告警清零，retro）：G1 已确认 2026-11-26；T-007 DONE（新增 `DOCS_CONTRACT.md` + `check-docs.sh` 容忍加粗 G1/G3 字段），T-008 G3 有条件通过（F-1 已修，F-2→CR-008）；G4 返工：`check-docs.sh` `current_cr()` 反引用 `\3` 越界致 `--gate g2.5` 误判 FAIL（P1，Review 漏报）。
+- CR-007（工作流基线 + 告警清零，retro）：G1 已确认 2026-11-26；T-007 DONE（新增 `DOCS_CONTRACT.md` + `check-docs.sh` 容忍加粗 G1/G3 字段），T-008 G3 有条件通过（F-1 已修，F-2→CR-008）；G4 返工 P1（`check-docs.sh` `current_cr()` 反引用 `\3` 越界致 `--gate g2.5` 误判 FAIL，Review 漏报）已由 `reports/dev-2026-11-26-T-008-r2.md` 修复，G4 复审通过（`reports/meta-2026-11-26-CR-007-r2.md`，2026-11-26），提交 `ffe8d15`。
+- CR-008（workflow-status 与 current_cr 显示正确性，R-012～R-014）：G1 已确认 2026-11-26；T-009/T-010 G2 完成（`04-tasks.md` 记 DONE 待 G3），G3 评审中（G2.5 并行）→ G3 有条件通过 2026-11-26（G3 已接受，AUTH-20261126-002，1 P2 / 5 P3 非阻断），G4 通过 2026-11-26（可提交 1 次；显式 git add，排除 skills/leverage-protocol/references/projects/vesta.md）。三脚本改动（未提交）：`workflow-status.sh` 按当前 CR 选信封 + `current_cr` 对「无/none/-」返回空；`check-docs.sh` 同语义 + g2.5/g3.5 空值 ERROR + `find_latest_report` 按 mtime 取最新；`selftest.sh` 新增 7 个用例（用例 30～36）。已知 P3：`check-docs --gate g3.5` 仅 grep「G3.5 豁免」子串，占位文本（如「待确认」）也会判通过（Dev 观察，未修）。
 
 ## 6. 决策索引
 
 - D-001：修复工作拆为 CR-001～CR-004，首轮 CR-001（路由正确性）。
 - D-002：本轮流程文档根目录 = `LosAngelousDocs/`；`WORKLOG.md` / `AUTHORIZATIONS.md` / `STATUS.md` 也放 `LosAngelousDocs/`，与 `bootstrap-project.sh` 的项目根约定暂不一致，**已在 CR-007 统一**（记录根默认项目根，存量文档根按 legacy 兼容）。
 - D-006～D-008（CR-002）：范围 = F-06 + F-15.1/2/5 + selftest/CI；幂等键 = 报告路径 + role/gate/cr/task/action；无 python3 时用 `realpath --relative-to` 回退。
+- D-009（2026-11-25）：文档根目录由 `docs/` 改名为 `LosAngelousDocs/`（仓库文档根、dev-workflow 默认、ci-artifacts 落点统一）。
 
 ## 7. 最近变更
 
@@ -63,3 +67,4 @@ git status --short
 - 2026-11-20：CR-001 收尾提交 `edd0a1b`；启动 CR-002（报告/日志脚本可靠性 + selftest），G1 待确认。
 - 2026-11-20：CR-002 T-004 完成并提交 `4f341e3`（G3 有条件通过，AUTH-20261120-004）；T-005 完成并提交 `beac653`（G3 通过，AUTH-20261120-005）；T-006 完成并提交 `4573bbd`（G3 通过，AUTH-20261120-006）。G4 总审通过（`LosAngelousDocs/reports/meta-2026-11-20-CR-002.md`）：18 条 AC 与 UAT 独立复现全通过，无 P0/P1；AUTH-006 的 CI 变更按 A2 由 Meta 追认；文档收尾（F-1～F-4）与脚本健壮性（F-5～F-10）转后续。
 - 2026-11-26：CR-007（retro）G1 确认并补 `DOCS_CONTRACT.md`。`5c09e61` 收敛授权协议（`A1w`/`A1c`/`A2`/`A3`，G2.5/G3.5 与 G3 接受记 WORKLOG），新增 `07-speed.md` 提速协议、`workflow-status.sh`、`finish-report --backfill`、`check-docs --gate g2.5|g3.5`（34 文件，+1126/−217）；`d6bce31` 为 11 个 Skill 补「不用于」边界、`red-tie-xhs` 去绝对路径并支持 `RED_TIE_FONT_DIR`（15 文件，+44/−24），`validate.sh` 达 0 ERROR / 0 WARN；工作区另有 `check-docs.sh` 加粗正则兼容修复（未提交，POLICY-CR-007）。追溯：R-009/R-010/R-011 → T-007/T-008 → `reports/doc-2026-11-26-CR-007.md` / `reports/dev-2026-11-26-T-008.md`。
+- 2026-11-26：CR-008 G2 完成（T-009/T-010，工作区未提交），三个脚本修复：`workflow-status.sh` 新增 `envelope_for_cr()` 按当前 CR 精确选信封、`current_cr()` 显式「无」返回空且仅缺字段回退；`check-docs.sh` `find_latest_report()` 改 GNU `-printf '%T@ %p'` 按 mtime 取最新（无 `-printf` 回退字典序）、`current_cr()` 同语义、g2.5/g3.5 空值明确 ERROR；`selftest.sh` 新增用例 30～36（+129 行）。复核 `PASS=35 FAIL=3`（环境项）、`check-docs --gate g1` 0 ERROR / 3 legacy WARN、真实 `workflow-status` 显示 `POLICY-CR-008`。追溯：R-012/R-013/R-014 → T-009/T-010 → `reports/dev-2026-11-26-T-009.md`。

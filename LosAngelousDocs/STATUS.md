@@ -1,23 +1,23 @@
 # STATUS
 
-> 维护者：Doc Agent ｜ 最近更新：2026-11-26 ｜ 状态：CR-007 已关闭（G4 通过，提交 `ffe8d15`）
+> 维护者：Doc Agent ｜ 最近更新：2026-11-26 ｜ 状态：CR-008 G4 通过，待 1 次提交
 
 ## 当前
 
-- **当前 CR**：无（CR-007 已关闭）
-- **当前门禁**：G4 通过 → 已收尾
-- **G1 已确认**：是（2026-11-26，用户确认 CR-007 范围；`check-docs --gate g1` = 0 ERROR / 3 legacy WARN）
-- **通道**：完整（retro）
-- **并行组**：G2.5 ∥ G3 ∥ G4 全部完成
+- **当前 CR**：CR-008 workflow-status 与 current_cr 显示正确性
+- **当前门禁**：G4 通过 → 收尾（待 1 次提交）
+- **G1 已确认**：是（2026-11-26，用户「继续实现」确认 CR-008 范围）
+- **通道**：完整
+- **并行组**：G2.5 DONE ∥ G3 DONE（有条件通过）∥ G4 进行中
 - **记录根**：文档根（legacy）
 - **G3 已接受**：是（Steward/Meta，2026-11-26）
-- **G3.5 豁免**：单模块文档 CR；G3 + G4 已覆盖跨模块一致性
-- **G4 豁免**：不适用（G4 复审通过，见 `reports/meta-2026-11-26-CR-007-r2.md`）
-- **进行中任务**：无（T-007、T-008 均 DONE）
+- **G3.5 豁免**：单模块脚本显示修复；G3 评审覆盖跨模块一致性
+- **G4 豁免**：不适用（G4 通过，见 `reports/meta-2026-11-26-CR-008.md`）
+- **进行中任务**：无（T-009/T-010 均 DONE）
 - **阻塞**：无
-- **下一步**：选择下一 CR（CR-008 `workflow-status` 信封修复，或触发回归集）
-- **范围信封**：POLICY-CR-007 已结束（1 次主提交 `ffe8d15` + 1 次收尾 docs 提交）
-- **最近报告**：`reports/doc-2026-11-26-CR-007.md`、`reports/dev-2026-11-26-T-008.md`、`reports/dev-2026-11-26-T-008-r2.md`、`reports/steward-2026-11-26-CR-007-g2.5.md`、`reports/review-2026-11-26-T-008.md`、`reports/review-2026-11-26-T-008-r2.md`、`reports/meta-2026-11-26-CR-007-r2.md`（G4 通过）
+- **下一步**：1 次提交（AUTH-20261126-002）并回填 commit
+- **范围信封**：POLICY-CR-008（`LosAngelousDocs/**` + `scripts/workflow-status.sh` + `scripts/check-docs.sh` + `scripts/selftest.sh`，1 次提交）
+- **最近报告**：`reports/dev-2026-11-26-T-009.md`（Doc：`reports/doc-2026-11-26-CR-008.md`）
 
 ## 已完成
 

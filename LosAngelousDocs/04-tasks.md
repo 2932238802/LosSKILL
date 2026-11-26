@@ -215,3 +215,33 @@
 | R-009 | AC-009-1～5 | T-007 | `check-docs --gate g1`/`g2.5` 0 ERROR；契约条目核对；加粗正则单测；current_cr 回归 |
 | R-010 | AC-010-1～4 | T-008 | Doc/Dev/Review 报告；Review 逐条判定 |
 | R-011 | AC-011-1～3 | T-008 | `validate.sh` 0 ERROR / 0 WARN；路径 grep |
+
+## CR-008 任务
+
+### T-009 workflow-status 信封与 current_cr（状态：DONE（G3/G4 通过））
+
+- **来源**：R-012、R-013
+- **目标**：按当前 CR 选 policy；STATUS 为「无」时 `current_cr` 返回空；G2.5/G3.5 空值明确报错。
+- **DoR**：G1 已确认；`AUTHORIZATIONS.md` 有多信封；`STATUS.md` 当前 CR 可读。
+- **AC 映射**：AC-012-1～3、AC-013-1～3
+- **证据要求**：fixture 输出、`check-docs --gate g2.5|g3.5` 退出码。
+- **G2 说明**（2026-11-26）：`workflow-status.sh` 按当前 CR 精确匹配 `## 范围信封（CR-xxx）` 块，无匹配回退最后一条并标注「回退」，当前 CR 为空显示「无活动 CR」；两脚本 `current_cr` 对「无/none/-」返回空、仅缺字段才回退；`check-docs` 的 g2.5/g3.5 空值明确 ERROR。证据见 `reports/dev-2026-11-26-T-009.md`。
+
+### T-010 find_latest_report 与 selftest（状态：DONE（G3/G4 通过））
+
+- **来源**：R-014
+- **目标**：按 mtime 取最新（`-r2` 优先）；补 selftest 正反向用例。
+- **DoR**：G1 已确认；`reports/` 可构造 base/r2 fixture。
+- **AC 映射**：AC-014-1～2
+- **证据要求**：G3 实际读取的报告名、selftest PASS/FAIL。
+- **G2 说明**（2026-11-26）：`find_latest_report` 改用 GNU `find -printf '%T@ %p'` 按 mtime 取最新，无 `-printf` 时回退字典序；selftest 新增 r2/base 正反向用例。证据见 `reports/dev-2026-11-26-T-009.md`。
+
+## CR-008 任务顺序与追溯
+
+`T-009 → T-010`
+
+| 需求 | AC | 任务 | 验证方式 |
+|---|---|---|---|
+| R-012 | AC-012-1～3 | T-009 | workflow-status fixture 输出 |
+| R-013 | AC-013-1～3 | T-009 | workflow-status 显示「无」；g2.5/g3.5 空值 ERROR |
+| R-014 | AC-014-1～2 | T-010 | g3 读取 r2；selftest 正反向 |

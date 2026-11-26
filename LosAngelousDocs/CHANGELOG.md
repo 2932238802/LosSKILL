@@ -20,6 +20,7 @@
 - 无 `python3` 时报告链接可能为绝对路径（CR-002）
 - `worklog.sh` 收到绝对报告路径时不再拼成错误相对链接（CR-007）
 - `check-docs.sh` 容忍 `STATUS.md` 中加粗的 `**G1 已确认**：是` / `**G3 已接受**：` 字段（CR-007）
+- `workflow-status.sh` 按当前 CR 选范围信封；`current_cr` 对「无」不再回退候选 CR；`check-docs --gate g2.5|g3.5` 空值明确报错；`find_latest_report` 按 mtime 取最新 `-rN` 报告（CR-008）
 
 ### 变更
 

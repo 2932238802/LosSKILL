@@ -9,6 +9,9 @@
 #   - capability_index query 空结果（T-001 回归）
 #   - init-docs 骨架生成与幂等（不覆盖已有文件）
 #   - check-docs 树契约 / G1 门禁 / 未登记路径 / 报告命名 / 拆分目录
+#   - workflow-status 按当前 CR 选信封 / 无活动 CR（CR-008）
+#   - check-docs current_cr 空值不回落候选、缺字段才回退（CR-008）
+#   - find_latest_report 按 mtime 取最新 -rN（CR-008）
 #
 # 用法：
 #   ./scripts/selftest.sh
@@ -529,6 +532,8 @@ fi
 # ---- 28. check-docs g2.5 / g3.5 ----
 wsproj="$work/wsproj"
 mkdir -p "$wsproj"
+# 模板默认「当前 CR：无」；CR-008 起空值在 g2.5/g3.5 会 ERROR，这里显式写当前 CR
+sed -i 's/^- 当前 CR：.*/- 当前 CR：CR-001/' "$docs_sb/STATUS.md"
 printf '# 工作日志\n| ID | 时间 | 角色 | 门禁 | CR / T | 做了什么 | 报告 | Commit | AUTH | 状态 |\n|---|---|---|---|---|---|---|---|---|---|\n<!-- worklog:rows -->\n' > "$wsproj/WORKLOG.md"
 "$repo_root/scripts/check-docs.sh" "$docs_sb" --gate g2.5 --project-root "$wsproj" >"$work/check-g25-miss.out" 2>&1
 rc_g25_miss=$?
@@ -574,6 +579,130 @@ if [ "$rc_ws" -eq 0 ] && grep -q '当前门禁' "$work/ws.out" && grep -q '下�
   pass "workflow-status 输出门禁与下一步"
 else
   fail "workflow-status（rc=$rc_ws）"
+fi
+
+# ---- 30. workflow-status 按当前 CR 选信封（CR-008 / AC-012-1） ----
+env_docs="$work/env-docs"
+env_proj="$work/env-proj"
+mkdir -p "$env_docs" "$env_proj"
+printf '# STATUS\n\n- 当前 CR：CR-008\n- 当前门禁：G2\n- G1 已确认：是\n' > "$env_docs/STATUS.md"
+printf '### CR-001\n- 状态：已完成\n### CR-008\n- 状态：进行中\n' > "$env_docs/00-requirements-intake.md"
+cat > "$env_proj/AUTHORIZATIONS.md" <<'EOF'
+## 范围信封（CR-001）
+policy: POLICY-CR-001
+expires: 2026-11-27
+max_commits: 3
+
+## 范围信封（CR-008）
+policy: POLICY-CR-008
+expires: 2026-12-03
+max_commits: 1
+EOF
+"$repo_root/scripts/workflow-status.sh" "$env_docs" --project-root "$env_proj" >"$work/ws-env1.out" 2>&1
+rc_env1=$?
+if [ "$rc_env1" -eq 0 ] && grep -q 'POLICY-CR-008' "$work/ws-env1.out" \
+  && ! grep -q 'POLICY-CR-001' "$work/ws-env1.out"; then
+  pass "workflow-status 按当前 CR 选信封（CR-008，不取首条 CR-001）"
+else
+  fail "workflow-status 选信封（rc=$rc_env1）：$(tr '\n' ' ' < "$work/ws-env1.out")"
+fi
+
+# ---- 31. workflow-status 当前 CR 为「无」→ 无活动 CR（AC-012-2 / AC-013-1） ----
+sed -i 's/^- 当前 CR：.*/- 当前 CR：无/' "$env_docs/STATUS.md"
+"$repo_root/scripts/workflow-status.sh" "$env_docs" --project-root "$env_proj" >"$work/ws-env2.out" 2>&1
+rc_env2=$?
+if [ "$rc_env2" -eq 0 ] && grep -q '当前 CR：无' "$work/ws-env2.out" \
+  && grep -q '无活动 CR' "$work/ws-env2.out" \
+  && ! grep -q 'POLICY-CR-' "$work/ws-env2.out"; then
+  pass "workflow-status 当前 CR 为「无」→ 无活动 CR，不回退候选 policy"
+else
+  fail "workflow-status 无活动 CR（rc=$rc_env2）：$(tr '\n' ' ' < "$work/ws-env2.out")"
+fi
+
+# ---- 32. workflow-status 单条 policy 正常显示 + 无匹配回退标注（AC-012-3） ----
+cat > "$env_proj/AUTHORIZATIONS.md" <<'EOF'
+## 范围信封（CR-008）
+policy: POLICY-CR-008
+expires: 2026-12-03
+max_commits: 1
+EOF
+sed -i 's/^- 当前 CR：.*/- 当前 CR：CR-008/' "$env_docs/STATUS.md"
+"$repo_root/scripts/workflow-status.sh" "$env_docs" --project-root "$env_proj" >"$work/ws-env3.out" 2>&1
+rc_env3=$?
+if [ "$rc_env3" -eq 0 ] && grep -q 'POLICY-CR-008' "$work/ws-env3.out" \
+  && ! grep -q '回退' "$work/ws-env3.out"; then
+  pass "workflow-status 单条 policy 正常显示"
+else
+  fail "workflow-status 单条 policy（rc=$rc_env3）：$(tr '\n' ' ' < "$work/ws-env3.out")"
+fi
+# 无匹配：当前 CR=CR-005，只有 CR-008 信封 → 回退并标注
+sed -i 's/^- 当前 CR：.*/- 当前 CR：CR-005/' "$env_docs/STATUS.md"
+"$repo_root/scripts/workflow-status.sh" "$env_docs" --project-root "$env_proj" >"$work/ws-env4.out" 2>&1
+if grep -q 'POLICY-CR-008' "$work/ws-env4.out" && grep -q '回退' "$work/ws-env4.out"; then
+  pass "workflow-status 无匹配信封回退最后一条并标注"
+else
+  fail "workflow-status 无匹配回退：$(tr '\n' ' ' < "$work/ws-env4.out")"
+fi
+
+# ---- 33. check-docs g2.5 当前 CR 为空 → ERROR，不回退候选（AC-013-2） ----
+g25_empty_docs="$work/g25-empty-docs"
+cp -r "$docs_sb" "$g25_empty_docs"
+sed -i 's/^- 当前 CR：.*/- 当前 CR：无/' "$g25_empty_docs/STATUS.md"
+printf '\n### CR-999 候选（未受理）\n- 状态：候选\n' >> "$g25_empty_docs/00-requirements-intake.md"
+g25_empty_proj="$work/g25-empty-proj"
+mkdir -p "$g25_empty_proj"
+printf '# 工作日志\n| ID | 时间 | 角色 | 门禁 | CR / T | 做了什么 | 报告 | Commit | AUTH | 状态 |\n|---|---|---|---|---|---|---|---|---|---|\n' > "$g25_empty_proj/WORKLOG.md"
+printf '| LOG-9 | 2026-11-26 | steward | G2.5 | CR-999 / T-001 | 合并增量 | - | - | - | 完成 |\n' >> "$g25_empty_proj/WORKLOG.md"
+"$repo_root/scripts/check-docs.sh" "$g25_empty_docs" --gate g2.5 --project-root "$g25_empty_proj" >"$work/g25-empty.out" 2>&1
+rc_g25_empty=$?
+if [ "$rc_g25_empty" -ne 0 ] && grep -q '未给出当前 CR' "$work/g25-empty.out"; then
+  pass "check-docs g2.5 当前 CR 为空 → ERROR（不回退候选 CR-999）"
+else
+  fail "check-docs g2.5 空当前 CR（rc=$rc_g25_empty）"
+fi
+
+# ---- 34. check-docs current_cr 缺字段时回退 intake 最大编号（AC-013-3） ----
+fb_docs="$work/fallback-docs"
+cp -r "$docs_sb" "$fb_docs"
+sed -i '/^- 当前 CR：/d' "$fb_docs/STATUS.md"
+printf '\n### CR-002\n- 状态：进行中\n' >> "$fb_docs/00-requirements-intake.md"
+fb_proj="$work/fallback-proj"
+mkdir -p "$fb_proj"
+printf '# 工作日志\n| ID | 时间 | 角色 | 门禁 | CR / T | 做了什么 | 报告 | Commit | AUTH | 状态 |\n|---|---|---|---|---|---|---|---|---|---|\n' > "$fb_proj/WORKLOG.md"
+printf '| LOG-9 | 2026-11-26 | steward | G2.5 | CR-002 / T-001 | 合并增量 | - | - | - | 完成 |\n' >> "$fb_proj/WORKLOG.md"
+"$repo_root/scripts/check-docs.sh" "$fb_docs" --gate g2.5 --project-root "$fb_proj" >"$work/fallback.out" 2>&1
+rc_fb=$?
+if [ "$rc_fb" -eq 0 ]; then
+  pass "check-docs 缺「当前 CR」字段 → 回退 intake 最大编号"
+else
+  fail "check-docs 缺字段回退（rc=$rc_fb）：$(tr '\n' ' ' < "$work/fallback.out")"
+fi
+
+# ---- 35. find_latest_report 按 mtime 取最新，-r2 优于 base（AC-014-1） ----
+lr_docs="$work/lr-docs"
+cp -r "$docs_sb" "$lr_docs"
+rm -f "$lr_docs"/reports/review-[0-9]*.md
+printf '正文没有结论。\n' > "$lr_docs/reports/review-2026-11-25-T-001.md"
+printf '结论：有条件通过\n' > "$lr_docs/reports/review-2026-11-25-T-001-r2.md"
+touch -t 202611251000 "$lr_docs/reports/review-2026-11-25-T-001.md"
+touch -t 202611251200 "$lr_docs/reports/review-2026-11-25-T-001-r2.md"
+"$repo_root/scripts/check-docs.sh" "$lr_docs" --gate g3 >"$work/lr-r2.out" 2>&1
+rc_lr_r2=$?
+if [ "$rc_lr_r2" -eq 0 ] && ! grep -q '缺少合法结论' "$work/lr-r2.out"; then
+  pass "check-docs G3 按 mtime 读取最新 -r2 报告（base 无结论不误判）"
+else
+  fail "check-docs 最新报告 r2（rc=$rc_lr_r2）：$(tr '\n' ' ' < "$work/lr-r2.out")"
+fi
+
+# ---- 36. 无 -rN 时仍取唯一/最新报告（AC-014-2） ----
+rm -f "$lr_docs/reports/review-2026-11-25-T-001-r2.md"
+printf '结论：通过\n' > "$lr_docs/reports/review-2026-11-25-T-001.md"
+"$repo_root/scripts/check-docs.sh" "$lr_docs" --gate g3 >"$work/lr-base.out" 2>&1
+rc_lr_base=$?
+if [ "$rc_lr_base" -eq 0 ] && ! grep -q '缺少合法结论' "$work/lr-base.out"; then
+  pass "check-docs G3 无 -rN 时取唯一报告"
+else
+  fail "check-docs 无 rN 报告（rc=$rc_lr_base）：$(tr '\n' ' ' < "$work/lr-base.out")"
 fi
 
 # ---- 汇总 ----

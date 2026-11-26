@@ -242,9 +242,17 @@ if [ "$gate" = "g1" ]; then
 fi
 
 find_latest_report() {
-  local role="$1" dirs=("$reports_dir")
+  local role="$1" dirs=("$reports_dir") latest=""
   [ -d "$reports_dir/archive" ] && dirs+=("$reports_dir/archive")
-  find "${dirs[@]}" -maxdepth 1 -type f -name "$role-[0-9][0-9][0-9][0-9]-*.md" -print 2>/dev/null | sort | tail -1
+  # 优先按 mtime 取最新（-r2 应优于 base）；GNU find -printf 不可用时回退字典序
+  if find "$reports_dir" -maxdepth 0 -printf '%p\n' >/dev/null 2>&1; then
+    latest="$(find "${dirs[@]}" -maxdepth 1 -type f -name "$role-[0-9][0-9][0-9][0-9]-*.md" \
+      -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | sed -E 's/^[^ ]+ //')"
+  fi
+  if [ -z "$latest" ]; then
+    latest="$(find "${dirs[@]}" -maxdepth 1 -type f -name "$role-[0-9][0-9][0-9][0-9]-*.md" -print 2>/dev/null | sort | tail -1)"
+  fi
+  printf '%s' "$latest"
 }
 
 g1_confirmed() {
@@ -264,11 +272,20 @@ record_file() {
 }
 
 current_cr() {
-  local cr
-  cr="$(sed -nE 's/^[[:space:]]*-?[[:space:]]*\**[[:space:]]*当前 CR[[:space:]]*\**[[:space:]]*(：|:)[[:space:]]*([A-Za-z0-9-]+).*/\2/p' "$doc_root/STATUS.md" 2>/dev/null | head -1)"
-  case "$cr" in
-    CR-*) printf '%s' "$cr"; return 0 ;;
-  esac
+  local raw val
+  raw="$(grep -E '^[[:space:]]*-?[[:space:]]*\**[[:space:]]*当前 CR[[:space:]]*\**[[:space:]]*(：|:)' "$doc_root/STATUS.md" 2>/dev/null | head -1)"
+  if [ -n "$raw" ]; then
+    val="$(printf '%s' "$raw" | sed -E 's/^[[:space:]]*-?[[:space:]]*\**[[:space:]]*当前 CR[[:space:]]*\**[[:space:]]*(：|:)[[:space:]]*//')"
+    val="$(printf '%s' "$val" | tr -d '*')"
+    val="$(printf '%s' "$val" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    case "$val" in
+      # 只取编号，忽略状态字段后面的描述文字
+      CR-*) printf '%s' "$(printf '%s' "$val" | grep -oE 'CR-[0-9]+' | head -1)"; return 0 ;;
+      # STATUS 明确写「无 / none / - / 空白」时返回空，不回退候选 CR
+      *) printf ''; return 0 ;;
+    esac
+  fi
+  # 仅当缺「当前 CR」字段时才回退 intake 最大编号（保持旧行为）
   grep -oE 'CR-[0-9]+' "$doc_root/00-requirements-intake.md" 2>/dev/null | sort -t- -k2 -n | tail -1
 }
 
@@ -291,8 +308,12 @@ g3_accepted() {
 
 if [ "$gate" = "g2.5" ]; then
   cr="$(current_cr)"
-  worklog_has_gate "G2.5" "$cr" \
-    || err "G2.5：WORKLOG 没有 G2.5 行${cr:+（$cr）}（Steward 合并增量后必须记一行）"
+  if [ -z "$cr" ]; then
+    err "G2.5：STATUS.md 未给出当前 CR（为空/无），无法核对 WORKLOG；先写「当前 CR：CR-xxx」"
+  else
+    worklog_has_gate "G2.5" "$cr" \
+      || err "G2.5：WORKLOG 没有 G2.5 行（$cr）（Steward 合并增量后必须记一行）"
+  fi
   if [ -n "$project_root_abs" ] && [ -f "$project_root_abs/PROJECT_BRAIN.md" ]; then :;
   elif [ -f "$doc_root/PROJECT_BRAIN.md" ]; then :;
   else warn "G2.5：找不到 PROJECT_BRAIN.md（项目根或文档根）"; fi
@@ -301,8 +322,13 @@ fi
 if [ "$gate" = "g3.5" ]; then
   if grep -qE 'G3\.5[[:space:]]*豁免' "$doc_root/STATUS.md" 2>/dev/null; then
     :
-  elif ! worklog_has_gate "G3.5" "$(current_cr)"; then
-    err "G3.5：WORKLOG 没有 G3.5 行，且 STATUS.md 未写「G3.5 豁免」"
+  else
+    cr="$(current_cr)"
+    if [ -z "$cr" ]; then
+      err "G3.5：STATUS.md 未给出当前 CR（为空/无），无法核对 WORKLOG；或在 STATUS.md 写「G3.5 豁免：<理由>」"
+    elif ! worklog_has_gate "G3.5" "$cr"; then
+      err "G3.5：WORKLOG 没有 G3.5 行（$cr），且 STATUS.md 未写「G3.5 豁免」"
+    fi
   fi
 fi
 

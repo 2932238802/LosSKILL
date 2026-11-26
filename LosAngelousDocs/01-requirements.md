@@ -208,3 +208,57 @@
 | 受影响文档 | `00-requirements-intake.md`、`01-requirements.md`、`04-tasks.md`、`STATUS.md`、`CHANGELOG.md` |
 | 兼容与迁移 | legacy 记录文件保留原位，`check-docs` 给 WARN 不报错 |
 | 风险 | 低：纯文档与元数据；retro 报告需 Review 独立取证 |
+
+## R-012 workflow-status 按当前 CR 选信封（P1，v1）
+
+- **来源**：CR-008
+- **背景**：`workflow-status.sh` 取 `AUTHORIZATIONS.md` 第一条 `policy`，永远显示 `POLICY-CR-001`。
+- **描述**：按 `STATUS.md` 当前 CR 选对应 policy；无匹配时回退最后一条并标注。
+- **验收标准**：
+  - AC-012-1：`AUTHORIZATIONS.md` 含 CR-001 / CR-008 两条 policy、STATUS 当前 CR=CR-008 → 显示 `POLICY-CR-008`。
+  - AC-012-2：STATUS 当前 CR 为「无」→ 不显示某条 CR policy，提示「无活动 CR」。
+  - AC-012-3：只有一条 policy 时正常显示。
+- **NFR 影响**：无新增依赖。
+- **影响面**：`scripts/workflow-status.sh`、`scripts/selftest.sh`。
+- **不在范围内**：改授权级别或台账格式。
+- **变更历史**：v1 2026-11-26 初始。
+
+## R-013 current_cr 不把候选 CR 当当前 CR（P1，v1）
+
+- **来源**：CR-008
+- **背景**：STATUS 写「当前 CR：无」时，`current_cr` 回退取 intake 最大编号，收尾后显示候选 CR（CR-008）。
+- **描述**：STATUS 明确为「无 / none / -」时返回空；缺字段才回退；G2.5/G3.5 在空值时明确报错。
+- **验收标准**：
+  - AC-013-1：`workflow-status.sh` 显示「当前 CR：无」，不再显示候选 CR。
+  - AC-013-2：`check-docs --gate g2.5|g3.5` 在当前 CR 为空时给出 ERROR，不拿候选 CR 检查。
+  - AC-013-3：STATUS 缺「当前 CR」字段时仍回退 intake 最大编号（保持旧行为）。
+- **NFR 影响**：无新增依赖。
+- **影响面**：`scripts/workflow-status.sh`、`scripts/check-docs.sh`、`scripts/selftest.sh`。
+- **不在范围内**：改变门禁顺序。
+- **变更历史**：v1 2026-11-26 初始。
+
+## R-014 最新角色报告按时间取（P2，v1）
+
+- **来源**：CR-008
+- **背景**：`find_latest_report` 用字典序取最新，`-r2.md` 排在 `.md` 之前，G3/G4 可能读到旧报告。
+- **描述**：按文件 mtime 取最新；无 `-rN` 时仍取最新/唯一报告。
+- **验收标准**：
+  - AC-014-1：base 与 `-r2` 同名报告、r2 更新 → `--gate g3` 读取 r2。
+  - AC-014-2：无 `-rN` 时仍取最新或唯一报告。
+- **NFR 影响**：无新增依赖；GNU find `-printf` 不可用时回退字典序。
+- **影响面**：`scripts/check-docs.sh`、`scripts/selftest.sh`。
+- **不在范围内**：改变报告命名规则。
+- **变更历史**：v1 2026-11-26 初始。
+
+## 影响分析（CR-008）
+
+| 维度 | 内容 |
+|---|---|
+| 受影响需求 | R-012、R-013、R-014（新增） |
+| 受影响 AC | AC-012-1～3、AC-013-1～3、AC-014-1～2 |
+| 受影响模块 / 接口 | `workflow-status.sh`、`check-docs.sh`；无运行时接口 |
+| 受影响数据 / 配置 | 无数据迁移；只读解析 STATUS/AUTHORIZATIONS |
+| 受影响测试 | `selftest.sh` 新增 fixture 用例 |
+| 受影响文档 | `STATUS.md`、`00/01/04`、`CHANGELOG.md` |
+| 兼容与迁移 | 保留缺字段回退旧行为；多信封兼容 |
+| 风险 | 低：显示与报告选择；用 selftest 正反向覆盖 |

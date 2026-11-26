@@ -5,6 +5,11 @@
 | ID | 时间 | 角色 | 门禁 | CR / T | 做了什么 | 报告 | Commit | AUTH | 状态 |
 |---|---|---|---|---|---|---|---|---|---|
 <!-- worklog:rows -->
+| LOG-20261126-200449 | 2026-11-26 20:04:49 +0800 | meta | G4 | CR-008 / CR-008 | 五层独立复核 CR-008（workflow-status 信封 / current_cr 空值 / find_latest_report mtime），8 条 AC 与 6+1 门禁命令独立复跑全 EXIT=0，1 P2（legacy 未标注信封块）判为可延期，无 P0/P1，可提交 1 次（AUTH-20261126-002） | [meta-2026-11-26-CR-008.md](reports/meta-2026-11-26-CR-008.md) | - | - | 通过 |
+| LOG-20261126-195729 | 2026-11-26 19:57:29 +0800 | review | G3 | CR-008 / T-009 | 三项修复经独立复跑与新旧脚本对照验证，AC-012~014 全部满足；1×P2（legacy 未标注 CR 的信封块无法按 CR 选中，回退并标注）+ P3×5，均非阻断 | [review-2026-11-26-T-009.md](reports/review-2026-11-26-T-009.md) | - | AUTH-20261126-002 | 有条件通过 |
+| LOG-20261126-193611 | 2026-11-26 19:36:11 +0800 | steward | G2.5 | CR-008 / CR-008 | 合并 CR-008 上下文增量到大脑 | [steward-2026-11-26-CR-008-g2.5.md](reports/steward-2026-11-26-CR-008-g2.5.md) | - | - | 完成 |
+| LOG-20261126-193249 | 2026-11-26 19:32:49 +0800 | dev | G2 | CR-008 / T-009 | 修复 workflow-status 信封选择、current_cr 空值语义与最新报告选择，并补 selftest 回归 | [dev-2026-11-26-T-009.md](reports/dev-2026-11-26-T-009.md) | - | - | 完成 |
+| LOG-20261126-191303 | 2026-11-26 19:13:03 +0800 | doc | G1 | CR-008 / CR-008 | 补 CR-008 需求/AC/任务与信封，G1 已确认 | [doc-2026-11-26-CR-008.md](reports/doc-2026-11-26-CR-008.md) | - | - | 完成 |
 | LOG-20261126-182132 | 2026-11-26 18:21:32 +0800 | meta | G4 | CR-007 / CR-007 | 复核 G4 P1 修复（check-docs current_cr → + selftest 回归）；g2.5/g1/g3/g4/validate/render 独立复跑全 EXIT=0，P1 闭合，无回归，可提交 | [meta-2026-11-26-CR-007-r2.md](reports/meta-2026-11-26-CR-007-r2.md) | - | - | 通过 |
 | LOG-20261126-180907 | 2026-11-26 18:09:07 +0800 | review | G3 | CR-007 / T-008 | 复评 G4 P1（check-docs current_cr → + selftest 回归），g2.5/g1/g3/validate/render 全通过，AC-009-5 满足，无 P0/P1 | [review-2026-11-26-T-008-r2.md](reports/review-2026-11-26-T-008-r2.md) | - | - | 通过 |
 | LOG-20261126-175949 | 2026-11-26 17:59:49 +0800 | dev | G2 | CR-007 / T-008 | 修复 check-docs current_cr 反引用越界（→）并补 selftest 回归 | [dev-2026-11-26-T-008-r2.md](reports/dev-2026-11-26-T-008-r2.md) | - | - | 完成 |
