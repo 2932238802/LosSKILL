@@ -158,6 +158,7 @@ escalate_when:
 ```
 
 - 2026-11-26：用户「继续实现」批准 CR-008 范围信封（G1）。
+- 2026-11-26：CR-008 收尾 docs 提交（STATUS 关闭 + AUTH 回填），不计入 `max_commits`（同 CR-002/CR-007）。
 
 ## AUTH 记录
 
@@ -176,6 +177,7 @@ escalate_when:
 - 有效期：随 CR 结束
 - 撤销：否
 - 幂等键：CR-008:T-009:提交 dev:A1c
+- Commit：bd76805
 
 
 ## AUTH-20261126-001
