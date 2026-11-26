@@ -26,3 +26,4 @@
 - `worklog --time` 统一为 `LOG-YYYYMMDD-HHMMSS`（CR-002）
 - 授权协议收敛为 `A1w`（信封预授权，记 WORKLOG）/`A1c`（Review 批，记台账）/`A2`/`A3`；G2.5/G3.5 与 G3 接受只记 WORKLOG（CR-003）
 - 记录根统一为项目根，存量项目可沿用文档根（legacy）；`finish-report` 新增 `--project-root`（CR-003）
+- 开发改为单分支：一律在 `main` 提交，不建长期 feature 分支；远端只保留 `main`（AGENTS.md）

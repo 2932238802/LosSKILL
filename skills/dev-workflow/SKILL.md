@@ -41,7 +41,7 @@ description: |
 |---|---|---|---|
 | A0 | 读代码、跑测试、lint、build | Agent 自主 | WORKLOG（可选） |
 | **A1w 写入** | 改代码、测试、文档、大脑增量（不 commit） | 用户（G1 信封预授权） | WORKLOG |
-| **A1c 提交** | feature 分支 commit | **Review**（G3 通过后） | AUTHORIZATIONS |
+| **A1c 提交** | 当前分支 commit（单分支开发默认 `main`） | **Review**（G3 通过后） | AUTHORIZATIONS |
 | A2 | push、PR、合并 main、依赖、构建/CI 配置 | Steward/Meta（信封可委托 Review 批低风险） | AUTHORIZATIONS |
 | A3 | 生产部署、删库、force push、密钥/权限 | 用户本人，永不委托 | AUTHORIZATIONS |
 

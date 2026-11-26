@@ -89,7 +89,7 @@
 
 - **ID 一旦分配不复用**。任务状态只用：`TODO` / `DOING` / `DONE` / `BLOCKED` / `DROPPED`。
 - **门禁**：`G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成（DoD）→ `G2.5` 上下文增量合并（Steward）→ `G3` 评审通过 → `G3.5` 跨模块检查（Steward，可选）→ `G4` 总审通过。未通过前一门，不进入下一阶段；任何跳门都必须先获得用户明确同意，并在报告中说明。G2.5 / G3.5 必须各留一行 WORKLOG（G3.5 可写 `G3.5 豁免：<理由>`），否则 G4 记流程缺陷。
-- **授权（唯一口径）**：`A1w` 写入（改代码/测试/文档/大脑增量，不 commit）由 G1 信封预授权，执行者记 WORKLOG；`A1c` 分支 commit 由 Review 在 G3 后批准并写 `AUTH-*`；`A2`（push/PR/合并/依赖/构建/CI）由 Steward；`A3` 只由用户。G2.5 / G3.5 属 A1w，不需要 Review 补批；G3 接受记 WORKLOG，不占 AUTH。台账与日志默认在项目根，存量项目允许文档根（legacy），见 `06-authorization.md` §3.1。
+- **授权（唯一口径）**：`A1w` 写入（改代码/测试/文档/大脑增量，不 commit）由 G1 信封预授权，执行者记 WORKLOG；`A1c` 当前分支 commit（单分支开发默认 `main`）由 Review 在 G3 后批准并写 `AUTH-*`；`A2`（push/PR/合并/依赖/构建/CI）由 Steward；`A3` 只由用户。G2.5 / G3.5 属 A1w，不需要 Review 补批；G3 接受记 WORKLOG，不占 AUTH。台账与日志默认在项目根，存量项目允许文档根（legacy），见 `06-authorization.md` §3.1。
 - **需求编号**：需求卡 `CR-xxx`；需求 `R-xxx`（变更时升版 `R-xxx v2`，保留历史）；假设 `A-xxx`；均不复用。
 - **状态面板**：`<文档根目录>/STATUS.md` 记录当前 CR、当前门禁、进行中任务、阻塞、下一步、最近报告链接。
 - **证据格式**：`文件:行号`、命令 + 关键输出、commit hash。没有证据的结论必须标 `[推断]`。

@@ -47,7 +47,7 @@
 | ID 规则 | 需求卡 `CR-xxx`、需求 `R-xxx`（变更升版 `v2`）、验收标准 `AC-xxx`、任务 `T-xxx`、决策 `D-xxx`、假设 `A-xxx`；分配后不复用 |
 | 门禁 | `G0` 需求受理 → `G1` 需求/AC/任务确认 → `G2` 开发完成 → `G2.5` 上下文增量合并 → `G3` 评审通过 → `G3.5` 跨模块检查（可选）→ `G4` 总审通过；跳门需用户授权。G2.5/G3.5 必须留 WORKLOG 行（G3.5 可豁免） |
 | 上下文 | 所有角色第 0 步读 `PROJECT_BRAIN.md`；每份报告带「上下文增量」；阅读预算 S ≤ 5 / M ≤ 15 / L 分阶段；同一 CR 内 Dev/Steward 复用会话；并行规则见 `07-speed.md` |
-| 授权 | 用户在 G1 批准一次「范围信封」；**A1w**（改代码/文档/大脑，不 commit）由信封授权、记 WORKLOG；**A1c**（分支 commit）由 Review 在 G3 后记账；A2 由 Steward（可委托 Review 批低风险）；A3 只由用户；Review 不得自批 G3，G3 接受记 WORKLOG；台账只追加 A1c/A2/A3 |
+| 授权 | 用户在 G1 批准一次「范围信封」；**A1w**（改代码/文档/大脑，不 commit）由信封授权、记 WORKLOG；**A1c**（当前分支 commit，单分支默认 `main`）由 Review 在 G3 后记账；A2 由 Steward（可委托 Review 批低风险）；A3 只由用户；Review 不得自批 G3，G3 接受记 WORKLOG；台账只追加 A1c/A2/A3 |
 | 工作日志 | 每个角色交付报告后填 `report-meta`，运行 `$LOSSKILL_HOME/scripts/finish-report.sh --project-root <项目根>`，自动写 `WORKLOG.md` 与（A1c/A2 时）`AUTH-*`；记录根默认项目根，存量项目可用文档根；Steward 在 G4 审计 |
 | 任务状态 | `TODO` / `DOING` / `DONE` / `BLOCKED` / `DROPPED` |
 | 证据格式 | `文件:行号`、命令 + 关键输出、commit hash；无证据必须标 `[推断]` |
@@ -284,7 +284,7 @@ Meta 的价值恰恰在于**不信任 Review**，并多一层结果验收。如�
 可以委托「信封内的程序性授权」，不能委托 A3：
 
 - 用户在 G1 批准一次范围信封（路径、命令、提交上限、到期、禁止项）。
-- **A1w**（改代码/测试/文档/大脑，不 commit）由信封授权，执行者记 WORKLOG；**A1c**（分支 commit）由 Review 在 G3 后批准并记账；A2（push、PR、合并、依赖、构建/CI）由 Steward；A3（生产、删库、密钥、force push）永远由用户确认。
+- **A1w**（改代码/测试/文档/大脑，不 commit）由信封授权，执行者记 WORKLOG；**A1c**（当前分支 commit，单分支默认 `main`）由 Review 在 G3 后批准并记账；A2（push、PR、合并、依赖、构建/CI）由 Steward；A3（生产、删库、密钥、force push）永远由用户确认。
 - Review 不能批准自己的 G3 结论，否则是自证；G3 接受由 Steward 或用户记 WORKLOG（不占 AUTH）。
 - Agent 不能替用户点 Claude Code 的权限弹窗；宿主权限仍由 harness 控制。
 - 台账 `AUTHORIZATIONS.md` 只追加 A1c/A2/A3，不删改；A1w/G2.5/G3.5/G3 接受记 WORKLOG。默认项目根，存量项目可用文档根；G4 审计缺失/越界。详见 `06-authorization.md`。

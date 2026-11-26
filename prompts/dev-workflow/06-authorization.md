@@ -14,7 +14,7 @@
 |---|---|---|---|---|
 | **A0 只读/验证** | 读代码、跑测试、lint、build、写临时目录 | 信封 | Agent 自主 | WORKLOG（仅失败或异常时记） |
 | **A1w 写入** | 改业务代码、测试、文档、`PROJECT_BRAIN.md` 增量（**不 commit**） | **G1 信封（用户一次批准）** | 用户（信封）；执行者在已批准路径内自记 | WORKLOG（AUTH 列写 `ENV-<policy>` 或 `-`） |
-| **A1c 提交** | 在信封分支上 `git commit` | 信封 + G3 结论（通过 / 有条件通过） | **Review** | `AUTHORIZATIONS.md` 一条 `AUTH-*`，`auth_level: A1c` |
+| **A1c 提交** | 在当前分支上 `git commit`（单分支开发默认 `main`） | 信封 + G3 结论（通过 / 有条件通过） | **Review** | `AUTHORIZATIONS.md` 一条 `AUTH-*`，`auth_level: A1c` |
 | **A2 共享状态** | push、PR、合并 main、依赖清单 / lockfile、构建 / CI 配置 | 信封 | Steward/Meta（可委托 Review 批准低风险 A2） | `AUTHORIZATIONS.md` `AUTH-*`，`auth_level: A2` |
 | **A3 高风险/不可逆** | 生产部署、删库、force push、改鉴权/密钥、外部付费、批量删除 | — | 用户本人 | `AUTH-*`，用户确认后人工记，脚本不代记 |
 
@@ -33,7 +33,7 @@
 | `LosAngelousDocs/**`、`*.md`、注释、文案 | A1w |
 | `src/**`、`tests/**`（在 `allowed_paths` 内） | A1w |
 | `PROJECT_BRAIN.md`、`brain/modules/**` | A1w（只有 Steward 合并增量） |
-| feature 分支 commit | A1c |
+| 当前分支 commit（单分支开发默认 `main`） | A1c |
 | 依赖清单 / lockfile（`package.json`、`Cargo.toml`、`requirements.txt`） | A2 |
 | 构建 / CI 配置（`.github/workflows/**`、`Dockerfile`、构建脚本） | A2 |
 | push、创建 PR、合并 main | A2 |
@@ -47,7 +47,7 @@
 默认 A2 由 Steward 批准。如果用户在信封里显式写 `delegate_a2_to_review: true`，Review 可以批准**低风险 A2**，但必须同时满足：
 
 - G3 已由 Steward 或用户接受（Review 不能自批 G3）；
-- 只做：push 当前 feature 分支、创建 PR、合并到 main；
+- 只做：push 当前分支（单分支开发默认 `main`）、创建 PR（需要时）；
 - 不碰 `forbidden`、依赖、鉴权、数据模型、`deploy/`；
 - 验证命令与回归全绿，且报告里有证据。
 
@@ -72,7 +72,7 @@ policy: CR-xxx
 granted_by: user
 granted_at: 2026-11-20
 expires: 2026-11-27        # 到期自动失效
-branch: feat/xxx           # A1c/A2 只允许在该分支或基于它
+branch: main               # 单分支开发默认 main；临时隔离分支仅本地且不长期保留
 allowed_paths:             # A1w/A1c 允许改动的路径
   - src/
   - tests/
@@ -110,15 +110,15 @@ escalate_when:
 
 - 时间：2026-11-20 14:05
 - CR/T：CR-004 / T-012
-- 动作：提交 feat/xxx 的 3 个文件
+- 动作：提交 main 的 3 个文件
 - 级别：A1c
 - 策略条款：P-02（allowed_paths、max_commits）
 - 证据：`./scripts/validate.sh` 通过；`git diff --stat` 3 files
 - 批准：review-agent
-- 范围：branch=feat/xxx，commit=待生成
+- 范围：branch=main，commit=待生成
 - 有效期：随 CR 结束
 - 撤销：否
-- 幂等键：CR-004:T-012:提交 feature 分支:A1c
+- 幂等键：CR-004:T-012:提交 main:A1c
 ```
 
 规则：

@@ -1,7 +1,7 @@
 # 授权台账 — {{PROJECT_NAME}}
 
 > 协议见 `dev-workflow` 的 `references/06-authorization.md`。
-> 用户在 G1 批准一次「范围信封」；**A1w**（改代码/文档/大脑，不 commit）由信封授权、记 WORKLOG；**A1c**（分支 commit）由 Review 在 G3 后记账；A2 由 Steward 记账；A3 只由用户确认。
+> 用户在 G1 批准一次「范围信封」；**A1w**（改代码/文档/大脑，不 commit）由信封授权、记 WORKLOG；**A1c**（当前分支 commit，单分支默认 `main`）由 Review 在 G3 后记账；A2 由 Steward 记账；A3 只由用户确认。
 > 本文件 append-only，只记 A1c/A2/A3；不要删除或改写旧条目。
 
 ## 当前策略
@@ -11,7 +11,7 @@ policy: CR-xxx
 granted_by: user
 granted_at: {{DATE}}
 expires: 待填写
-branch: 待填写
+branch: main               # 单分支开发默认 main；不建长期 feature 分支
 allowed_paths:
   - 待填写
 allowed_commands:

@@ -41,6 +41,7 @@ L 重活（跨模块/数据/权限/发布）→ 先出 2–3 方案与回滚 →
 - G1 前与 Dev 开工前：`{{LOSSKILL_PATH}}/scripts/check-docs.sh <文档根目录> --gate g1` 必须 0 ERROR。
 - 接手先看状态：`{{LOSSKILL_PATH}}/scripts/workflow-status.sh {{DOC_ROOT}} --project-root . --check`。
 - 角色提示词里的 `$LOSSKILL_HOME` 即：`{{LOSSKILL_PATH}}`（也记在 `PROJECT_BRAIN.md` 第 1 节）。
+- 单分支开发：一律在 `main` 提交，不建长期 feature 分支；误建的分支合入后立即删除。
 
 ## 雷区
 
