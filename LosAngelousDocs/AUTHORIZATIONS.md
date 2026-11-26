@@ -117,6 +117,7 @@ escalate_when:
 - 2026-11-26：用户批准 CR-007 范围信封（G1，retro 补记）。
 - 2026-11-26：CR-007 信封扩展 `allowed_paths` 增加 `scripts/check-docs.sh`（G1 发现加粗字段不兼容，用户批准）。
 - 2026-11-26：CR-007 信封扩展 `allowed_paths` 增加 `scripts/selftest.sh`（G4 返工要求补 `current_cr` 回归用例，用户批准）。
+- 2026-11-26：CR-007 收尾 docs 提交（STATUS 关闭 + AUTH 回填），不计入 `max_commits`（与 CR-002 收尾同例）。
 
 ## AUTH 记录
 
@@ -135,6 +136,7 @@ escalate_when:
 - 有效期：随 CR 结束
 - 撤销：否
 - 幂等键：CR-007:T-008:提交 docs:A1c
+- Commit：ffe8d15
 - 补充：G4 P1 返工（`current_cr` `\3`→`\2` + selftest 回归）已由 Review r2 复核通过，见 `reports/review-2026-11-26-T-008-r2.md`（2026-11-26）。
 
 
