@@ -1,16 +1,23 @@
 # STATUS
 
-> 维护者：Doc Agent ｜ 最近更新：2026-11-20 ｜ 状态：CR-002 已关闭（G4 通过）；待下一 CR
+> 维护者：Doc Agent ｜ 最近更新：2026-11-26 ｜ 状态：CR-007 G4 通过，待 1 次 docs 提交
 
 ## 当前
 
-- **当前 CR**：无（CR-001 / CR-002 均已关闭）
-- **当前门禁**：G4 通过 → 已收尾
-- **进行中任务**：无
+- **当前 CR**：CR-007 工作流基线与告警清零（retro）
+- **当前门禁**：G4 通过 → 收尾（待 1 次 docs 提交）
+- **G1 已确认**：是（2026-11-26，用户确认 CR-007 范围；`check-docs --gate g1` = 0 ERROR / 3 legacy WARN）
+- **通道**：完整（retro）
+- **并行组**：G2.5 DONE ∥ G3 DONE（有条件通过）∥ G4 返工
+- **记录根**：文档根（legacy）
+- **G3 已接受**：是（Steward/Meta，2026-11-26）
+- **G3.5 豁免**：单模块文档 CR；G3 + G4 已覆盖跨模块一致性
+- **G4 豁免**：不适用（G4 复审通过，见 `reports/meta-2026-11-26-CR-007-r2.md`）
+- **进行中任务**：无（T-007、T-008 均 DONE）
 - **阻塞**：无
-- **下一步**：选择下一 CR（建议 CR-003 协议一致性）或启动正式项目 G0
-- **范围信封**：POLICY-CR-002 已结束（3/3 + 1 次收尾 docs 提交）
-- **G4 结论**：18/18 AC 与 UAT 独立复现通过；AUTH-006 的 CI 变更由 Meta 追认 A2；P3 转后续。
+- **下一步**：执行 1 次 docs 提交并回填 AUTH-20261126-001 的 commit
+- **范围信封**：POLICY-CR-007（`LosAngelousDocs/**` + `scripts/check-docs.sh` + `scripts/selftest.sh`，1 次提交）
+- **最近报告**：`reports/doc-2026-11-26-CR-007.md`、`reports/dev-2026-11-26-T-008.md`、`reports/dev-2026-11-26-T-008-r2.md`、`reports/steward-2026-11-26-CR-007-g2.5.md`、`reports/review-2026-11-26-T-008.md`、`reports/review-2026-11-26-T-008-r2.md`、`reports/meta-2026-11-26-CR-007-r2.md`（G4 通过）
 
 ## 已完成
 
@@ -54,5 +61,5 @@
 - 收尾项 F-1～F-4 已处理：台账更正、状态串、架构表、CHANGELOG。
 - 收尾提交：`docs(workflow): 收尾 CR-002 G4 总审记录`（hash 见 git log）。
 - 后续 P3（F-5～F-10）：worklog mv 临时文件、`--no-worklog` relpath、`--force` AUTH、`--time` 帮助、selftest 补 `head`/插行/SKIP 计失败；建议下一轮或 CR-007。
-- CR-003 协议矛盾（A1/commit/A2/台账）**已修**：拆分为 A1w/A1c，G3 接受改记 WORKLOG，`finish-report --backfill` 回填 commit，记录根统一项目根（legacy 文档根兼容）；新增 `07-speed.md` 与 `workflow-status.sh`。
+- 协议矛盾（A1/commit/A2/台账）已在 `5c09e61` 修复，现由 **CR-007** 追认：拆分为 A1w/A1c，G3 接受改记 WORKLOG，`finish-report --backfill` 回填 commit，记录根统一项目根（legacy 文档根兼容）；新增 `07-speed.md` 与 `workflow-status.sh`。
 - T-005 P3 AUTH-005 scope 已在台账更正记录与 G4 报告交叉覆盖。

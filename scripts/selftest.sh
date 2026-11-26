@@ -547,6 +547,26 @@ else
   fail "check-docs g2.5/g3.5（g25=$rc_g25_miss/$rc_g25_ok g35=$rc_g35_miss/$rc_g35_ok）"
 fi
 
+# ---- 28b. check-docs g2.5 取 STATUS 当前 CR，而非 intake 最大 CR（回归 P1） ----
+docs_cr="$work/docs-cr"
+cp -r "$docs_sb" "$docs_cr"
+wsproj_cr="$work/wsproj-cr"
+mkdir -p "$wsproj_cr"
+# STATUS 显式写当前 CR=CR-001（覆盖模板的「当前 CR：无」，确保走到 sed 分支）
+sed -i 's/^- 当前 CR：.*/- 当前 CR：CR-001/' "$docs_cr/STATUS.md"
+# intake 追加一个编号更大的候选，复现「回退取最大 CR」会被误判的场景
+printf '\n### CR-999 候选（未受理）\n- 状态：候选\n' >> "$docs_cr/00-requirements-intake.md"
+printf '# 工作日志\n| ID | 时间 | 角色 | 门禁 | CR / T | 做了什么 | 报告 | Commit | AUTH | 状态 |\n|---|---|---|---|---|---|---|---|---|---|\n' > "$wsproj_cr/WORKLOG.md"
+printf '| LOG-9 | 2026-11-26 | steward | G2.5 | CR-001 / T-001 | 合并增量 | - | - | - | 完成 |\n' >> "$wsproj_cr/WORKLOG.md"
+"$repo_root/scripts/check-docs.sh" "$docs_cr" --gate g2.5 --project-root "$wsproj_cr" >"$work/check-g25-cr.out" 2>&1
+rc_g25_cr=$?
+# 通过即证明取到的是 CR-001；若误取 CR-999，WORKLOG 无匹配行，必然非零
+if [ "$rc_g25_cr" -eq 0 ]; then
+  pass "check-docs g2.5 取 STATUS 当前 CR（不误取 intake 最大 CR-999）"
+else
+  fail "check-docs g2.5 当前 CR（rc=$rc_g25_cr）：$(tr '\n' ' ' < "$work/check-g25-cr.out")"
+fi
+
 # ---- 29. workflow-status 只读诊断 ----
 "$repo_root/scripts/workflow-status.sh" "$docs_sb" --project-root "$sandbox" >"$work/ws.out" 2>&1
 rc_ws=$?

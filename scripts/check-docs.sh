@@ -237,7 +237,7 @@ if [ "$gate" = "g1" ]; then
     || err "G1：04-tasks.md 缺少 DoR"
   grep -qF '当前门禁' "$doc_root/STATUS.md" 2>/dev/null \
     || err "G1：STATUS.md 缺少「当前门禁」"
-  grep -qE 'G1[[:space:]]*已确认[[:space:]]*(：|:)[[:space:]]*是' "$doc_root/STATUS.md" 2>/dev/null \
+  grep -qE 'G1[[:space:]]*已确认[[:space:]]*\**[[:space:]]*(：|:)[[:space:]]*\**[[:space:]]*是' "$doc_root/STATUS.md" 2>/dev/null \
     || err "G1：STATUS.md 未写「G1 已确认：是」（用户确认后才可写）"
 fi
 
@@ -248,7 +248,7 @@ find_latest_report() {
 }
 
 g1_confirmed() {
-  grep -qE 'G1[[:space:]]*已确认[[:space:]]*(：|:)[[:space:]]*是' "$doc_root/STATUS.md" 2>/dev/null
+  grep -qE 'G1[[:space:]]*已确认[[:space:]]*\**[[:space:]]*(：|:)[[:space:]]*\**[[:space:]]*是' "$doc_root/STATUS.md" 2>/dev/null
 }
 
 # 记录根：默认项目根；存量项目允许文档根（legacy）
@@ -265,7 +265,7 @@ record_file() {
 
 current_cr() {
   local cr
-  cr="$(sed -nE 's/^[[:space:]]*-?[[:space:]]*\**[[:space:]]*当前 CR[[:space:]]*\**[[:space:]]*(：|:)[[:space:]]*([A-Za-z0-9-]+).*/\3/p' "$doc_root/STATUS.md" 2>/dev/null | head -1)"
+  cr="$(sed -nE 's/^[[:space:]]*-?[[:space:]]*\**[[:space:]]*当前 CR[[:space:]]*\**[[:space:]]*(：|:)[[:space:]]*([A-Za-z0-9-]+).*/\2/p' "$doc_root/STATUS.md" 2>/dev/null | head -1)"
   case "$cr" in
     CR-*) printf '%s' "$cr"; return 0 ;;
   esac
@@ -283,7 +283,7 @@ worklog_has_gate() {
 }
 
 g3_accepted() {
-  grep -qE 'G3[[:space:]]*已接受[[:space:]]*(：|:)' "$doc_root/STATUS.md" 2>/dev/null && return 0
+  grep -qE 'G3[[:space:]]*已接受[[:space:]]*\**[[:space:]]*(：|:)' "$doc_root/STATUS.md" 2>/dev/null && return 0
   local wl
   wl="$(record_file WORKLOG.md)" || return 1
   grep -qE '\|[[:space:]]*G3[[:space:]]*\|.*接受' "$wl"

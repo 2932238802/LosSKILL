@@ -150,3 +150,61 @@
 | 受影响文档 | `LosAngelousDocs/03-design.md`、`LosAngelousDocs/04-tasks.md`、`LosAngelousDocs/05-decisions.md` |
 | 兼容与迁移 | 旧报告仍可处理；无需迁移 |
 | 风险 | 中：幂等键过宽会误跳过，过窄会重复；用 AC-004-4 与 selftest 覆盖 |
+
+## R-009 文档树契约与 G1 门禁（P0，v1）
+
+- **来源**：CR-007
+- **背景**：`LosAngelousDocs/` 没有 `DOCS_CONTRACT.md`，`check-docs --gate g1` 直接失败，后续 CR 无法过门禁。
+- **描述**：补契约并登记现有文件；让本仓库能通过 G1 机器检查。
+- **验收标准**：
+  - AC-009-1：`DOCS_CONTRACT.md` 存在，含核心 10 个文件与 `reports` 目录条目。
+  - AC-009-2：`./scripts/check-docs.sh LosAngelousDocs --gate g1` 退出码 0（0 ERROR）。
+  - AC-009-3：文档根现有文件全部登记，或属于 legacy 记录文件（`WORKLOG.md` / `AUTHORIZATIONS.md` / `PROJECT_BRAIN.md`）。
+  - AC-009-4：`check-docs` 容忍 `STATUS.md` 中加粗的 `**G1 已确认**：是` / `**G3 已接受**：` 写法（G1 实测发现）。
+  - AC-009-5：`current_cr()` 优先取 `STATUS.md` 的「当前 CR」；即使 `00-requirements-intake.md` 存在更高编号的候选 CR，`--gate g2.5` 仍按当前 CR 判定（G4 P1 回归）。
+- **NFR 影响**：无新增依赖；纯文档 + 两处脚本修复。
+- **影响面**：`LosAngelousDocs/DOCS_CONTRACT.md`（新）、`scripts/check-docs.sh`（G1/G3 正则、`current_cr`）、`scripts/selftest.sh`（回归用例）。
+- **不在范围内**：移动 legacy 记录文件到项目根。
+- **变更历史**：v1 2026-11-26 初始。
+
+## R-010 已提交改动可追溯与独立复核（P1，v1）
+
+- **来源**：CR-007
+- **背景**：`5c09e61`（协议 + 提速）与 `d6bce31`（WARN 清零）在工作流外提交，缺 CR/R/AC/T 与独立复核。
+- **描述**：retro 补齐文档与报告，由 Review 独立复核两个提交，不重做实现。
+- **验收标准**：
+  - AC-010-1：CR-007 卡、R/AC/T 与追溯矩阵存在。
+  - AC-010-2：Doc 报告与 Dev G2 报告落盘到 `reports/`。
+  - AC-010-3：Review 报告逐条判定 AC，并给出合法结论。
+  - AC-010-4：Review 无 P0/P1；如有，转返工并记录。
+- **NFR 影响**：不改变运行时行为。
+- **影响面**：`LosAngelousDocs/reports/`、`STATUS.md`、`WORKLOG.md`。
+- **不在范围内**：重新实现或修改 `skills/` / `scripts/`。
+- **变更历史**：v1 2026-11-26 初始。
+
+## R-011 Skill 告警清零（P1，v1）
+
+- **来源**：CR-007
+- **背景**：`validate.sh` 原有 16 个 WARN（11 个 description 缺边界、5 个 `red-tie-xhs` 绝对路径）。
+- **描述**：补触发边界，去掉硬编码路径，`validate.sh` 达到 0 ERROR / 0 WARN。
+- **验收标准**：
+  - AC-011-1：`./scripts/validate.sh` 0 ERROR / 0 WARN。
+  - AC-011-2：11 个 Skill 的 description 含「不用于 / Not for」边界。
+  - AC-011-3：`red-tie-xhs` 的 `SKILL.md` 不含 `C:\` / `E:\` 绝对路径；`template.py` 支持 `RED_TIE_FONT_DIR`。
+- **NFR 影响**：无新增依赖；字体探测失败时给出明确报错。
+- **影响面**：12 个 Skill 的 `SKILL.md`、`skills/red-tie-xhs/references/template.py`。
+- **不在范围内**：改写 Skill 正文能力。
+- **变更历史**：v1 2026-11-26 初始。
+
+## 影响分析（CR-007）
+
+| 维度 | 内容 |
+|---|---|
+| 受影响需求 | R-009、R-010、R-011（新增） |
+| 受影响 AC | AC-009-1～5、AC-010-1～4、AC-011-1～3 |
+| 受影响模块 / 接口 | 文档树、`reports/`、Skill 元数据；无运行时接口 |
+| 受影响数据 / 配置 | 无数据迁移；新增 `DOCS_CONTRACT.md` |
+| 受影响测试 | 复用 `validate.sh`、`check-docs.sh`、`selftest.sh`；无新增测试 |
+| 受影响文档 | `00-requirements-intake.md`、`01-requirements.md`、`04-tasks.md`、`STATUS.md`、`CHANGELOG.md` |
+| 兼容与迁移 | legacy 记录文件保留原位，`check-docs` 给 WARN 不报错 |
+| 风险 | 低：纯文档与元数据；retro 报告需 Review 独立取证 |

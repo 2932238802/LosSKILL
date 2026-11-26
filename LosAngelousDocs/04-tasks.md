@@ -187,3 +187,31 @@
 - T-004 是证据链主缺陷，优先。
 - T-005 与 T-004 同文件，串行。
 - T-006 覆盖前两者，最后做。
+
+## CR-007 任务
+
+### T-007 补文档树契约并登记现有文件（状态：DONE（G3/G4 通过））
+
+- **来源**：R-009
+- **目标**：新增 `DOCS_CONTRACT.md`，登记核心文件、历史报告与可视化文件；修 `check-docs` 对加粗 G1/G3 字段的兼容与 `current_cr` 优先取 STATUS；补 selftest 回归；让 `check-docs --gate g1`/`g2.5` 0 ERROR。
+- **DoR**：用户已确认 G1；`LosAngelousDocs/` 现有文件清单已核对；允许路径 `LosAngelousDocs/**`、`scripts/check-docs.sh`、`scripts/selftest.sh`。
+- **AC 映射**：AC-009-1、AC-009-2、AC-009-3、AC-009-4、AC-009-5
+- **证据要求**：`check-docs --gate g1`/`g2.5` 的退出码与输出；加粗字段 grep 结果；selftest 用例。
+
+### T-008 补记两个提交并独立复核（状态：DONE（G3 通过，G4 复审通过））
+
+- **来源**：R-010、R-011
+- **目标**：为 `5c09e61`（协议 + 提速）与 `d6bce31`（WARN 清零）补 Doc/Dev 报告；由 Review 独立复核，不重做实现。
+- **DoR**：两个提交 hash 已知；`validate.sh` / `check-docs.sh` 可运行；CR-007 文档已就绪。
+- **AC 映射**：AC-010-1～4、AC-011-1～3
+- **证据要求**：`validate.sh` 输出（0/0）；Review 报告逐条 AC 判定；commit `d6bce31` 的 diff。
+
+## CR-007 任务顺序与追溯
+
+`T-007 → T-008`
+
+| 需求 | AC | 任务 | 验证方式 |
+|---|---|---|---|
+| R-009 | AC-009-1～5 | T-007 | `check-docs --gate g1`/`g2.5` 0 ERROR；契约条目核对；加粗正则单测；current_cr 回归 |
+| R-010 | AC-010-1～4 | T-008 | Doc/Dev/Review 报告；Review 逐条判定 |
+| R-011 | AC-011-1～3 | T-008 | `validate.sh` 0 ERROR / 0 WARN；路径 grep |
